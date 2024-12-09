@@ -5,6 +5,7 @@ import { AbstraxionProvider } from "@burnt-labs/abstraxion";
 
 import "@burnt-labs/abstraxion/dist/index.css";
 import "@burnt-labs/ui/dist/index.css";
+import Script from "next/script";
 
 const inter = Inter({ subsets: ["latin"] });
 export const seatContractAddress =
@@ -16,6 +17,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <Script src="https://telegram.org/js/telegram-web-app.js"></Script>
+      </head>
       <body className={inter.className}>
         <AbstraxionProvider
           config={{
