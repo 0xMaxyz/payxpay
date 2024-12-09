@@ -1,101 +1,137 @@
-import Image from "next/image";
+"use client";
+import Link from "next/link";
+import { JSX, useState } from "react";
+import {
+  Abstraxion,
+  useAbstraxionAccount,
+  useAbstraxionSigningClient,
+  useModal,
+} from "@burnt-labs/abstraxion";
+import { Button } from "@burnt-labs/ui";
+import "@burnt-labs/ui/dist/index.css";
+import type { ExecuteResult } from "@cosmjs/cosmwasm-stargate";
+import { seatContractAddress } from "./layout";
 
-export default function Home() {
+type ExecuteResultOrUndefined = ExecuteResult | undefined;
+export default function Page(): JSX.Element {
+  // Abstraxion hooks
+  const { data: account } = useAbstraxionAccount();
+  const { client } = useAbstraxionSigningClient();
+
+  // General state hooks
+  const [isModalOpen, setModalOpen] = useModal();
+
+  const openModal = () => setModalOpen(true);
+  const closeModal = () => setModalOpen(false);
+
+  const [loading, setLoading] = useState(false);
+  const [executeResult, setExecuteResult] =
+    useState<ExecuteResultOrUndefined>(undefined);
+
+  const blockExplorerUrl = `https://explorer.burnt.com/xion-testnet-1/tx/${executeResult?.transactionHash}`;
+
+  function getTimestampInSeconds(date: Date | null) {
+    if (!date) return 0;
+    const d = new Date(date);
+    return Math.floor(d.getTime() / 1000);
+  }
+
+  const now = new Date();
+  now.setSeconds(now.getSeconds() + 15);
+  const oneYearFromNow = new Date();
+  oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
+
+  async function claimSeat() {
+    setLoading(true);
+    const msg = {
+      sales: {
+        claim_item: {
+          token_id: String(getTimestampInSeconds(now)),
+          owner: account.bech32Address,
+          token_uri: "",
+          extension: {},
+        },
+      },
+    };
+
+    try {
+      const claimRes = await client?.execute(
+        account.bech32Address,
+        seatContractAddress,
+        msg,
+        {
+          amount: [{ amount: "0.001", denom: "uxion" }],
+          gas: "500000",
+        },
+        "", // memo
+        []
+      );
+
+      setExecuteResult(claimRes);
+    } catch (error) {
+      // eslint-disable-next-line no-console -- No UI exists yet to display errors
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <main className="m-auto flex min-h-screen max-w-xs flex-col items-center justify-center gap-4 p-4">
+      <h1 className="text-2xl font-bold tracking-tighter text-white">
+        ABSTRAXION
+      </h1>
+      <Button
+        fullWidth
+        onClick={() => {
+          openModal();
+        }}
+        structure="base"
+      >
+        {account.bech32Address ? (
+          <div className="flex items-center justify-center">VIEW ACCOUNT</div>
+        ) : (
+          "CONNECT"
+        )}
+      </Button>
+      {client ? (
+        <Button
+          disabled={loading}
+          fullWidth
+          onClick={() => {
+            void claimSeat();
+          }}
+          structure="base"
+        >
+          {loading ? "LOADING..." : "CLAIM SEAT"}
+        </Button>
+      ) : null}
+      {isModalOpen && <Abstraxion onClose={closeModal} />}
+      {executeResult ? (
+        <div className="flex flex-col rounded border-2 border-black p-2 dark:border-white">
+          <div className="mt-2">
+            <p className="text-zinc-500">
+              <span className="font-bold">Transaction Hash</span>
+            </p>
+            <p className="text-sm">{executeResult.transactionHash}</p>
+          </div>
+          <div className="mt-2">
+            <p className=" text-zinc-500">
+              <span className="font-bold">Block Height:</span>
+            </p>
+            <p className="text-sm">{executeResult.height}</p>
+          </div>
+          <div className="mt-2">
+            <Link
+              className="text-black underline visited:text-purple-600 dark:text-white"
+              href={blockExplorerUrl}
+              target="_blank"
+            >
+              View in Block Explorer
+            </Link>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+      ) : null}
+    </main>
   );
 }
