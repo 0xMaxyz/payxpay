@@ -1,5 +1,4 @@
 "use client";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import { AbstraxionProvider } from "@burnt-labs/abstraxion";
 
@@ -7,8 +6,8 @@ import "@burnt-labs/abstraxion/dist/index.css";
 import "@burnt-labs/ui/dist/index.css";
 import Script from "next/script";
 import { seatContractAddress } from "./consts";
-
-const inter = Inter({ subsets: ["latin"] });
+import Header from "./components/header";
+import NavigationBar from "./components/navbar";
 
 export default function RootLayout({
   children,
@@ -20,7 +19,7 @@ export default function RootLayout({
       <head>
         <Script src="https://telegram.org/js/telegram-web-app.js"></Script>
       </head>
-      <body className={inter.className}>
+      <body className="flex flex-col h-screen">
         <AbstraxionProvider
           config={{
             contracts: [seatContractAddress],
@@ -28,7 +27,9 @@ export default function RootLayout({
             restUrl: "https://api.xion-testnet-1.burnt.com",
           }}
         >
-          {children}
+          <Header />
+          <NavigationBar />
+          <main className="flex-grow overflow-y-auto">{children}</main>
         </AbstraxionProvider>
       </body>
     </html>

@@ -81,6 +81,7 @@ export default function Page(): JSX.Element {
       <h1 className="text-2xl font-bold tracking-tighter text-white">
         ABSTRAXION
       </h1>
+      <button className="btn btn-primary">Hello daisyUI!</button>
       <Button
         fullWidth
         onClick={() => {
