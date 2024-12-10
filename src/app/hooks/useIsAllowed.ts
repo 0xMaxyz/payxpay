@@ -8,7 +8,8 @@ export const useIsAllowed = () => {
 
   useEffect(() => {
     if (typeof window !== "undefined" && WebApp) {
-      const isTelegramMiniApp = WebApp?.platform === "telegram";
+      const isTelegramMiniApp =
+        WebApp?.platform === "telegram" || WebApp?.platform === "tdesktop";
 
       if (isProduction) {
         setIsAllowed(isTelegramMiniApp);
