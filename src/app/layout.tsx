@@ -25,11 +25,18 @@ export default function RootLayout({
   }, [theme]);
   if (!isAllowed) {
     return (
-      <div className="flex items-center justify-center min-h-screen text-center">
-        <p className="text-lg font-semibold">
-          This app is only available on Telegram.
-        </p>
-      </div>
+      <html>
+        <head>
+          <Script src="https://telegram.org/js/telegram-web-app.js"></Script>
+        </head>
+        <body className="flex flex-col h-screen">
+          <main className="flex items-center justify-center min-h-screen text-center">
+            <p className="text-lg font-semibold">
+              This app is only available on Telegram.
+            </p>
+          </main>
+        </body>
+      </html>
     );
   }
 
