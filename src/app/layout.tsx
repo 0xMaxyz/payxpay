@@ -18,7 +18,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   const isAllowed = useIsAllowed();
-  const theme = useTelegram;
+  const { theme, WebApp } = useTelegram();
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme.toString());
@@ -33,6 +33,7 @@ export default function RootLayout({
           <main className="flex items-center justify-center min-h-screen text-center">
             <p className="text-lg font-semibold">
               This app is only available on Telegram.
+              {WebApp?.platform}
             </p>
           </main>
         </body>
