@@ -1,3 +1,10 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.logo-color {
+  filter: none;
+}
+[data-theme="dark"] .logo-color {
+  filter: invert(1) brightness(2);
+}

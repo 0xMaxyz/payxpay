@@ -6,14 +6,33 @@ import "@burnt-labs/abstraxion/dist/index.css";
 import "@burnt-labs/ui/dist/index.css";
 import Script from "next/script";
 import { seatContractAddress } from "./consts";
-import Header from "./components/header";
-import NavigationBar from "./components/navbar";
+import NavBar from "./components/navbar";
+
+import { useEffect } from "react";
+import { useTelegram } from "./hooks/useTelegram";
+import { useIsAllowed } from "./hooks/useIsAllowed";
 
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const isAllowed = useIsAllowed();
+  const theme = useTelegram;
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme.toString());
+  }, [theme]);
+  if (!isAllowed) {
+    return (
+      <div className="flex items-center justify-center min-h-screen text-center">
+        <p className="text-lg font-semibold">
+          This app is only available on Telegram.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <html lang="en">
       <head>
@@ -27,8 +46,7 @@ export default function RootLayout({
             restUrl: "https://api.xion-testnet-1.burnt.com",
           }}
         >
-          <Header />
-          <NavigationBar />
+          <NavBar />
           <main className="flex-grow overflow-y-auto">{children}</main>
         </AbstraxionProvider>
       </body>
