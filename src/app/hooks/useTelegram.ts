@@ -11,7 +11,7 @@ export const useTelegram = () => {
       tg.ready();
 
       tg.onEvent("ready", () => {
-        console.log("tg is ready");
+        console.log("tg onReady event is called");
         // Set header and bottom bar colors
         tg.setHeaderColor("secondary_bg_color");
         tg.setBottomBarColor("secondary_bg_color");
