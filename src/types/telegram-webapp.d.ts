@@ -1,4 +1,5 @@
 interface TelegramWebApp {
+  ready(): void;
   setHeaderColor(color: string): void;
   setBottomBarColor(color: string): void;
   colorScheme: "light" | "dark";
