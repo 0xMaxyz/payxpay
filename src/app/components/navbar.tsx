@@ -30,7 +30,7 @@ export default function NavBar() {
               href={item.path}
               className={`tab ${
                 pathname === item.path
-                  ? "bg-primary text-white rounded-box"
+                  ? "primary text-white rounded-box"
                   : "text-color"
               }`}
             >
