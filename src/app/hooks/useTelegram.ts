@@ -22,7 +22,7 @@ export const useTelegram = () => {
         tg.offEvent("themeChanged", handleThemeChange);
       };
     }
-  }, []);
+  }, [theme]);
 
   return {
     theme,
