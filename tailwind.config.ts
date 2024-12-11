@@ -17,7 +17,14 @@ const config: Config = {
   },
   plugins: [daisyui],
   daisyui: {
-    themes: false,
+    themes: [
+      {
+        telegram: {
+          "base-100": "var(--tg-theme-bg-color)",
+          "base-content": "var(--tg-theme-text-color)",
+        },
+      },
+    ],
   },
 };
 export default config;
