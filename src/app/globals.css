@@ -25,9 +25,13 @@
 [data-theme="telegram"] .sec-bg {
   background-color: var(--tg-theme-secondary-bg-color);
 }
-[data-theme="telegram"][style*="--tg-color-scheme: dark;"] .bottom-nav-colors {
+[data-theme="telegram"][style*="--tg-color-scheme: dark;"] .bottom-nav-text {
   color: var(--tg-theme-text-color) !important;
   background-color: var(--tg-theme-text-color) !important;
+}
+[data-theme="telegram"][style*="--tg-color-scheme: dark;"] .bottom-nav-fill {
+  fill: var(--tg-theme-text-color) !important;
+  stroke: var(--tg-theme-text-color) !important;
 }
 
 @tailwind base;

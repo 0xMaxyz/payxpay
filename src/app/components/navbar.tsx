@@ -8,13 +8,12 @@ const Navbar = () => {
             className="h-5 w-5"
             fill="none"
             viewBox="0 0 24 24"
-            stroke="currentColor"
           >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth="0.1"
-              fill="#000"
+              className="bottom-nav-fill"
               d="M19.5,3.5L18,2l-1.5,1.5L15,2l-1.5,1.5L12,2l-1.5,1.5L9,2L7.5,3.5L6,2v14H3v3c0,1.66,1.34,3,3,3h12c1.66,0,3-1.34,3-3V2 L19.5,3.5z M19,19c0,0.55-0.45,1-1,1s-1-0.45-1-1v-3H8V5h11V19z"
             />
             <rect
@@ -23,7 +22,7 @@ const Navbar = () => {
               x="9"
               y="7"
               strokeWidth="0.1"
-              fill="#000"
+              className="bottom-nav-fill"
             ></rect>
             <rect
               height="2"
@@ -31,7 +30,7 @@ const Navbar = () => {
               x="16"
               y="7"
               strokeWidth="0.1"
-              fill="#000"
+              className="bottom-nav-fill"
             ></rect>
             <rect
               height="2"
@@ -39,7 +38,7 @@ const Navbar = () => {
               x="9"
               y="10"
               strokeWidth="0.1"
-              fill="#000"
+              className="bottom-nav-fill"
             ></rect>
             <rect
               height="2"
@@ -47,15 +46,15 @@ const Navbar = () => {
               x="16"
               y="10"
               strokeWidth="0.1"
-              fill="#000"
+              className="bottom-nav-fill"
             ></rect>
           </svg>
-          <span className="btm-nav-label">Invoice</span>
+          <span className="btm-nav-label bottom-nav-colors">Pay</span>
         </a>
         <a href="/pay">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5 bottom-nav-colors"
+            className="h-5 w-5"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -65,7 +64,7 @@ const Navbar = () => {
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth="0.1"
-              fill="#000"
+              className="bottom-nav-fill"
             ></path>
           </svg>
           <span className="btm-nav-label bottom-nav-colors">Pay</span>
@@ -76,17 +75,16 @@ const Navbar = () => {
             className="h-5 w-5"
             fill="none"
             viewBox="0 0 24 24"
-            stroke="currentColor"
           >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth="0.1"
-              fill="#000"
+              className="bottom-nav-fill"
               d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"
             />
           </svg>
-          <span className="btm-nav-label">History</span>
+          <span className="btm-nav-label bottom-nav-colors">History</span>
         </a>
       </div>
     </>
