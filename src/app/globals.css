@@ -1,7 +1,7 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
+:root [data-theme="telegram"] {
+  --base-100: var(--tg-theme-bg-color) !important;
+  --base-content: var(--tg-theme-text-color) !important;
+}
 .logo-color {
   filter: none;
 }
@@ -13,3 +13,7 @@
   color: var(--tg-theme-button-text-color);
   background-color: var(--tg-theme-button-color);
 }
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
