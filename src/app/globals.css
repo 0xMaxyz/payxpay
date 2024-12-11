@@ -18,6 +18,14 @@
   color: var(--tg-theme-text-color);
 }
 
+[data-theme="telegram"] .active-bg {
+  background-color: var(--tg-theme-button-color);
+}
+
+[data-theme="telegram"] .sec-bg {
+  background-color: var(--tg-theme-secondary-bg-color);
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

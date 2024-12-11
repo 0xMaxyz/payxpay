@@ -1,62 +1,95 @@
-"use client";
-
-import Link from "next/link";
-import Image from "next/image";
-import { usePathname } from "next/navigation";
-
-export default function NavBar() {
-  const pathname = usePathname();
-  const navItems = [
-    { name: "Create Invoice", path: "/create-invoice" },
-    { name: "Pay", path: "/pay" },
-    { name: "History", path: "/history" },
-  ];
+const Navbar = () => {
   return (
-    <div className="navbar bg-base-100">
-      <div className="navbar-start">
-        <Image
-          className="logo-color"
-          width="100"
-          height="50"
-          src="/assets/img/logo.png"
-          alt="PayxPay logo"
-        />
-      </div>
-      <div className="navbar-center">
-        <div className="flex space-x-2">
-          {navItems.map((item) => (
-            <Link
-              key={item.path}
-              href={item.path}
-              className={`tab ${
-                pathname === item.path
-                  ? "primary text-white rounded-box"
-                  : "text-color"
-              }`}
-            >
-              {item.name}
-            </Link>
-          ))}
-        </div>
-      </div>
-      <div className="navbar-end">
-        <div className="dropdown dropdown-end">
-          <label tabIndex={0} className="btn btn-ghost">
-            Hey, User!
-          </label>
-          <ul
-            tabIndex={0}
-            className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 text-color"
+    <>
+      <div className="btm-nav sec-bg">
+        <a href="/create-invoice">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
           >
-            <li>
-              <Link href="/settings">Settings</Link>
-            </li>
-            <li>
-              <button>Logout</button>
-            </li>
-          </ul>
-        </div>
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="0.1"
+              fill="#000"
+              d="M19.5,3.5L18,2l-1.5,1.5L15,2l-1.5,1.5L12,2l-1.5,1.5L9,2L7.5,3.5L6,2v14H3v3c0,1.66,1.34,3,3,3h12c1.66,0,3-1.34,3-3V2 L19.5,3.5z M19,19c0,0.55-0.45,1-1,1s-1-0.45-1-1v-3H8V5h11V19z"
+            />
+            <rect
+              height="2"
+              width="6"
+              x="9"
+              y="7"
+              strokeWidth="0.1"
+              fill="#000"
+            ></rect>
+            <rect
+              height="2"
+              width="2"
+              x="16"
+              y="7"
+              strokeWidth="0.1"
+              fill="#000"
+            ></rect>
+            <rect
+              height="2"
+              width="6"
+              x="9"
+              y="10"
+              strokeWidth="0.1"
+              fill="#000"
+            ></rect>
+            <rect
+              height="2"
+              width="2"
+              x="16"
+              y="10"
+              strokeWidth="0.1"
+              fill="#000"
+            ></rect>
+          </svg>
+          <span className="btm-nav-label">Invoice</span>
+        </a>
+        <a href="/pay">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="0.1"
+              fill="#000"
+            ></path>
+          </svg>
+          <span className="btm-nav-label">Pay</span>
+        </a>
+        <a href="/history">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="0.1"
+              fill="#000"
+              d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"
+            />
+          </svg>
+          <span className="btm-nav-label">History</span>
+        </a>
       </div>
-    </div>
+    </>
   );
-}
+};
+export default Navbar;

@@ -5,9 +5,10 @@ import { AbstraxionProvider } from "@burnt-labs/abstraxion";
 
 import "./globals.css";
 import { seatContractAddress } from "./consts";
-import NavBar from "./components/navbar";
+import Header from "./components/header";
 import { useTelegram } from "./hooks/useTelegram";
 import { useIsAllowed } from "./hooks/useIsAllowed";
+import Navbar from "./components/navbar";
 
 export default function RootLayout({
   children,
@@ -40,8 +41,9 @@ export default function RootLayout({
               restUrl: "https://api.xion-testnet-1.burnt.com",
             }}
           >
-            <NavBar />
-            <main className="flex-grow overflow-y-auto">{children}</main>
+            <Header />
+            <main className="flex-grow overflow-y-auto pb-16">{children}</main>
+            <Navbar />
           </AbstraxionProvider>
         ) : (
           <main className="flex items-center justify-center min-h-screen text-center">
