@@ -18,8 +18,12 @@ export default function RootLayout({
   const { theme, WebApp } = useTelegram();
 
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme.toString());
-  }, [theme]);
+    if (isAllowed) {
+      document.documentElement.setAttribute("data-theme", "telegram");
+    } else {
+      document.documentElement.setAttribute("data-theme", "light");
+    }
+  }, [isAllowed, theme]);
 
   return (
     <html lang="en">
