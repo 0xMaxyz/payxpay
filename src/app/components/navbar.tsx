@@ -31,7 +31,7 @@ export default function NavBar() {
               className={`tab ${
                 pathname === item.path
                   ? "bg-primary text-white rounded-box"
-                  : ""
+                  : "text-color"
               }`}
             >
               {item.name}
@@ -46,7 +46,7 @@ export default function NavBar() {
           </label>
           <ul
             tabIndex={0}
-            className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52"
+            className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 text-color"
           >
             <li>
               <Link href="/settings">Settings</Link>
