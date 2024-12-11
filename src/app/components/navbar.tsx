@@ -1,7 +1,7 @@
 const Navbar = () => {
   return (
     <>
-      <div className="btm-nav sec-bg text-color bottom-nav-colors">
+      <div className="btm-nav sec-bg text-color ">
         <a href="/create-invoice">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -55,7 +55,7 @@ const Navbar = () => {
         <a href="/pay">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5"
+            className="h-5 w-5 bottom-nav-colors"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -68,7 +68,7 @@ const Navbar = () => {
               fill="#000"
             ></path>
           </svg>
-          <span className="btm-nav-label">Pay</span>
+          <span className="btm-nav-label bottom-nav-colors">Pay</span>
         </a>
         <a href="/history">
           <svg
