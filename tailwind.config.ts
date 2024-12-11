@@ -20,8 +20,7 @@ const config: Config = {
     themes: [
       {
         telegram: {
-          // eslint-disable-next-line @typescript-eslint/no-require-imports
-          ...require("daisyui/src/theming/themes")["light"],
+          primary: "black",
           "base-100": "var(--tg-theme-bg-color)",
           "base-content": "var(--tg-theme-text-color)",
         },
