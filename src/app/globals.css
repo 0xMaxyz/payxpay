@@ -29,7 +29,7 @@
   color: var(--tg-theme-text-color) !important;
   background-color: var(--tg-theme-text-color) !important;
 }
-[data-theme="telegram"][style*="--tg-color-scheme: dark;"] .bottom-nav-fill {
+[data-theme="telegram"] .bottom-nav-fill {
   fill: var(--tg-theme-text-color) !important;
   stroke: var(--tg-theme-text-color) !important;
 }
