@@ -13,9 +13,3 @@
   color: var(--tg-theme-button-text-color);
   background-color: var(--tg-theme-button-color);
 }
-:root [data-theme="telegram"] {
-  --base-100: var(--tg-theme-bg-color) !important;
-  --base-content: var(--tg-theme-text-color) !important;
-  background-color: var(--tg-theme-bg-color) !important;
-  color: var(--tg-theme-text-color) !important;
-}
