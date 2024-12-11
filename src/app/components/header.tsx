@@ -2,15 +2,15 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+//import { usePathname } from "next/navigation";
 
 export default function Header() {
-  const pathname = usePathname();
-  const navItems = [
-    { name: "Create Invoice", path: "/create-invoice" },
-    { name: "Pay", path: "/pay" },
-    { name: "History", path: "/history" },
-  ];
+  // const pathname = usePathname();
+  // const navItems = [
+  //   { name: "Create Invoice", path: "/create-invoice" },
+  //   { name: "Pay", path: "/pay" },
+  //   { name: "History", path: "/history" },
+  // ];
   return (
     <div className="navbar base-200">
       <div className="navbar-start">
