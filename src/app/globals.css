@@ -5,7 +5,7 @@
 .logo-color {
   filter: none;
 }
-[data-theme="dark"] .logo-color {
+[data-theme="telegram"][style*="--tg-color-scheme: dark;"] .logo-color {
   filter: invert(1) brightness(2);
 }
 
@@ -14,8 +14,8 @@
   background-color: var(--tg-theme-button-color);
 }
 
-.text-color {
-  color: var(--base-content);
+[data-theme="telegram"] .text-color {
+  color: var(--tg-theme-text-color);
 }
 
 @tailwind base;
