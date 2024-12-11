@@ -1,7 +1,7 @@
 const Navbar = () => {
   return (
     <>
-      <div className="btm-nav sec-bg">
+      <div className="btm-nav sec-bg text-color bottom-nav-colors">
         <a href="/create-invoice">
           <svg
             xmlns="http://www.w3.org/2000/svg"

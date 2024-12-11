@@ -25,6 +25,10 @@
 [data-theme="telegram"] .sec-bg {
   background-color: var(--tg-theme-secondary-bg-color);
 }
+[data-theme="telegram"][style*="--tg-color-scheme: dark;"] .bottom-nav-colors {
+  color: var(--tg-theme-text-color);
+  background-color: var(--tg-theme-text-color);
+}
 
 @tailwind base;
 @tailwind components;
