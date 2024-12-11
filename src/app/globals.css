@@ -8,3 +8,8 @@
 [data-theme="dark"] .logo-color {
   filter: invert(1) brightness(2);
 }
+
+[data-theme="mytheme"] .btn {
+  color: var(--tg-theme-button-text-color);
+  background-color: var(--tg-theme-button-color);
+}
