@@ -16,6 +16,7 @@ interface TelegramWebApp {
     hide(): void;
   };
   platform: string;
+  initData: string;
 }
 
 interface Window {
