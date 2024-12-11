@@ -10,18 +10,16 @@ export const useTelegram = () => {
       console.log("tg found");
       tg.ready();
 
-      tg.onEvent("ready", () => {
-        console.log("tg onReady event is called");
-        // Set header and bottom bar colors
-        tg.setHeaderColor("secondary_bg_color");
-        tg.setBottomBarColor("secondary_bg_color");
-      });
+      // Set header and bottom bar colors
+      tg.setHeaderColor("secondary_bg_color");
+      tg.setBottomBarColor("secondary_bg_color");
 
       // Read initial theme
       setTheme(tg.colorScheme);
 
       // Listen for theme change
       const handleThemeChange = () => {
+        console.log("handleThemeChange called");
         setTheme(tg.colorScheme);
       };
 
