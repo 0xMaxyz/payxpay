@@ -16,7 +16,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   const { isAllowed, loading } = useIsAllowed();
-  const { theme, WebApp } = useTelegram();
+  const { theme } = useTelegram();
 
   useEffect(() => {
     if (isAllowed) {
@@ -29,7 +29,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <Script src="https://telegram.org/js/telegram-web-app.js"></Script>
+        <Script
+          strategy="beforeInteractive"
+          onLoad={() => console.log("Telegram WebApp script loaded!")}
+          src="https://telegram.org/js/telegram-web-app.js"
+        ></Script>
       </head>
       <body className="flex flex-col h-screen">
         {loading && <div>Loading...</div>}
@@ -49,7 +53,6 @@ export default function RootLayout({
           <main className="flex items-center justify-center min-h-screen text-center">
             <p className="text-lg font-semibold">
               This app is only available on Telegram.
-              {WebApp?.platform}
             </p>
           </main>
         )}

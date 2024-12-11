@@ -6,7 +6,9 @@ export const useTelegram = () => {
   useEffect(() => {
     if (typeof window !== "undefined" && window.Telegram?.WebApp) {
       const tg = window.Telegram.WebApp;
+
       console.log("tg found");
+      tg.ready();
 
       tg.onEvent("ready", () => {
         console.log("tg is ready");
