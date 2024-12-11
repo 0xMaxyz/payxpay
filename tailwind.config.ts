@@ -18,7 +18,6 @@ const config: Config = {
   plugins: [daisyui],
   daisyui: {
     themes: [
-      "light",
       {
         telegram: {
           // eslint-disable-next-line @typescript-eslint/no-require-imports
