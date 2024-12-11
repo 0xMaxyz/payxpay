@@ -3,6 +3,7 @@ import Script from "next/script";
 import { useEffect } from "react";
 import { AbstraxionProvider } from "@burnt-labs/abstraxion";
 
+import "./globals.css";
 import { seatContractAddress } from "./consts";
 import NavBar from "./components/navbar";
 import { useTelegram } from "./hooks/useTelegram";
