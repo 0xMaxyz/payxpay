@@ -1,14 +1,10 @@
 "use client";
-import "./globals.css";
+import Script from "next/script";
+import { useEffect } from "react";
 import { AbstraxionProvider } from "@burnt-labs/abstraxion";
 
-import "@burnt-labs/abstraxion/dist/index.css";
-import "@burnt-labs/ui/dist/index.css";
-import Script from "next/script";
 import { seatContractAddress } from "./consts";
 import NavBar from "./components/navbar";
-
-import { useEffect } from "react";
 import { useTelegram } from "./hooks/useTelegram";
 import { useIsAllowed } from "./hooks/useIsAllowed";
 
