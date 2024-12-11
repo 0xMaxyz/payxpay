@@ -23,6 +23,8 @@ const config: Config = {
         telegram: {
           // eslint-disable-next-line @typescript-eslint/no-require-imports
           ...require("daisyui/src/theming/themes")["light"],
+          "base-100": "var(--tg-theme-bg-color)",
+          "base-content": "var(--tg-theme-text-color)",
         },
       },
     ],
