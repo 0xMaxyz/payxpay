@@ -20,9 +20,6 @@ export default function RootLayout({
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme.toString());
   }, [theme]);
-  if (loading) {
-    return <div>Loading...</div>;
-  }
 
   return (
     <html lang="en">
@@ -30,6 +27,7 @@ export default function RootLayout({
         <Script src="https://telegram.org/js/telegram-web-app.js"></Script>
       </head>
       <body className="flex flex-col h-screen">
+        {loading && <div>Loading...</div>}
         {isAllowed ? (
           <AbstraxionProvider
             config={{
