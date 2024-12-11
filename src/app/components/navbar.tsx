@@ -5,7 +5,7 @@ const Navbar = () => {
   const pathname = usePathname();
   return (
     <>
-      <div className="btm-nav-sm sec-bg text-color ">
+      <div className="btm-nav btm-nav-sm sec-bg text-color ">
         <a
           href="/create-invoice"
           className={`${
