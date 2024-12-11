@@ -5,6 +5,12 @@ export const useTelegram = () => {
 
   useEffect(() => {
     if (typeof window !== "undefined" && window.Telegram?.WebApp) {
+      const setTelegramUi = function () {
+        const tg = window.Telegram.WebApp;
+        // set header and bottom bar color to secondary color
+        tg.setHeaderColor("secondary_bg_color");
+        tg.setBottomBarColor("secondary_bg_color");
+      };
       const tg = window.Telegram.WebApp;
 
       // Read initial theme
@@ -16,6 +22,9 @@ export const useTelegram = () => {
       };
 
       tg.onEvent("themeChanged", handleThemeChange);
+
+      // set other Tg ui related properties
+      setTelegramUi();
 
       // Cleanup event listener
       return () => {
