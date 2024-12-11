@@ -58,7 +58,9 @@ const Navbar = () => {
               className="bottom-nav-fill"
             ></rect>
           </svg>
-          <span className="btm-nav-label bottom-nav-colors">Pay</span>
+          <span className="btm-nav-label bottom-nav-colors">
+            Create Invoice
+          </span>
         </a>
         <a
           href="/pay"
