@@ -9,7 +9,7 @@
   filter: invert(1) brightness(2);
 }
 
-[data-theme="mytheme"] .btn {
+[data-theme="telegram"] .btn {
   color: var(--tg-theme-button-text-color);
   background-color: var(--tg-theme-button-color);
 }
