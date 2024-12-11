@@ -33,6 +33,9 @@
   fill: var(--tg-theme-text-color) !important;
   stroke: var(--tg-theme-text-color) !important;
 }
+[data-theme="telegram"] .primary {
+  color: var(--tg-theme-button-color) !important;
+}
 
 @tailwind base;
 @tailwind components;

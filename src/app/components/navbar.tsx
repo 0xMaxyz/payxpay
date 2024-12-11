@@ -1,8 +1,17 @@
+"use client";
+import { usePathname } from "next/navigation";
+
 const Navbar = () => {
+  const pathname = usePathname();
   return (
     <>
-      <div className="btm-nav sec-bg text-color ">
-        <a href="/create-invoice">
+      <div className="btm-nav-sm sec-bg text-color ">
+        <a
+          href="/create-invoice"
+          className={`${
+            pathname === "/create-invoice" ? "border-b-2 primary" : ""
+          }`}
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-5 w-5"
@@ -51,7 +60,10 @@ const Navbar = () => {
           </svg>
           <span className="btm-nav-label bottom-nav-colors">Pay</span>
         </a>
-        <a href="/pay">
+        <a
+          href="/pay"
+          className={`${pathname === "/pay" ? "border-b-2 primary" : ""}`}
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-5 w-5"
@@ -69,7 +81,10 @@ const Navbar = () => {
           </svg>
           <span className="btm-nav-label bottom-nav-colors">Pay</span>
         </a>
-        <a href="/history">
+        <a
+          href="/history"
+          className={`${pathname === "/history" ? "border-b-2 primary" : ""}`}
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-5 w-5"

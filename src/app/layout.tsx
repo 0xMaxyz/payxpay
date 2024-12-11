@@ -2,6 +2,7 @@
 import Script from "next/script";
 import { useEffect } from "react";
 import { AbstraxionProvider } from "@burnt-labs/abstraxion";
+import Image from "next/image";
 
 import "./globals.css";
 import { seatContractAddress } from "./consts";
@@ -36,7 +37,19 @@ export default function RootLayout({
         ></Script>
       </head>
       <body className="flex flex-col h-screen">
-        {loading && <div>Loading...</div>}
+        {loading && (
+          <main className="flex flex-col items-center justify-center min-h-screen text-center">
+            <Image
+              className="logo-color"
+              width="200"
+              height="100"
+              src="/assets/img/logo.png"
+              alt="PayxPay logo"
+            />
+            <span className="loading loading-infinity loading-lg"></span>
+          </main>
+        )}
+
         {isAllowed ? (
           <AbstraxionProvider
             config={{
