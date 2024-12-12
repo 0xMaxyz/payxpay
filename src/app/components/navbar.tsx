@@ -1,8 +1,10 @@
 "use client";
 import { usePathname } from "next/navigation";
+import { useIsAllowed } from "../hooks/useIsAllowed";
 
 const Navbar = () => {
   const pathname = usePathname();
+  const { isAllowed, loading } = useIsAllowed();
   return (
     <>
       <div className="btm-nav btm-nav-sm sec-bg text-color ">
@@ -10,7 +12,7 @@ const Navbar = () => {
           href="/create-invoice"
           className={`${
             pathname === "/create-invoice" ? "border-b-2 primary" : ""
-          }`}
+          } ${!isAllowed || loading ? "disabled" : ""}`}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -64,7 +66,9 @@ const Navbar = () => {
         </a>
         <a
           href="/pay"
-          className={`${pathname === "/pay" ? "border-b-2 primary" : ""}`}
+          className={`${pathname === "/pay" ? "border-b-2 primary" : ""} ${
+            !isAllowed || loading ? "disabled" : ""
+          }`}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -85,7 +89,9 @@ const Navbar = () => {
         </a>
         <a
           href="/history"
-          className={`${pathname === "/history" ? "border-b-2 primary" : ""}`}
+          className={`${pathname === "/history" ? "border-b-2 primary" : ""} ${
+            !isAllowed || loading ? "disabled" : ""
+          }`}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

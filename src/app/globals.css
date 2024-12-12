@@ -37,6 +37,11 @@
   color: var(--tg-theme-button-color) !important;
 }
 
+a.disabled {
+  pointer-events: none;
+  cursor: default;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

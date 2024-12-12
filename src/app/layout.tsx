@@ -5,7 +5,7 @@ import { AbstraxionProvider } from "@burnt-labs/abstraxion";
 import Image from "next/image";
 
 import "./globals.css";
-import { seatContractAddress } from "./consts";
+import { pxpContract } from "./consts";
 import Header from "./components/header";
 import { useTelegram } from "./hooks/useTelegram";
 import { useIsAllowed } from "./hooks/useIsAllowed";
@@ -36,40 +36,39 @@ export default function RootLayout({
           src="https://telegram.org/js/telegram-web-app.js"
         ></Script>
       </head>
-      <body className="flex flex-col h-screen">
-        {loading && (
-          <main className="flex flex-col items-center justify-center min-h-screen text-center">
-            <Image
-              className="logo-color"
-              width="200"
-              height="100"
-              src="/assets/img/logo.png"
-              alt="PayxPay logo"
-            />
-            <span className="loading loading-infinity loading-lg"></span>
-          </main>
-        )}
-
-        {isAllowed ? (
-          <AbstraxionProvider
-            config={{
-              contracts: [seatContractAddress],
-              rpcUrl: "https://rpc.xion-testnet-1.burnt.com:443",
-              restUrl: "https://api.xion-testnet-1.burnt.com",
-            }}
-          >
-            <Header />
+      <AbstraxionProvider
+        config={{
+          contracts: [pxpContract],
+          rpcUrl: "https://rpc.xion-testnet-1.burnt.com:443",
+          restUrl: "https://api.xion-testnet-1.burnt.com",
+        }}
+      >
+        <body className="flex flex-col h-screen">
+          <Header />
+          {loading ? (
+            <main className="flex flex-col items-center justify-center min-h-screen text-center">
+              <Image
+                className="logo-color"
+                width="200"
+                height="100"
+                src="/assets/img/logo.png"
+                alt="PayxPay logo"
+              />
+              <span className="loading loading-infinity loading-lg"></span>
+            </main>
+          ) : isAllowed ? (
             <main className="flex-grow overflow-y-auto pb-16">{children}</main>
-            <Navbar />
-          </AbstraxionProvider>
-        ) : (
-          <main className="flex items-center justify-center min-h-screen text-center">
-            <p className="text-lg font-semibold">
-              This app is only available on Telegram.
-            </p>
-          </main>
-        )}
-      </body>
+          ) : (
+            <main className="flex items-center justify-center min-h-screen text-center">
+              <p className="text-lg font-semibold">
+                This app is only available on Telegram.
+              </p>
+            </main>
+          )}
+
+          <Navbar />
+        </body>
+      </AbstraxionProvider>
     </html>
   );
 }

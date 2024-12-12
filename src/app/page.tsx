@@ -10,7 +10,7 @@ import {
 import { Button } from "@burnt-labs/ui";
 import "@burnt-labs/ui/dist/index.css";
 import type { ExecuteResult } from "@cosmjs/cosmwasm-stargate";
-import { seatContractAddress } from "./consts";
+import { pxpContract } from "./consts";
 
 type ExecuteResultOrUndefined = ExecuteResult | undefined;
 export default function Page(): JSX.Element {
@@ -57,7 +57,7 @@ export default function Page(): JSX.Element {
     try {
       const claimRes = await client?.execute(
         account.bech32Address,
-        seatContractAddress,
+        pxpContract,
         msg,
         {
           amount: [{ amount: "0.001", denom: "uxion" }],
