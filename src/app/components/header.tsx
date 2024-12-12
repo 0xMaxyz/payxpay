@@ -3,13 +3,28 @@
 import Image from "next/image";
 
 import { useEffect, useState } from "react";
-//import { useTelegram } from "../hooks/useTelegram";
 import { useIsAllowed } from "../hooks/useIsAllowed";
+import {
+  Abstraxion,
+  useAbstraxionAccount,
+  //useAbstraxionSigningClient,
+  useModal,
+} from "@burnt-labs/abstraxion";
+// import { ExecuteResultOrUndefined } from "../types";
 
 export default function Header() {
   const [isPlaceholder, setisPlaceholder] = useState(true);
-  //const { WebApp } = useTelegram();
-  const { isAllowed } = useIsAllowed();
+  const { isAllowed, userData } = useIsAllowed();
+
+  const { data: account } = useAbstraxionAccount();
+  // const { client } = useAbstraxionSigningClient();
+  const [isModalOpen, setModalOpen] = useModal();
+  // const [executeResult, setExecuteResult] =
+  //   useState<ExecuteResultOrUndefined>(undefined);
+
+  const openModal = () => setModalOpen(true);
+  const closeModal = () => setModalOpen(false);
+
   useEffect(() => {
     setisPlaceholder(!isAllowed);
   }, [isAllowed]);
@@ -27,13 +42,24 @@ export default function Header() {
       </div>
 
       <div className="navbar-end">
+        <button
+          className="btn btn-sm btn-primary me-3 h-1"
+          onClick={() => openModal()}
+        >
+          {account.bech32Address ? (
+            <div className="flex items-center justify-center">View Account</div>
+          ) : (
+            "Connect"
+          )}
+        </button>
+        {isModalOpen && <Abstraxion onClose={closeModal} />}
         <div className="dropdown dropdown-end">
           <div
             tabIndex={0}
             role="button"
             className="btn btn-ghost btn-circle avatar"
           >
-            <div className="w-10 rounded-full">
+            <div className="w-8 rounded-full">
               {isPlaceholder ? (
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -60,20 +86,17 @@ export default function Header() {
                   height="50"
                   width="50"
                   alt="user profile picture"
-                  src="/img"
+                  src={`${userData?.photo_url ?? "/assets/img/user.webp"}`}
                 />
               )}
             </div>
           </div>
           <ul
             tabIndex={0}
-            className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow"
+            className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-36 p-2 shadow"
           >
             <li>
-              <a className="justify-between">
-                Profile
-                <span className="badge">New</span>
-              </a>
+              <a className="justify-between">Profile</a>
             </li>
             <li>
               <a>Settings</a>

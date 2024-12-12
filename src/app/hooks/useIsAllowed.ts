@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTelegram } from "./useTelegram";
-import { EnvironmentType } from "../interfaces";
+import { EnvironmentType, TgUserData } from "../types";
 import logger from "@/lib/logger";
 
 export const useIsAllowed = () => {
@@ -8,6 +8,7 @@ export const useIsAllowed = () => {
   const [isAllowed, setIsAllowed] = useState(false);
   const [loading, setLoading] = useState(true);
   const isProduction = (process.env.ENV as EnvironmentType) === "production";
+  const [userData, setuserData] = useState<TgUserData | null>(null);
 
   useEffect(() => {
     const validateInitData = async (initData: string) => {
@@ -19,6 +20,9 @@ export const useIsAllowed = () => {
 
         if (response.ok && data.isValid) {
           setIsAllowed(true);
+          // set user data
+          const u = Object.fromEntries(new URLSearchParams(initData));
+          setuserData(JSON.parse(u.user));
         } else {
           setIsAllowed(false);
         }
@@ -45,5 +49,5 @@ export const useIsAllowed = () => {
     }
   }, [WebApp, isProduction]);
 
-  return { isAllowed, loading };
+  return { isAllowed, loading, userData };
 };

@@ -11,6 +11,7 @@ import { Button } from "@burnt-labs/ui";
 import "@burnt-labs/ui/dist/index.css";
 import type { ExecuteResult } from "@cosmjs/cosmwasm-stargate";
 import { pxpContract } from "./consts";
+import { blockExplorerUrl, getTimestampInSeconds } from "@/lib/tools";
 
 type ExecuteResultOrUndefined = ExecuteResult | undefined;
 export default function Page(): JSX.Element {
@@ -27,14 +28,6 @@ export default function Page(): JSX.Element {
   const [loading, setLoading] = useState(false);
   const [executeResult, setExecuteResult] =
     useState<ExecuteResultOrUndefined>(undefined);
-
-  const blockExplorerUrl = `https://explorer.burnt.com/xion-testnet-1/tx/${executeResult?.transactionHash}`;
-
-  function getTimestampInSeconds(date: Date | null) {
-    if (!date) return 0;
-    const d = new Date(date);
-    return Math.floor(d.getTime() / 1000);
-  }
 
   const now = new Date();
   now.setSeconds(now.getSeconds() + 15);
@@ -125,7 +118,7 @@ export default function Page(): JSX.Element {
           <div className="mt-2">
             <Link
               className="text-black underline visited:text-purple-600 dark:text-white"
-              href={blockExplorerUrl}
+              href={blockExplorerUrl(executeResult?.transactionHash)}
               target="_blank"
             >
               View in Block Explorer
