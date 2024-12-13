@@ -11,9 +11,9 @@ export const POST = async (req: NextRequest) => {
   try {
     const body = await req.json();
     console.log(
-      `line13: request body is: ${body} and body message is: ${
-        body.message
-      }, https://${process.env.VERCEL_PROJECT_PRODUCTION_URL as string}`
+      `line13: request body is: ${JSON.stringify(body)}, https://${
+        process.env.VERCEL_PROJECT_PRODUCTION_URL as string
+      }`
     );
 
     if (!body || !body.message) {
@@ -23,14 +23,14 @@ export const POST = async (req: NextRequest) => {
       );
     }
 
-    const update = body.message as TelegramUpdate;
-    console.log(`line 25: update object is: ${update}`);
+    const update = body as TelegramUpdate;
+    console.log(`line 25: update object is: ${JSON.stringify(update)}`);
 
     const chatId = update.message?.chat.id;
-    console.log(`line 28: chat id  is: ${chatId}`);
+    console.log(`line 28: chat id  is: ${JSON.stringify(chatId)}`);
 
     const text = update.message?.text;
-    console.log(`line 31: message text  is: ${text}`);
+    console.log(`line 31: message text  is: ${JSON.stringify(text)}`);
 
     // Handle `/pay` command with query parameters
     const startCommandRegex = /\/pay (.+)/;
@@ -41,7 +41,11 @@ export const POST = async (req: NextRequest) => {
       const query = match[1]; // Example: "invoiceId=12345"
       const invoiceId = query.split("=")[1]; // Extract "12345"
 
-      console.log(`line 42: query is ${query} and invoice id is: ${invoiceId}`);
+      console.log(
+        `line 42: query is ${JSON.stringify(
+          query
+        )} and invoice id is: ${JSON.stringify(invoiceId)}`
+      );
       // Send a message with an inline button linking to your Telegram Mini App
       const response = await fetch(`${TELEGRAM_API}/sendMessage`, {
         method: "POST",
@@ -66,7 +70,7 @@ export const POST = async (req: NextRequest) => {
 
       if (!response.ok) {
         const error = await response.text();
-        console.error(`line 67: ${error}`);
+        console.error(`line 67: ${JSON.stringify(error)}`);
         return NextResponse.json(
           { error: `Failed to send message: ${error}` },
           { status: 500 }
@@ -87,7 +91,7 @@ export const POST = async (req: NextRequest) => {
 
       if (!response.ok) {
         const error = await response.text();
-        console.error(`line 88: ${error}`);
+        console.error(`line 88: ${JSON.stringify(error)}`);
         return NextResponse.json(
           { error: `Failed to send message: ${error}` },
           { status: 500 }
@@ -97,7 +101,7 @@ export const POST = async (req: NextRequest) => {
       return NextResponse.json({ success: true }, { status: 200 });
     }
   } catch (error) {
-    console.error(`Error in Telegram bot handler: ${error}`);
+    console.error(`Error in Telegram bot handler: ${JSON.stringify(error)}`);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }
@@ -110,34 +114,54 @@ export const GET = async () => {
   return NextResponse.json({ message: "Hello from Telegram Bot API!" });
 };
 
-// Type definitions for Telegram updates
-interface TelegramUpdate {
+export interface TelegramUpdate {
   update_id: number;
-  message?: TelegramMessage;
+  message: TelegramMessage;
 }
 
-interface TelegramMessage {
+export interface TelegramMessage {
   message_id: number;
-  from?: TelegramUser;
+  from: TelegramUser;
   chat: TelegramChat;
-  date: number;
-  text?: string;
+  date: number; // Unix timestamp
+  text: string;
+  entities?: TelegramEntity[]; // Optional because it might not always exist
 }
 
-interface TelegramUser {
+export interface TelegramUser {
   id: number;
   is_bot: boolean;
   first_name: string;
-  last_name?: string;
-  username?: string;
-  language_code?: string;
+  last_name?: string; // Optional because `last_name` may not always be present
+  username?: string; // Optional because `username` may not always be present
+  language_code?: string; // Optional because `language_code` may not always be present
 }
 
-interface TelegramChat {
+export interface TelegramChat {
   id: number;
-  type: string; // e.g., "private", "group", "supergroup", "channel"
-  title?: string;
-  username?: string;
-  first_name?: string;
-  last_name?: string;
+  first_name?: string; // Optional because group chats may not have `first_name`
+  last_name?: string; // Optional because group chats may not have `last_name`
+  username?: string; // Optional because group chats may not have `username`
+  type: "private" | "group" | "supergroup" | "channel";
+}
+
+export interface TelegramEntity {
+  offset: number;
+  length: number;
+  type:
+    | "mention"
+    | "hashtag"
+    | "cashtag"
+    | "bot_command"
+    | "url"
+    | "email"
+    | "phone_number"
+    | "bold"
+    | "italic"
+    | "underline"
+    | "strikethrough"
+    | "code"
+    | "pre"
+    | "text_link"
+    | "text_mention";
 }
