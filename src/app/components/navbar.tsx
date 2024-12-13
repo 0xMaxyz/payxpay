@@ -1,6 +1,7 @@
 "use client";
 import { usePathname } from "next/navigation";
 import { useTelegramContext } from "../hooks/useTelegramContext";
+import Link from "next/link";
 
 const Navbar = () => {
   const pathname = usePathname();
@@ -8,7 +9,7 @@ const Navbar = () => {
   return (
     <>
       <div className="btm-nav btm-nav-sm sec-bg text-color ">
-        <a
+        <Link
           href="/"
           className={`${pathname === "/" ? "border-b-2 primary" : ""} ${
             !isAllowed || loading ? "disabled" : ""
@@ -63,8 +64,8 @@ const Navbar = () => {
           <span className="btm-nav-label bottom-nav-colors">
             Create Invoice
           </span>
-        </a>
-        <a
+        </Link>
+        <Link
           href="/pay"
           className={`${pathname === "/pay" ? "border-b-2 primary" : ""} ${
             !isAllowed || loading ? "disabled" : ""
@@ -86,8 +87,8 @@ const Navbar = () => {
             ></path>
           </svg>
           <span className="btm-nav-label bottom-nav-colors">Pay</span>
-        </a>
-        <a
+        </Link>
+        <Link
           href="/history"
           className={`${pathname === "/history" ? "border-b-2 primary" : ""} ${
             !isAllowed || loading ? "disabled" : ""
@@ -108,7 +109,7 @@ const Navbar = () => {
             />
           </svg>
           <span className="btm-nav-label bottom-nav-colors">History</span>
-        </a>
+        </Link>
       </div>
     </>
   );
