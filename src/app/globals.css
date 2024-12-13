@@ -42,6 +42,10 @@ a.disabled {
   cursor: default;
 }
 
+[data-theme="telegram"] .btn-transparent {
+  background-color: transparent !important;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

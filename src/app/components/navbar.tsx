@@ -9,10 +9,10 @@ const Navbar = () => {
     <>
       <div className="btm-nav btm-nav-sm sec-bg text-color ">
         <a
-          href="/create-invoice"
-          className={`${
-            pathname === "/create-invoice" ? "border-b-2 primary" : ""
-          } ${!isAllowed || loading ? "disabled" : ""}`}
+          href="/"
+          className={`${pathname === "/" ? "border-b-2 primary" : ""} ${
+            !isAllowed || loading ? "disabled" : ""
+          }`}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

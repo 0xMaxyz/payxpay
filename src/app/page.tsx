@@ -1,131 +1,105 @@
 "use client";
-import Link from "next/link";
-import { JSX, useState } from "react";
-import {
-  Abstraxion,
-  useAbstraxionAccount,
-  useAbstraxionSigningClient,
-  useModal,
-} from "@burnt-labs/abstraxion";
-import { Button } from "@burnt-labs/ui";
-import "@burnt-labs/ui/dist/index.css";
-import type { ExecuteResult } from "@cosmjs/cosmwasm-stargate";
-import { pxpContract } from "./consts";
-import { blockExplorerUrl, getTimestampInSeconds } from "@/lib/tools";
 
-type ExecuteResultOrUndefined = ExecuteResult | undefined;
-export default function Page(): JSX.Element {
-  // Abstraxion hooks
-  const { data: account } = useAbstraxionAccount();
-  const { client } = useAbstraxionSigningClient();
+import { useState } from "react";
 
-  // General state hooks
-  const [isModalOpen, setModalOpen] = useModal();
+const CreateInvoicePage = () => {
+  const [amount, setAmount] = useState("");
+  const [currency, setCurrency] = useState("TRY");
+  const [token, setToken] = useState("USDC");
+  const [chain, setChain] = useState("Injective");
+  const [walletAddress, setWalletAddress] = useState("");
 
-  const openModal = () => setModalOpen(true);
-  const closeModal = () => setModalOpen(false);
+  const handleSubmit = () => {
+    // Perform API call to create an invoice
+    console.log({
+      amount,
+      currency,
+      token,
+      chain,
+      walletAddress,
+    });
+  };
 
-  const [loading, setLoading] = useState(false);
-  const [executeResult, setExecuteResult] =
-    useState<ExecuteResultOrUndefined>(undefined);
-
-  const now = new Date();
-  now.setSeconds(now.getSeconds() + 15);
-  const oneYearFromNow = new Date();
-  oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
-
-  async function claimSeat() {
-    setLoading(true);
-    const msg = {
-      sales: {
-        claim_item: {
-          token_id: String(getTimestampInSeconds(now)),
-          owner: account.bech32Address,
-          token_uri: "",
-          extension: {},
-        },
-      },
-    };
-
-    try {
-      const claimRes = await client?.execute(
-        account.bech32Address,
-        pxpContract,
-        msg,
-        {
-          amount: [{ amount: "0.001", denom: "uxion" }],
-          gas: "500000",
-        },
-        "", // memo
-        []
-      );
-
-      setExecuteResult(claimRes);
-    } catch (error) {
-      // eslint-disable-next-line no-console -- No UI exists yet to display errors
-      console.log(error);
-    } finally {
-      setLoading(false);
-    }
-  }
-  console.log(`Environment: ${process.env.NEXT_PUBLIC_ENV}`);
   return (
-    <main className="m-auto flex min-h-screen max-w-xs flex-col items-center justify-center gap-4 p-4">
-      <h1 className="text-2xl font-bold tracking-tighter text-white">
-        ABSTRAXION
-      </h1>
-      <button className="btn btn-primary">Hello daisyUI!</button>
-      <Button
-        fullWidth
-        onClick={() => {
-          openModal();
-        }}
-        structure="base"
-      >
-        {account.bech32Address ? (
-          <div className="flex items-center justify-center">VIEW ACCOUNT</div>
-        ) : (
-          "CONNECT"
-        )}
-      </Button>
-      {client ? (
-        <Button
-          disabled={loading}
-          fullWidth
-          onClick={() => {
-            void claimSeat();
-          }}
-          structure="base"
+    <div className="p-4">
+      <h1 className="text-xl font-bold mb-4">Create Invoice</h1>
+
+      <div className="form-control w-full mb-4">
+        <label className="label">
+          <span className="label-text">Amount</span>
+        </label>
+        <input
+          type="text"
+          placeholder="Enter the amount"
+          className="input input-bordered w-full"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+        />
+      </div>
+
+      <div className="form-control w-full mb-4">
+        <label className="label">
+          <span className="label-text">Currency</span>
+        </label>
+        <select
+          className="select select-bordered w-full"
+          value={currency}
+          onChange={(e) => setCurrency(e.target.value)}
         >
-          {loading ? "LOADING..." : "CLAIM SEAT"}
-        </Button>
-      ) : null}
-      {isModalOpen && <Abstraxion onClose={closeModal} />}
-      {executeResult ? (
-        <div className="flex flex-col rounded border-2 border-black p-2 dark:border-white">
-          <div className="mt-2">
-            <p className="text-zinc-500">
-              <span className="font-bold">Transaction Hash</span>
-            </p>
-            <p className="text-sm">{executeResult.transactionHash}</p>
-          </div>
-          <div className="mt-2">
-            <p className=" text-zinc-500">
-              <span className="font-bold">Block Height:</span>
-            </p>
-            <p className="text-sm">{executeResult.height}</p>
-          </div>
-          <div className="mt-2">
-            <Link
-              className="text-black underline visited:text-purple-600 dark:text-white"
-              href={blockExplorerUrl(executeResult?.transactionHash)}
-              target="_blank"
-            >
-              View in Block Explorer
-            </Link>
-          </div>
-        </div>
-      ) : null}
-    </main>
+          <option value="TRY">Turkish Lira (TRY)</option>
+          <option value="USD">US Dollar (USD)</option>
+          <option value="EUR">Euro (EUR)</option>
+        </select>
+      </div>
+
+      <div className="form-control w-full mb-4">
+        <label className="label">
+          <span className="label-text">Payment Token</span>
+        </label>
+        <select
+          className="select select-bordered w-full"
+          value={token}
+          onChange={(e) => setToken(e.target.value)}
+        >
+          <option value="USDC">USDC</option>
+          <option value="DAI">DAI</option>
+          <option value="ATOM">ATOM</option>
+        </select>
+      </div>
+
+      <div className="form-control w-full mb-4">
+        <label className="label">
+          <span className="label-text">Destination Chain</span>
+        </label>
+        <select
+          className="select select-bordered w-full"
+          value={chain}
+          onChange={(e) => setChain(e.target.value)}
+        >
+          <option value="Injective">Injective</option>
+          <option value="Osmosis">Osmosis</option>
+          <option value="Juno">Juno</option>
+        </select>
+      </div>
+
+      <div className="form-control w-full mb-4">
+        <label className="label">
+          <span className="label-text">Wallet Address</span>
+        </label>
+        <input
+          type="text"
+          placeholder="Enter the destination wallet address"
+          className="input input-bordered w-full"
+          value={walletAddress}
+          onChange={(e) => setWalletAddress(e.target.value)}
+        />
+      </div>
+
+      <button className="btn btn-primary w-full" onClick={handleSubmit}>
+        Create Invoice
+      </button>
+    </div>
   );
-}
+};
+
+export default CreateInvoicePage;

@@ -44,29 +44,31 @@ export default function Header() {
       </div>
 
       <div className="navbar-end">
-        <button
-          className="btn btn-sm btn-primary me-3 h-1"
-          onClick={() => openModal()}
-        >
-          {account.bech32Address ? (
-            <>
-              <div className="flex items-center justify-center">
-                View Account
-              </div>
-              <div className="flex items-center justify-center">
-                {shortenAddress(account.bech32Address)}
-              </div>
-            </>
-          ) : (
-            "Connect"
-          )}
-        </button>
+        {isAllowed && (
+          <button
+            className="btn btn-sm btn-primary me-3 h-1"
+            onClick={() => openModal()}
+          >
+            {account.bech32Address ? (
+              <>
+                <div className="flex items-center justify-center">
+                  View Account
+                </div>
+                <div className="flex items-center justify-center">
+                  {shortenAddress(account.bech32Address)}
+                </div>
+              </>
+            ) : (
+              "Connect"
+            )}
+          </button>
+        )}
         {isModalOpen && <Abstraxion onClose={closeModal} />}
         <div className="dropdown dropdown-end">
           <div
             tabIndex={0}
             role="button"
-            className="btn btn-ghost btn-circle avatar"
+            className="btn btn-ghost btn-circle avatar btn-transparent"
           >
             <div className="w-8 rounded-full">
               {isPlaceholder ? (
