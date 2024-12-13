@@ -10,6 +10,11 @@ if (!BOT_TOKEN) {
 export const POST = async (req: NextRequest) => {
   try {
     const body = await req.json();
+    console.log(
+      `line13: request body is: ${body} and body message is: ${
+        body.message
+      }, https://${process.env.VERCEL_PROJECT_PRODUCTION_URL as string}`
+    );
 
     if (!body || !body.message) {
       return NextResponse.json(
@@ -19,18 +24,24 @@ export const POST = async (req: NextRequest) => {
     }
 
     const update = body.message as TelegramUpdate;
+    console.log(`line 25: update object is: ${update}`);
 
     const chatId = update.message?.chat.id;
-    const text = update.message?.text;
+    console.log(`line 28: chat id  is: ${chatId}`);
 
-    // Handle `/start` command with query parameters
-    const startCommandRegex = /\/start (.+)/;
+    const text = update.message?.text;
+    console.log(`line 31: message text  is: ${text}`);
+
+    // Handle `/pay` command with query parameters
+    const startCommandRegex = /\/pay (.+)/;
     const match = text?.match(startCommandRegex);
 
     if (match) {
+      console.log(`line 39: found /pay match`);
       const query = match[1]; // Example: "invoiceId=12345"
       const invoiceId = query.split("=")[1]; // Extract "12345"
 
+      console.log(`line 42: query is ${query} and invoice id is: ${invoiceId}`);
       // Send a message with an inline button linking to your Telegram Mini App
       const response = await fetch(`${TELEGRAM_API}/sendMessage`, {
         method: "POST",
@@ -55,6 +66,7 @@ export const POST = async (req: NextRequest) => {
 
       if (!response.ok) {
         const error = await response.text();
+        console.error(`line 67: ${error}`);
         return NextResponse.json(
           { error: `Failed to send message: ${error}` },
           { status: 500 }
@@ -75,6 +87,7 @@ export const POST = async (req: NextRequest) => {
 
       if (!response.ok) {
         const error = await response.text();
+        console.error(`line 88: ${error}`);
         return NextResponse.json(
           { error: `Failed to send message: ${error}` },
           { status: 500 }
