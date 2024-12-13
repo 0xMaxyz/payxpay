@@ -30,7 +30,9 @@ export const TelegramProvider = ({
     const validateInitData = async (initData: string) => {
       try {
         const response = await fetch(
-          `/api/telegram/validate-userdata?initData=${initData}`
+          `/api/telegram/validate-userdata?initData=${encodeURIComponent(
+            initData
+          )}`
         );
         const data = await response.json();
         console.log(`Received data from api call:${data}`);
