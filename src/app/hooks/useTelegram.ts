@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 
 export const useTelegram = () => {
+  const [WebApp, setWebApp] = useState<typeof window.Telegram.WebApp | null>(
+    null
+  );
   const [theme, setTheme] = useState<"light" | "dark">("light");
 
   useEffect(() => {
@@ -9,6 +12,9 @@ export const useTelegram = () => {
 
       console.log("tg found");
       tg.ready();
+
+      // set webapp
+      setWebApp(tg);
 
       // Set header and bottom bar colors
       tg.setHeaderColor("secondary_bg_color");
@@ -34,6 +40,6 @@ export const useTelegram = () => {
 
   return {
     theme,
-    WebApp: typeof window !== "undefined" ? window.Telegram?.WebApp : null,
+    WebApp,
   };
 };

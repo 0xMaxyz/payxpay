@@ -13,6 +13,7 @@ export const useIsAllowed = () => {
   useEffect(() => {
     const validateInitData = async (initData: string) => {
       try {
+        console.log("Making api call");
         const response = await fetch(
           `/api/telegram/validate-userdata?initData=${initData}`
         );
