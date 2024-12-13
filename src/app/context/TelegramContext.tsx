@@ -1,4 +1,4 @@
-import React, { createContext, useEffect, useState } from "react";
+import React, { createContext, useEffect, useRef, useState } from "react";
 import { EnvironmentType, TgUserData } from "../types";
 
 interface TelegramContextProps {
@@ -28,7 +28,12 @@ export const TelegramProvider = ({
   const [loading, setLoading] = useState(true);
   const isProduction =
     (process.env.NEXT_PUBLIC_ENV as EnvironmentType) === "production";
+  const isInit = useRef(false);
   useEffect(() => {
+    if (isInit.current) {
+      return;
+    }
+    isInit.current = true;
     const validateInitData = async (initData: string) => {
       try {
         const response = await fetch(
