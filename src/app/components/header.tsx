@@ -3,7 +3,7 @@
 import Image from "next/image";
 
 import { useEffect, useState } from "react";
-import { useIsAllowed } from "../hooks/useIsAllowed";
+
 import {
   Abstraxion,
   useAbstraxionAccount,
@@ -12,10 +12,11 @@ import {
 } from "@burnt-labs/abstraxion";
 import { shortenAddress } from "@/lib/tools";
 // import { ExecuteResultOrUndefined } from "../types";
+import { useTelegramContext } from "../hooks/useTelegramContext";
 
 export default function Header() {
   const [isPlaceholder, setisPlaceholder] = useState(true);
-  const { isAllowed, userData } = useIsAllowed();
+  const { isAllowed, userData } = useTelegramContext();
 
   const { data: account } = useAbstraxionAccount();
   // const { client } = useAbstraxionSigningClient();

@@ -1,10 +1,10 @@
 "use client";
 import { usePathname } from "next/navigation";
-import { useIsAllowed } from "../hooks/useIsAllowed";
+import { useTelegramContext } from "../hooks/useTelegramContext";
 
 const Navbar = () => {
   const pathname = usePathname();
-  const { isAllowed, loading } = useIsAllowed();
+  const { isAllowed, loading } = useTelegramContext();
   return (
     <>
       <div className="btm-nav btm-nav-sm sec-bg text-color ">
