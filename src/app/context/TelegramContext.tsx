@@ -6,6 +6,7 @@ interface TelegramContextProps {
   userData: TgUserData | null;
   isAllowed: boolean;
   loading: boolean;
+  theme: "light" | "dark";
 }
 
 export const TelegramContext = createContext<TelegramContextProps | undefined>(
@@ -21,6 +22,7 @@ export const TelegramProvider = ({
   const [WebApp, setWebApp] = useState<typeof window.Telegram.WebApp | null>(
     null
   );
+  const [theme, setTheme] = useState<"light" | "dark">("light");
   const [userData, setUserData] = useState<TgUserData | null>(null);
   const [isAllowed, setIsAllowed] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -42,6 +44,8 @@ export const TelegramProvider = ({
           setIsAllowed(true);
           const user = Object.fromEntries(new URLSearchParams(initData));
           setUserData(JSON.parse(user.user));
+          // set the html theme to telegram
+          document.documentElement.setAttribute("data-theme", "telegram");
         } else {
           console.warn("Validation failed");
           setIsAllowed(false);
@@ -70,17 +74,38 @@ export const TelegramProvider = ({
         console.log("Telegram webapp is ready");
         setWebApp(tgWebApp);
 
+        // set theme
+        setTheme(tgWebApp.colorScheme);
+
+        // set header and footer colors in TMA
+        tgWebApp.setHeaderColor("secondary_bg_color");
+        tgWebApp.setBottomBarColor("secondary_bg_color");
+
+        // Listen for theme change
+        const handleThemeChange = () => {
+          console.log("handleThemeChange called");
+          setTheme(tgWebApp.colorScheme);
+        };
+        tgWebApp.onEvent("themeChanged", handleThemeChange);
+
         const initData = tgWebApp.initData;
         if (initData) {
           validateInitData(initData);
         } else {
           setLoading(false);
         }
+
+        // Cleanup event listener
+        return () => {
+          tgWebApp.offEvent("themeChanged", handleThemeChange);
+        };
       }
     }
-  }, []);
+  }, [isProduction]);
   return (
-    <TelegramContext.Provider value={{ WebApp, userData, isAllowed, loading }}>
+    <TelegramContext.Provider
+      value={{ WebApp, userData, isAllowed, loading, theme }}
+    >
       {children}
     </TelegramContext.Provider>
   );
