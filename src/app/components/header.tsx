@@ -10,6 +10,7 @@ import {
   //useAbstraxionSigningClient,
   useModal,
 } from "@burnt-labs/abstraxion";
+import { shortenAddress } from "@/lib/tools";
 // import { ExecuteResultOrUndefined } from "../types";
 
 export default function Header() {
@@ -47,7 +48,14 @@ export default function Header() {
           onClick={() => openModal()}
         >
           {account.bech32Address ? (
-            <div className="flex items-center justify-center">View Account</div>
+            <>
+              <div className="flex items-center justify-center">
+                View Account
+              </div>
+              <div className="flex items-center justify-center">
+                {shortenAddress(account.bech32Address)}
+              </div>
+            </>
           ) : (
             "Connect"
           )}

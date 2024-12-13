@@ -19,22 +19,28 @@ export const useIsAllowed = () => {
         const data = await response.json();
 
         if (response.ok && data.isValid) {
+          console.log(`The init data is valid, checked on backend`);
           setIsAllowed(true);
           // set user data
           const u = Object.fromEntries(new URLSearchParams(initData));
           setuserData(JSON.parse(u.user));
+          console.log(`UserData is: ${userData}`);
         } else {
           setIsAllowed(false);
+          setuserData(null);
         }
       } catch (error) {
         logger.error(`Error validating user data: ${error}`);
         setIsAllowed(false);
+        setuserData(null);
       } finally {
         setLoading(false);
       }
     };
     if (!isProduction) {
       setIsAllowed(true);
+      setuserData(null);
+
       setLoading(false);
     } else {
       if (typeof window !== "undefined" && WebApp) {
