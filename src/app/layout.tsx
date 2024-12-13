@@ -16,7 +16,7 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <Script
-          strategy="beforeInteractive"
+          strategy="afterInteractive"
           onLoad={() => console.log("Telegram WebApp script loaded!")}
           src="https://telegram.org/js/telegram-web-app.js"
         ></Script>
