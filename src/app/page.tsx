@@ -68,7 +68,7 @@ export default function Page(): JSX.Element {
       setLoading(false);
     }
   }
-
+  console.log(`Environment: ${process.env.NEXT_PUBLIC_ENV}`);
   return (
     <main className="m-auto flex min-h-screen max-w-xs flex-col items-center justify-center gap-4 p-4">
       <h1 className="text-2xl font-bold tracking-tighter text-white">

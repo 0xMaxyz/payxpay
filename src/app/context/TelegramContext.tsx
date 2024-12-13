@@ -1,14 +1,14 @@
 import React, { createContext, useEffect, useState } from "react";
 import { EnvironmentType, TgUserData } from "../types";
 
-interface TelegramContextType {
+interface TelegramContextProps {
   WebApp: typeof window.Telegram.WebApp | null;
   userData: TgUserData | null;
   isAllowed: boolean;
   loading: boolean;
 }
 
-export const TelegramContext = createContext<TelegramContextType | undefined>(
+export const TelegramContext = createContext<TelegramContextProps | undefined>(
   undefined
 );
 
@@ -17,13 +17,15 @@ export const TelegramProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
+  console.log("We're in provider");
   const [WebApp, setWebApp] = useState<typeof window.Telegram.WebApp | null>(
     null
   );
   const [userData, setUserData] = useState<TgUserData | null>(null);
   const [isAllowed, setIsAllowed] = useState(false);
   const [loading, setLoading] = useState(true);
-  const isProduction = (process.env.ENV as EnvironmentType) === "production";
+  const isProduction =
+    (process.env.NEXT_PUBLIC_ENV as EnvironmentType) === "production";
   useEffect(() => {
     const validateInitData = async (initData: string) => {
       try {
@@ -53,11 +55,13 @@ export const TelegramProvider = ({
     };
 
     if (!isProduction) {
+      console.log("Env is development");
       // In development, skip validation for testing purposes
       setIsAllowed(true);
       setUserData(null);
       setLoading(false);
     } else {
+      console.log("Env is production");
       if (typeof window !== "undefined" && window.Telegram?.WebApp) {
         const tgWebApp = window.Telegram.WebApp;
         tgWebApp.ready();
@@ -72,7 +76,7 @@ export const TelegramProvider = ({
         }
       }
     }
-  }, [isProduction]);
+  }, []);
   return (
     <TelegramContext.Provider value={{ WebApp, userData, isAllowed, loading }}>
       {children}
