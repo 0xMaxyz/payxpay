@@ -58,7 +58,7 @@ export const POST = async (req: NextRequest) => {
               [
                 {
                   text: "Open Payment Page",
-                  url: `https://${
+                  web_app: `https://${
                     process.env.VERCEL_PROJECT_PRODUCTION_URL as string
                   }/pay?invoiceId=${invoiceId}`,
                 },
