@@ -33,7 +33,7 @@ export const POST = async (req: NextRequest) => {
     console.log(`line 31: message text  is: ${JSON.stringify(text)}`);
 
     // Handle `/pay` command with query parameters
-    const startCommandRegex = /\/pay=invoiceId=([a-zA-Z0-9]+)/;
+    const startCommandRegex = /\/pay=invoice=([a-zA-Z0-9]+)/;
     const match = text?.match(startCommandRegex);
 
     if (match) {
@@ -61,7 +61,7 @@ export const POST = async (req: NextRequest) => {
                   web_app: {
                     url: `https://${
                       process.env.VERCEL_PROJECT_PRODUCTION_URL as string
-                    }/pay?invoiceId=${invoiceId}`,
+                    }/pay?invoice=${invoiceId}`,
                   },
                 },
               ],

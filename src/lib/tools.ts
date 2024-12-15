@@ -1,3 +1,5 @@
+import { Invoice } from "@/app/types";
+import crypto from "crypto";
 export const blockExplorerUrl = (txHash: string) => {
   return `https://explorer.burnt.com/xion-testnet-1/tx/${txHash}`;
 };
@@ -8,4 +10,18 @@ export const getTimestampInSeconds = (date: Date | null) => {
 };
 export const shortenAddress = (bech32Address: string) => {
   return `${bech32Address.slice(0, 8)}...${bech32Address.slice(-4)}`;
+};
+
+export const signInvoice = (invoice: Invoice, bot_token: string): string => {
+  const payload = JSON.stringify(invoice);
+  return crypto.createHmac("sha256", bot_token).update(payload).digest("hex");
+};
+export const decodeInvoice = <T extends Invoice>(encodedInvoice: string): T => {
+  return JSON.parse(decodeURIComponent(encodedInvoice)) as T;
+};
+export const encodeSignedInvoice = (
+  invoice: Invoice,
+  signature: string
+): string => {
+  return encodeURIComponent(JSON.stringify({ ...invoice, signature }));
 };
