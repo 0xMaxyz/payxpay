@@ -25,3 +25,17 @@ export const encodeSignedInvoice = (
 ): string => {
   return encodeURIComponent(JSON.stringify({ ...invoice, signature }));
 };
+
+export const createInvoiceId = (invoice: Invoice): Invoice => {
+  if (invoice) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { id, ...noIdInvoice } = invoice;
+    const calcId = crypto
+      .createHash("sha256")
+      .update(JSON.stringify(noIdInvoice))
+      .digest("hex");
+    return { id: calcId, ...noIdInvoice } as Invoice;
+  } else {
+    return invoice;
+  }
+};
