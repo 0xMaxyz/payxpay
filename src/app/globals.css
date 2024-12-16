@@ -1,6 +1,11 @@
 :root [data-theme="telegram"] {
-  --base-100: var(--tg-theme-bg-color) !important;
-  --base-content: var(--tg-theme-text-color) !important;
+  --a: var(--tg-theme-accent-text-color) !important;
+  --b1: var(--tg-theme-bg-color) !important;
+  --b2: var(--tg-theme-secondary-bg-color) !important;
+  --bc: var(--tg-theme-text-color) !important;
+  --p: var(--tg-theme-button-color) !important;
+  --pc: var(--tg-theme-button-text-color) !important;
+  --er: var(--tg-theme-destructive-text-color) !important;
 }
 .logo-color {
   filter: none;
