@@ -8,7 +8,8 @@ const Navbar = () => {
   const { isAllowed, loading } = useTelegramContext();
   return (
     <>
-      <div className="btm-nav btm-nav-sm sec-bg text-color ">
+      {/* <div className="btm-nav btm-nav-sm sec-bg text-color "> */}
+      <div className="bottom-navbar">
         <Link
           href="/"
           className={`${pathname === "/" ? "border-b-2 primary" : ""} ${

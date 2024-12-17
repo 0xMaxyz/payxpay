@@ -67,6 +67,21 @@ a.disabled {
 [data-theme="telegram"] .btn-transparent {
   background-color: transparent !important;
 }
+.bottom-navbar {
+  position: fixed;
+  bottom: 0px;
+  left: 0px;
+  right: 0px;
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-around;
+  padding-bottom: var(--tg-safe-area-inset-bottom);
+  height: 3rem;
+  color: var(--tg-theme-text-color, #1f2937);
+  background-color: var(--tg-theme-secondary-bg-color, #ffffff);
+}
 
 @tailwind base;
 @tailwind components;
