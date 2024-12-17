@@ -52,7 +52,7 @@ a.disabled {
 @tailwind components;
 @tailwind utilities;
 
-[data-theme="telegram"] .app-container {
+:root [data-theme="telegram"] {
   --a: var(--tg-theme-accent-text-color) !important;
   --b1: var(--tg-theme-bg-color) !important;
   --b2: var(--tg-theme-secondary-bg-color) !important;
