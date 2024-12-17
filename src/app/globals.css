@@ -17,6 +17,11 @@
 [data-theme="telegram"] .btn {
   color: var(--tg-theme-button-text-color);
   background-color: var(--tg-theme-button-color);
+  border: none;
+  transition: background-color 0.2s, filter 0.2s;
+}
+[data-theme="telegram"] .btn:hover {
+  background-color: rgba(0, 0, 0, 0.1);
 }
 
 [data-theme="telegram"] .text-color {
