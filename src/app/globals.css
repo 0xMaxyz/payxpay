@@ -1,3 +1,16 @@
+[data-theme="telegram"] {
+  --color-accent: var(--tg-theme-accent-text-color, #3b82f6);
+  --color-base-100: var(--tg-theme-bg-color, #ffffff);
+  --color-base-200: var(--tg-theme-secondary-bg-color, #f3f4f6);
+  --color-text: var(--tg-theme-text-color, #1f2937);
+  --color-primary: var(--tg-theme-button-color, #3b82f6);
+  --color-primary-content: var(--tg-theme-button-text-color, #ffffff);
+  --color-error: var(--tg-theme-destructive-text-color, #ef4444);
+}
+[data-theme="telegram"] .app-container {
+  background-color: var(--color-base-100);
+  color: var(--color-text);
+}
 .logo-color {
   filter: none;
 }
@@ -6,10 +19,14 @@
 }
 
 [data-theme="telegram"] .btn {
-  @apply text-[var(--tg-theme-button-text-color)] 
-         bg-[var(--tg-theme-button-color)] 
-         border-none 
-         transition-colors duration-300;
+  background-color: var(--color-primary);
+  color: var(--color-primary-content);
+  border: none;
+  transition: background-color 0.3s;
+}
+
+[data-theme="telegram"] .btn:hover {
+  background-color: color-mix(in srgb, var(--color-primary) 90%, black);
 }
 
 [data-theme="telegram"] .text-color {
@@ -51,13 +68,3 @@ a.disabled {
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-:root [data-theme="telegram"] {
-  --a: var(--tg-theme-accent-text-color) !important;
-  --b1: var(--tg-theme-bg-color) !important;
-  --b2: var(--tg-theme-secondary-bg-color) !important;
-  --bc: var(--tg-theme-text-color) !important;
-  --p: var(--tg-theme-button-color) !important;
-  --pc: var(--tg-theme-button-text-color) !important;
-  --er: var(--tg-theme-destructive-text-color) !important;
-}

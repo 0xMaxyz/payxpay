@@ -8,7 +8,7 @@ import { useTelegramContext } from "../hooks/useTelegramContext";
 const Body = ({ children }: { children: React.ReactNode }) => {
   const { isAllowed, loading } = useTelegramContext();
   return (
-    <body className="flex flex-col h-screen">
+    <body className="flex flex-col h-screen app-container">
       <Header />
       {loading ? (
         <main className="flex flex-col items-center justify-center min-h-screen text-center">
