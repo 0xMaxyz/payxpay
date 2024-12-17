@@ -11,6 +11,9 @@
   background-color: var(--color-base-100);
   color: var(--color-text);
 }
+[data-theme="telegram"] .label {
+  color: var(--color-text);
+}
 .logo-color {
   filter: none;
 }
