@@ -1,6 +1,7 @@
 "use client";
 
 import { ChangeEvent, useEffect, useState } from "react";
+import Image from "next/image";
 import { CURRENCIES } from "./consts";
 import {
   useAbstraxionAccount,
@@ -110,6 +111,16 @@ const CreateInvoicePage = () => {
       >
         Create Invoice
       </button>
+      <video className="fire-video mb-24" muted loop autoPlay playsInline>
+        <source src="/assets/vid/fire.mp4" type="video/mp4" />
+      </video>
+      <Image
+        className="rounded-full fire-video mb-24 ms-24"
+        height="50"
+        width="50"
+        alt="xion"
+        src="/assets/img/flame.jpg"
+      />
     </div>
   );
 };
