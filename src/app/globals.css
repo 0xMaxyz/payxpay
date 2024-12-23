@@ -1,3 +1,33 @@
+.b-logo:hover {
+  border: 2px solid;
+  border-color: blue;
+  transition: border-color 0.5s ease-in-out 0.1s;
+  transition-timing-function: linear;
+  border-radius: 50%;
+}
+.icon-container {
+  position: relative;
+}
+
+.burnt-card {
+  background-color: var(--tg-theme-section-bg-color, #ffffff);
+}
+
+.fire-video {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  z-index: -1;
+}
+
+.icon {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  height: 100%;
+  color: white;
+}
+
 [data-theme="telegram"] {
   --color-accent: var(--tg-theme-accent-text-color, #3b82f6);
   --color-base-100: var(--tg-theme-bg-color, #ffffff);
@@ -86,3 +116,15 @@ a.disabled {
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer utilities {
+  .burnt-logo.avatar.online::before {
+    top: 15%;
+    right: 30%;
+  }
+
+  .burnt-logo.avatar.offline::before {
+    top: 15%;
+    right: 30%;
+  }
+}

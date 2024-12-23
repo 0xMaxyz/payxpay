@@ -5,7 +5,7 @@ import { AbstraxionProvider } from "@burnt-labs/abstraxion";
 import "./globals.css";
 import { pxpContract } from "./consts";
 import { TelegramProvider } from "./context/TelegramContext";
-import Body from "./components/Body";
+import Body from "./components/body";
 
 export default function RootLayout({
   children,

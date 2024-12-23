@@ -1,101 +1,113 @@
 "use client";
 
-import { useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
+import { CURRENCIES } from "./consts";
+import {
+  useAbstraxionAccount,
+  useAbstraxionSigningClient,
+} from "@burnt-labs/abstraxion";
 
 const CreateInvoicePage = () => {
+  const { data: account } = useAbstraxionAccount();
+  const { logout } = useAbstraxionSigningClient();
+  useEffect(() => {
+    if (account.bech32Address) {
+      setWalletAddress(account.bech32Address);
+    } else {
+      setWalletAddress("");
+    }
+  }, [account.bech32Address]);
+
   const [amount, setAmount] = useState("");
-  const [currency, setCurrency] = useState("TRY");
-  const [token, setToken] = useState("USDC");
-  const [chain, setChain] = useState("Injective");
+  const [currency, setCurrency] = useState<string>("");
+  const [description, setDescription] = useState("");
   const [walletAddress, setWalletAddress] = useState("");
+  const MAX_DESCRIPTION_LENGTH = 200;
+  const handleDescriptionInput = (
+    event: ChangeEvent<HTMLTextAreaElement>
+  ): void => {
+    const text = event.target.value;
+    if (text.length <= MAX_DESCRIPTION_LENGTH) {
+      setDescription(text);
+    }
+  };
+
+  const handleAmountInput = (event: ChangeEvent<HTMLInputElement>): void => {
+    const value = event.target.value;
+    if (/^\d*$/.test(value)) {
+      setAmount(value);
+    }
+  };
 
   const handleSubmit = () => {
     // Perform API call to create an invoice
-    console.log({
-      amount,
-      currency,
-      token,
-      chain,
-      walletAddress,
-    });
   };
 
   return (
     <div className="p-4">
       <h1 className="text-xl font-bold mb-4">Create Invoice</h1>
 
-      <div className="form-control w-full mb-4">
-        <label className="label">
+      <label className="form-control w-full mb-2">
+        <div className="label">
           <span className="label-text">Amount</span>
-        </label>
+        </div>
         <input
           type="text"
           placeholder="Enter the amount"
-          className="input input-bordered w-full"
+          className="input input-bordered input-sm w-full"
           value={amount}
-          onChange={(e) => setAmount(e.target.value)}
+          onChange={handleAmountInput}
         />
-      </div>
-
-      <div className="form-control w-full mb-4">
-        <label className="label">
+      </label>
+      <label className="form-control w-full ">
+        <div className="label">
           <span className="label-text">Currency</span>
-        </label>
+        </div>
         <select
-          className="select select-bordered w-full"
+          className="select select-bordered"
           value={currency}
           onChange={(e) => setCurrency(e.target.value)}
         >
-          <option value="TRY">Turkish Lira (TRY)</option>
-          <option value="USD">US Dollar (USD)</option>
-          <option value="EUR">Euro (EUR)</option>
+          {CURRENCIES.sort((a, b) => a.name.localeCompare(b.name)).map((c) => {
+            return (
+              <option key={c.contract}>
+                {c.name} - {c.unit}
+              </option>
+            );
+          })}
         </select>
-      </div>
+        {/* <div className="label">
+          <span className="label-text-alt"></span>
+          <span className="label-text-alt">{currency}</span>
+        </div> */}
+      </label>
+      <label className="form-control">
+        <div className="label">
+          <span className="label-text">Description</span>
+        </div>
+        <textarea
+          className="textarea textarea-bordered textarea-sm h-24 max-h-48 min-h-20"
+          placeholder="Description"
+          value={description}
+          onChange={handleDescriptionInput}
+        ></textarea>
+        <div className="label">
+          <span className="label-text-alt"></span>
+          <span className="label-text-alt text-success">
+            {description.length}/{MAX_DESCRIPTION_LENGTH}
+          </span>
+        </div>
+      </label>
 
-      <div className="form-control w-full mb-4">
-        <label className="label">
-          <span className="label-text">Payment Token</span>
-        </label>
-        <select
-          className="select select-bordered w-full"
-          value={token}
-          onChange={(e) => setToken(e.target.value)}
-        >
-          <option value="USDC">USDC</option>
-          <option value="DAI">DAI</option>
-          <option value="ATOM">ATOM</option>
-        </select>
-      </div>
-
-      <div className="form-control w-full mb-4">
-        <label className="label">
-          <span className="label-text">Destination Chain</span>
-        </label>
-        <select
-          className="select select-bordered w-full"
-          value={chain}
-          onChange={(e) => setChain(e.target.value)}
-        >
-          <option value="Injective">Injective</option>
-          <option value="Osmosis">Osmosis</option>
-          <option value="Juno">Juno</option>
-        </select>
-      </div>
-
-      <div className="form-control w-full mb-4">
-        <label className="label">
-          <span className="label-text">Wallet Address</span>
-        </label>
-        <input
-          type="text"
-          placeholder="Enter the destination wallet address"
-          className="input input-bordered w-full"
-          value={walletAddress}
-          onChange={(e) => setWalletAddress(e.target.value)}
-        />
-      </div>
-
-      <button className="btn btn-primary w-full" onClick={handleSubmit}>
+      <p>{walletAddress}</p>
+      <button className="btn btn-primary" onClick={async () => logout?.()}>
+        Dis
+      </button>
+      <button
+        className="btn btn-primary w-full"
+        disabled={amount ? (Number.parseInt(amount) <= 0 ? true : false) : true}
+        onClick={handleSubmit}
+      >
         Create Invoice
       </button>
     </div>

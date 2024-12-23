@@ -29,3 +29,9 @@ export interface Invoice {
 export interface SignedInvoice extends Invoice {
   signature: string;
 }
+
+export interface Currency {
+  name: string;
+  unit: string;
+  contract: string;
+}
