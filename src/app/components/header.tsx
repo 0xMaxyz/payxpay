@@ -17,7 +17,7 @@ export default function Header() {
       </div>
 
       <div className="navbar-end">
-        <Burnt />
+        <Burnt video={false} />
       </div>
     </div>
   );

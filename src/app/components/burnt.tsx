@@ -8,7 +8,10 @@ import {
 } from "@burnt-labs/abstraxion";
 import { useTelegramContext } from "../hooks/useTelegramContext";
 import { useEffect, useState } from "react";
-const Burnt = () => {
+interface BurntProps {
+  video: boolean;
+}
+const Burnt = ({ video }: BurntProps) => {
   const { logout } = useAbstraxionSigningClient();
   const { data: account } = useAbstraxionAccount();
   const { isAllowed, userData } = useTelegramContext();
@@ -68,9 +71,26 @@ const Burnt = () => {
             <div className="icon-container b-logo">
               {account?.bech32Address ? (
                 <>
-                  <video className="fire-video" muted loop autoPlay playsInline>
-                    <source src="/assets/vid/fire.mp4" type="video/mp4" />
-                  </video>
+                  {video ? (
+                    <video
+                      className="fire-video"
+                      muted
+                      loop
+                      autoPlay
+                      playsInline
+                    >
+                      <source src="/assets/vid/fire.mp4" type="video/mp4" />
+                    </video>
+                  ) : (
+                    <Image
+                      className="rounded-full fire-video"
+                      height="50"
+                      width="50"
+                      alt="xion"
+                      src="/assets/img/flame.jpg"
+                    />
+                  )}
+
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 75 75"
