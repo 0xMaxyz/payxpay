@@ -111,7 +111,13 @@ const CreateInvoicePage = () => {
       >
         Create Invoice
       </button>
-      <video className="fire-video mb-24" muted loop autoPlay playsInline>
+      <video
+        className="fire-video test mb-24 h-24 w-24"
+        muted
+        loop
+        autoPlay
+        playsInline
+      >
         <source src="/assets/vid/fire.mp4" type="video/mp4" />
       </video>
       <Image
@@ -121,6 +127,9 @@ const CreateInvoicePage = () => {
         alt="xion"
         src="/assets/img/flame.jpg"
       />
+      <>
+        <div className="mask-diamond"></div>
+      </>
     </div>
   );
 };

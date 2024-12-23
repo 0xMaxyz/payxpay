@@ -9,14 +9,19 @@
   position: relative;
 }
 
+.mask-logo {
+  height: 4rem;
+  width: 4rem;
+  -webkit-clip-path: url(#xlogo);
+  clip-path: url(#xlogo);
+}
+
 .burnt-card {
   background-color: var(--tg-theme-section-bg-color, #ffffff);
 }
 
 .fire-video {
-  position: absolute;
-  bottom: 0;
-  left: 0;
+  position: relative;
   z-index: -1;
   height: 2rem;
   width: 2rem;
