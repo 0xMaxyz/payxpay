@@ -61,14 +61,14 @@ const Burnt = () => {
       <div className="dropdown dropdown-bottom dropdown-end">
         <div tabIndex={0} role="button" className="m-1">
           <div
-            className={`avatar burnt-logo  w-8 h-8   ${
+            className={`avatar burnt-logo rounded-full  w-8 h-8   ${
               account?.bech32Address ? "online" : "offline"
             }`}
           >
             <div className="icon-container b-logo">
               {account?.bech32Address ? (
                 <>
-                  <video className="fire-video" loop muted autoPlay playsInline>
+                  <video className="fire-video" muted loop autoPlay playsInline>
                     <source src="/assets/vid/fire.mp4" type="video/mp4" />
                   </video>
                   <svg
@@ -166,6 +166,7 @@ const Burnt = () => {
                   </svg>
                 ) : (
                   <Image
+                    className="rounded-full"
                     height="50"
                     width="50"
                     alt="user profile picture"
