@@ -57,14 +57,14 @@
   filter: invert(1) brightness(2);
 }
 
-[data-theme="telegram"] .btn {
+[data-theme="telegram"] .btn-primary {
   background-color: var(--color-primary);
   color: var(--color-primary-content);
   border: none;
   transition: background-color 0.3s;
 }
 
-[data-theme="telegram"] .btn:hover {
+[data-theme="telegram"] .btn-primary:hover {
   background-color: color-mix(in srgb, var(--color-primary) 90%, black);
 }
 

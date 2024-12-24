@@ -158,7 +158,9 @@ const Burnt = () => {
             )}
             {isAllowed && (
               <button
-                className="btn btn-xs btn-secondary"
+                className={`btn btn-xs ${
+                  account?.bech32Address ? "btn-error" : "btn-success"
+                }`}
                 onClick={handleConnectButtonClick}
               >
                 {account?.bech32Address ? "Disconnect" : "Connect"}

@@ -88,7 +88,7 @@ const CreateInvoicePage = () => {
       </label>
 
       <button
-        className="btn btn-primary w-full"
+        className="btn btn-success w-full"
         disabled={amount ? (Number.parseInt(amount) <= 0 ? true : false) : true}
         onClick={handleSubmit}
       >
