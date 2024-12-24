@@ -1,16 +1,11 @@
 "use client";
 
 import { ChangeEvent, useEffect, useState } from "react";
-import Image from "next/image";
 import { CURRENCIES } from "./consts";
-import {
-  useAbstraxionAccount,
-  useAbstraxionSigningClient,
-} from "@burnt-labs/abstraxion";
+import { useAbstraxionAccount } from "@burnt-labs/abstraxion";
 
 const CreateInvoicePage = () => {
   const { data: account } = useAbstraxionAccount();
-  const { logout } = useAbstraxionSigningClient();
   useEffect(() => {
     if (account.bech32Address) {
       setWalletAddress(account.bech32Address);
@@ -55,7 +50,7 @@ const CreateInvoicePage = () => {
         <input
           type="text"
           placeholder="Enter the amount"
-          className="input input-bordered input-sm w-full"
+          className="input input-bordered input-sm w-full tg-input"
           value={amount}
           onChange={handleAmountInput}
         />
@@ -65,7 +60,7 @@ const CreateInvoicePage = () => {
           <span className="label-text">Currency</span>
         </div>
         <select
-          className="select select-bordered"
+          className="select select-bordered tg-input"
           value={currency}
           onChange={(e) => setCurrency(e.target.value)}
         >
@@ -87,7 +82,7 @@ const CreateInvoicePage = () => {
           <span className="label-text">Description</span>
         </div>
         <textarea
-          className="textarea textarea-bordered textarea-sm h-24 max-h-48 min-h-20"
+          className="textarea textarea-bordered textarea-sm h-24 max-h-48 min-h-20 tg-input"
           placeholder="Description"
           value={description}
           onChange={handleDescriptionInput}
@@ -101,9 +96,7 @@ const CreateInvoicePage = () => {
       </label>
 
       <p>{walletAddress}</p>
-      <button className="btn btn-primary" onClick={async () => logout?.()}>
-        Dis
-      </button>
+
       <button
         className="btn btn-primary w-full"
         disabled={amount ? (Number.parseInt(amount) <= 0 ? true : false) : true}
@@ -111,25 +104,6 @@ const CreateInvoicePage = () => {
       >
         Create Invoice
       </button>
-      <video
-        className="fire-video test mb-24 h-24 w-24"
-        muted
-        loop
-        autoPlay
-        playsInline
-      >
-        <source src="/assets/vid/fire.mp4" type="video/mp4" />
-      </video>
-      <Image
-        className="rounded-full fire-video mb-24 ms-24"
-        height="50"
-        width="50"
-        alt="xion"
-        src="/assets/img/flame.jpg"
-      />
-      <>
-        <div className="mask-diamond"></div>
-      </>
     </div>
   );
 };

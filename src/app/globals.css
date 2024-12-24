@@ -124,13 +124,36 @@ a.disabled {
 @tailwind utilities;
 
 @layer utilities {
-  .burnt-logo.avatar.online::before {
+  .burnt-logo.avatar.online:before {
     top: 15%;
     right: 30%;
   }
 
-  .burnt-logo.avatar.offline::before {
+  .burnt-logo.avatar.offline:before {
     top: 15%;
     right: 30%;
+  }
+  .label-text {
+    color: var(--tg-theme-text-color, #000);
+  }
+  .tg-input:focus {
+    box-shadow: none;
+    border-color: var(
+      --tg-theme-text-color,
+      var(--fallback-bc, oklch(var(--bc) / 0.2))
+    );
+    outline-style: solid;
+    outline-width: 2px;
+    outline-offset: 2px;
+    outline-color: var(
+      --tg-theme-text-color,
+      var(--fallback-bc, oklch(var(--bc) / 0.2))
+    );
+  }
+  .tg-input {
+    background-color: var(
+      --tg-theme-secondary-bg-color,
+      var(--fallback-b1, oklch(var(--b1) / var(--tw-bg-opacity)))
+    );
   }
 }

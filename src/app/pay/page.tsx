@@ -79,7 +79,7 @@ const PayPage = () => {
             type="text"
             value={signedInvoice?.id || ""}
             placeholder="Scan the QR code or paste the invoice"
-            className="input input-bordered w-full"
+            className="input input-bordered w-full tg-input"
           />
           <div className="flex gap-4 mt-4">
             <button
