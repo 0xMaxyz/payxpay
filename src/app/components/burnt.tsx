@@ -8,6 +8,7 @@ import {
 } from "@burnt-labs/abstraxion";
 import { useTelegramContext } from "../hooks/useTelegramContext";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 const Burnt = () => {
   const { logout } = useAbstraxionSigningClient();
@@ -48,7 +49,7 @@ const Burnt = () => {
           <div className="modal-action">
             <form method="dialog">
               {/* if there is a button in form, it will close the modal */}
-              <button className="btn btn-bg-primary me-4 btn-sm">Cancel</button>
+              <button className="btn btn-primary me-4 btn-sm">Cancel</button>
               <button
                 className="btn btn-error btn-sm"
                 onClick={() => {
@@ -152,7 +153,29 @@ const Burnt = () => {
               </p>
             </div>
             {account?.bech32Address ? (
-              <text>{shortenAddress(account.bech32Address)}</text>
+              <div className="flex flex-row">
+                <text>{shortenAddress(account.bech32Address)}</text>
+                <Link
+                  href={`https://explorer.burnt.com/xion-testnet-1/account/${account.bech32Address}`}
+                  target="_blank"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="ms-1 h-3 w-3 tg-link"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="0.1"
+                      className="bottom-nav-fill"
+                    ></path>
+                  </svg>
+                </Link>
+              </div>
             ) : (
               ""
             )}

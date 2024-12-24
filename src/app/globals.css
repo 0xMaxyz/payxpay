@@ -174,4 +174,9 @@ a.disabled {
       var(--fallback-bc, oklch(var(--bc) / 0.2))
     );
   }
+
+  .tg-link {
+    color: var(--tg-theme-link-color, #0000ee);
+    fill: var(--tg-theme-link-color, #0000ee);
+  }
 }
