@@ -1,8 +1,7 @@
 .b-logo:hover {
-  border: 2px solid;
-  border-color: blue;
-  transition: border-color 0.5s ease-in-out 0.1s;
-  transition-timing-function: linear;
+  border: 3px solid;
+  border-color: var(--tg-theme-button-color, #000);
+  transition: all 0.3s ease-in-out;
   border-radius: 50%;
 }
 .icon-container {

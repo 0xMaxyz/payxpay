@@ -62,56 +62,8 @@ const Burnt = () => {
       <div className="dropdown dropdown-bottom dropdown-end">
         <div tabIndex={0} role="button" className="m-1">
           <div className={`avatar burnt-logo rounded-full w-8 h-8`}>
-            <div className="icon-container b-logo">
-              {account?.bech32Address ? (
-                <>
-                  <Image
-                    height="50"
-                    width="50"
-                    alt="xion"
-                    className="mask-logo rounded-full"
-                    src="/assets/img/flame.jpg"
-                  />
-                  <svg width="0" height="0">
-                    <defs>
-                      <clipPath id="xlogo">
-                        <path
-                          transform="translate(9, 0) scale(0.4)"
-                          d="M7.42 39.1c-3.83-4.47-5.46-8.45-5.46-12.39 0-2.33.25-3.79.57-5.13C.65 25.56.01 28.53.01 31.34c0 14.85 13.62 16.77 13.62 27.28 0 2.54-1.35 5.99-5.89 12.45 13.7-18.28 17.18-24.86 17.18-29.42 0-12.77-13.56-14.91-13.56-29.27 0-3.28 1.88-7.22 5.38-12.37 0 0-3.33 4.69-5.13 7.19-6.41 8.92-8.89 20.5-4.18 31.91l-.01-.01Z"
-                        />
-                      </clipPath>
-                    </defs>
-                  </svg>
-                </>
-              ) : (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 75 75"
-                  fill="currentColor"
-                  className="icon z-0"
-                  preserveAspectRatio="xMidYMid slice"
-                >
-                  <path
-                    x="0"
-                    y="0"
-                    transform="translate(22, 2)"
-                    fill="black"
-                    width="100%"
-                    height="100%"
-                    d="M7.42 39.1c-3.83-4.47-5.46-8.45-5.46-12.39 0-2.33.25-3.79.57-5.13C.65 25.56.01 28.53.01 31.34c0 14.85 13.62 16.77 13.62 27.28 0 2.54-1.35 5.99-5.89 12.45 13.7-18.28 17.18-24.86 17.18-29.42 0-12.77-13.56-14.91-13.56-29.27 0-3.28 1.88-7.22 5.38-12.37 0 0-3.33 4.69-5.13 7.19-6.41 8.92-8.89 20.5-4.18 31.91l-.01-.01Z"
-                  />
-                </svg>
-              )}
-            </div>
-          </div>
-        </div>
-        <div
-          tabIndex={0}
-          className="dropdown-content card card-compact burnt-card z-[1] w-64 p-0 shadow"
-        >
-          <div className="card-body" style={{ padding: "8px !important" }}>
-            <div className="flex flex-row-reverse">
-              <div className="w-8 rounded-full">
+            <div className="icon-container">
+              <div className="w-8 h-8 rounded-full b-logo ">
                 {isPlaceholder ? (
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -141,6 +93,56 @@ const Burnt = () => {
                     alt="user profile picture"
                     src={`${userData?.photo_url ?? "/assets/img/user.webp"}`}
                   />
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          tabIndex={0}
+          className="dropdown-content card card-compact burnt-card z-[1] w-64 p-0 shadow-xl"
+        >
+          <div className="card-body" style={{ padding: "8px !important" }}>
+            <div className="flex flex-row-reverse">
+              <div className="w-8 h-8 rounded-full">
+                {account?.bech32Address ? (
+                  <>
+                    <Image
+                      height="50"
+                      width="50"
+                      alt="xion"
+                      className="mask-logo rounded-full"
+                      src="/assets/img/flame.jpg"
+                    />
+                    <svg width="0" height="0">
+                      <defs>
+                        <clipPath id="xlogo">
+                          <path
+                            transform="translate(9, 0) scale(0.4)"
+                            d="M7.42 39.1c-3.83-4.47-5.46-8.45-5.46-12.39 0-2.33.25-3.79.57-5.13C.65 25.56.01 28.53.01 31.34c0 14.85 13.62 16.77 13.62 27.28 0 2.54-1.35 5.99-5.89 12.45 13.7-18.28 17.18-24.86 17.18-29.42 0-12.77-13.56-14.91-13.56-29.27 0-3.28 1.88-7.22 5.38-12.37 0 0-3.33 4.69-5.13 7.19-6.41 8.92-8.89 20.5-4.18 31.91l-.01-.01Z"
+                          />
+                        </clipPath>
+                      </defs>
+                    </svg>
+                  </>
+                ) : (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 75 75"
+                    fill="currentColor"
+                    className="icon z-0"
+                    preserveAspectRatio="xMidYMid slice"
+                  >
+                    <path
+                      x="0"
+                      y="0"
+                      transform="translate(22, 2)"
+                      fill="black"
+                      width="100%"
+                      height="100%"
+                      d="M7.42 39.1c-3.83-4.47-5.46-8.45-5.46-12.39 0-2.33.25-3.79.57-5.13C.65 25.56.01 28.53.01 31.34c0 14.85 13.62 16.77 13.62 27.28 0 2.54-1.35 5.99-5.89 12.45 13.7-18.28 17.18-24.86 17.18-29.42 0-12.77-13.56-14.91-13.56-29.27 0-3.28 1.88-7.22 5.38-12.37 0 0-3.33 4.69-5.13 7.19-6.41 8.92-8.89 20.5-4.18 31.91l-.01-.01Z"
+                    />
+                  </svg>
                 )}
               </div>
               <p className="my-auto">
