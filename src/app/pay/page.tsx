@@ -66,14 +66,16 @@ const PayPage = () => {
   const handlePasteFromClipboard = () => {};
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-      <div className="card w-full max-w-2xl shadow-lg bg-white p-6 rounded-lg">
-        <h1 className="text-2xl font-bold text-center mb-4">Pay Page</h1>
+    <div className="flex flex-col items-center justify-center min-h-screen tg-bg-primary">
+      <div className="card w-full max-w-2xl shadow-lg tg-bg-secondary p-6 rounded-lg">
+        <h1 className="text-2xl font-bold text-center mb-4 tg-text">
+          Pay Page
+        </h1>
 
         {/* Input Section */}
         <div className="form-control mb-6">
           <label className="label">
-            <span className="label-text font-semibold">Invoice ID</span>
+            <span className="label-text font-semibold tg-text">Invoice ID</span>
           </label>
           <input
             type="text"

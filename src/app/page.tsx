@@ -1,23 +1,15 @@
 "use client";
 
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useState } from "react";
 import { CURRENCIES } from "./consts";
-import { useAbstraxionAccount } from "@burnt-labs/abstraxion";
+// import { useAbstraxionAccount } from "@burnt-labs/abstraxion";
 
 const CreateInvoicePage = () => {
-  const { data: account } = useAbstraxionAccount();
-  useEffect(() => {
-    if (account.bech32Address) {
-      setWalletAddress(account.bech32Address);
-    } else {
-      setWalletAddress("");
-    }
-  }, [account.bech32Address]);
+  // const { data: account } = useAbstraxionAccount();
 
   const [amount, setAmount] = useState("");
   const [currency, setCurrency] = useState<string>("");
   const [description, setDescription] = useState("");
-  const [walletAddress, setWalletAddress] = useState("");
   const MAX_DESCRIPTION_LENGTH = 200;
   const handleDescriptionInput = (
     event: ChangeEvent<HTMLTextAreaElement>
@@ -94,8 +86,6 @@ const CreateInvoicePage = () => {
           </span>
         </div>
       </label>
-
-      <p>{walletAddress}</p>
 
       <button
         className="btn btn-primary w-full"

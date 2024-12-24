@@ -38,9 +38,11 @@ const Burnt = () => {
       {isModalOpen && <Abstraxion onClose={changeModalState} />}
       {/* Confirmation Modal */}
       <dialog id="disconnect-confirmation-modal" className="modal">
-        <div className="modal-box">
-          <h3 className="font-bold text-lg">Disconnect your XION account</h3>
-          <p className="py-2">
+        <div className="modal-box tg-bg-secondary">
+          <h3 className="font-bold text-lg tg-text">
+            Disconnect your XION account
+          </h3>
+          <p className="py-2 tg-text">
             This will disconnect your XION account from the current session.
           </p>
           <div className="modal-action">

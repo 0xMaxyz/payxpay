@@ -156,4 +156,22 @@ a.disabled {
       var(--fallback-b1, oklch(var(--b1) / var(--tw-bg-opacity)))
     );
   }
+  .tg-bg-primary {
+    background-color: var(
+      --tg-theme-bg-color,
+      var(--fallback-bc, oklch(var(--bc) / 0.2))
+    );
+  }
+  .tg-bg-secondary {
+    background-color: var(
+      --tg-theme-secondary-bg-color,
+      var(--fallback-bc, oklch(var(--bc) / 0.2))
+    );
+  }
+  .tg-text {
+    color: var(
+      --tg-theme-text-color,
+      var(--fallback-bc, oklch(var(--bc) / 0.2))
+    );
+  }
 }
