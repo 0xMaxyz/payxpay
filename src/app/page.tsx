@@ -87,12 +87,13 @@ const CreateInvoicePage = () => {
         unit: currency,
         address: account.bech32Address,
       };
-      console.log(`invoice is: \n${JSON.stringify(account)}`);
+      console.log(`invoice is: \n${JSON.stringify(invoice)}`);
 
       const resp = await fetch(
         `/api/invoice/sign?invoice=${encodeURIComponent(
           JSON.stringify(invoice)
-        )}`
+        )}`,
+        { method: "POST" }
       );
       if (resp.ok) {
         const data = await resp.json();
