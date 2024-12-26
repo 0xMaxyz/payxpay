@@ -23,6 +23,7 @@ interface CloudStorageFunctions {
   removeItem: (key: string) => Promise<boolean>;
   removeItems: (keys: string[]) => Promise<boolean>;
   getKeys: () => Promise<string[]>;
+  getFirstAvailableInvoiceId: () => Promise<number>;
   saveInvoice: (invoice: string) => Promise<boolean>;
   getInvoice: (key: number) => Promise<string | null>;
   getInvoices: (page: number, pageSize: number) => Promise<string[]>;
@@ -97,6 +98,21 @@ export const TelegramProvider = ({
               resolve(keys ?? []);
             });
           }),
+        getFirstAvailableInvoiceId: async () => {
+          if (!cloudStorage) {
+            console.error("Cloud Storage is not available");
+            throw new Error("Cloud Storage is not available");
+          }
+          const keys = await cloudStorage.getKeys();
+          const availableKey = Array.from(
+            { length: 1024 - 24 },
+            (_, i) => i + 25
+          ).find((key) => !keys.includes(String(key)));
+          if (availableKey === undefined) {
+            throw new Error("No available storage keys for invoices");
+          }
+          return availableKey;
+        },
         saveInvoice: async (invoice) => {
           if (!cloudStorage) {
             console.error("Cloud Storage is not available");

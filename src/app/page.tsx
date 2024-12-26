@@ -75,9 +75,14 @@ const CreateInvoicePage = () => {
       }
       // so the required inputs are filled, we can now create the invoice
       setCreateInvoiceBtnLoading(true);
+      const csId = await cloudStorage?.getFirstAvailableInvoiceId();
+      if (!csId) {
+        console.error("No available storage keys for invoices");
+        return;
+      }
       console.log("Creating invoice...");
       const invoice: Invoice = {
-        id: "",
+        id: csId.toString(),
         description: description,
         issuerTelegramId: telegramUserData?.id ?? 0,
         issuerFirstName: telegramUserData?.first_name ?? "",
