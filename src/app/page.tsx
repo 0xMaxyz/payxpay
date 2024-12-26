@@ -94,7 +94,6 @@ const CreateInvoicePage = () => {
         amount: Number.parseInt(amount),
         unit: currency,
         address: account.bech32Address,
-        tgHash: TgWebApp?.initData ?? "",
       };
       console.log(`invoice is: \n${JSON.stringify(invoice)}`);
       console.log(
@@ -106,7 +105,7 @@ const CreateInvoicePage = () => {
       const resp = await fetch(
         `/api/invoice/sign?invoice=${encodeURIComponent(
           JSON.stringify(invoice)
-        )}`,
+        )}&hash=${TgWebApp?.initData ?? ""}`,
         { method: "POST" }
       );
       if (resp.ok) {

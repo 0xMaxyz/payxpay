@@ -37,11 +37,11 @@ export interface Invoice {
   unit: string;
   // The address of the seller
   address: string;
-  // The auth hash of the user which shows that the user is the owner of the invoice
-  tgHash: string;
 }
 export interface SignedInvoice extends Invoice {
   signature: string;
+  // The auth hash of the user which shows that the user is the owner of the invoice
+  tgHash: string;
 }
 
 export interface Currency {

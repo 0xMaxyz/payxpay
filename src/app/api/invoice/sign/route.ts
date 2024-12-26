@@ -18,17 +18,18 @@ export async function POST(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const encodedInvoice = searchParams.get("invoice");
+    const tgHash = searchParams.get("hash");
 
-    if (!encodedInvoice) {
-      return NextResponse.json({ error: "Missing invoice." }, { status: 400 });
+    if (!encodedInvoice || !tgHash) {
+      return NextResponse.json(
+        { error: "Missing invoice/hash." },
+        { status: 400 }
+      );
     }
     // Decode and sign the invoice
-    console.log("receivedInvoice: ", encodedInvoice);
     const invoice = decodeInvoice<Invoice>(encodedInvoice);
-    console.log("Decoded invoice: ", invoice);
-    console.log("Tg Hash is: ", invoice.tgHash);
     // validate the tgHash of the invoice and compare the sent userId with the userId in the hash
-    const isValid = verifyTelegramWebAppData(invoice.tgHash);
+    const isValid = verifyTelegramWebAppData(tgHash);
 
     if (!isValid) {
       // the attached hash is not valid
@@ -37,7 +38,7 @@ export async function POST(req: NextRequest) {
     if (isValid) {
       // then the attached tgHash is valid
       const user: TgUserData = JSON.parse(
-        Object.fromEntries(new URLSearchParams(invoice.tgHash)).user
+        Object.fromEntries(new URLSearchParams(tgHash)).user
       );
       if (user.id !== invoice.issuerTelegramId) {
         return NextResponse.json({ error: "Forbidden." }, { status: 403 });
