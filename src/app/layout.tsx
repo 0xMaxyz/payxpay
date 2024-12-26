@@ -6,6 +6,7 @@ import "./globals.css";
 import { pxpContract } from "./consts";
 import { TelegramProvider } from "./context/TelegramContext";
 import Body from "./components/body";
+import { NotificationProvider } from "./context/NotificationContext";
 
 export default function RootLayout({
   children,
@@ -27,9 +28,11 @@ export default function RootLayout({
           restUrl: "https://api.xion-testnet-1.burnt.com",
         }}
       >
-        <TelegramProvider>
-          <Body>{children}</Body>
-        </TelegramProvider>
+        <NotificationProvider>
+          <TelegramProvider>
+            <Body>{children}</Body>
+          </TelegramProvider>
+        </NotificationProvider>
       </AbstraxionProvider>
     </html>
   );

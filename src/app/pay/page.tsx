@@ -67,7 +67,7 @@ const PayPage = () => {
 
   return (
     <div className="p-4">
-      <h1 className="text-xl font-bold mb-4">Pay Page</h1>
+      <h1 className="text-xl font-bold mb-4">Pay</h1>
 
       {/* Input Section */}
       <div className="form-control mb-6">

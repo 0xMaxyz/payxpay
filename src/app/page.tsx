@@ -1,15 +1,31 @@
 "use client";
 
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { CURRENCIES } from "./consts";
+import { Invoice, SignedInvoice } from "./types";
+import { useAbstraxionAccount, useModal } from "@burnt-labs/abstraxion";
+import { useNotification } from "./context/NotificationContext";
 // import { useAbstraxionAccount } from "@burnt-labs/abstraxion";
 
 const CreateInvoicePage = () => {
   // const { data: account } = useAbstraxionAccount();
-
+  const { addNotification } = useNotification();
+  const [createInvoiceBtnLoading, setCreateInvoiceBtnLoading] = useState(false);
+  const { data: account } = useAbstraxionAccount();
+  const [createInvoiceEnabled, setCreateInvoiceEnabled] = useState(false);
   const [amount, setAmount] = useState("");
   const [currency, setCurrency] = useState<string>("");
   const [description, setDescription] = useState("");
+  const [isModalOpen, setModalOpen] = useModal();
+  const changeModalState = () => setModalOpen(!isModalOpen);
+  useEffect(() => {
+    if (Number.parseInt(amount) > 0 && currency) {
+      setCreateInvoiceEnabled(true);
+    } else {
+      setCreateInvoiceEnabled(false);
+    }
+  }, [amount, currency]);
+
   const MAX_DESCRIPTION_LENGTH = 200;
   const handleDescriptionInput = (
     event: ChangeEvent<HTMLTextAreaElement>
@@ -20,6 +36,14 @@ const CreateInvoicePage = () => {
     }
   };
 
+  const [isConnecting, setIsConnecting] = useState(false);
+  const handleConnect = () => {
+    if (!isConnecting) {
+      setIsConnecting(true);
+      changeModalState();
+    }
+  };
+
   const handleAmountInput = (event: ChangeEvent<HTMLInputElement>): void => {
     const value = event.target.value;
     if (/^\d*$/.test(value)) {
@@ -27,8 +51,41 @@ const CreateInvoicePage = () => {
     }
   };
 
-  const handleSubmit = () => {
-    // Perform API call to create an invoice
+  const handleSubmitInvoice = async () => {
+    if (!createInvoiceBtnLoading) {
+      setCreateInvoiceBtnLoading(true);
+      // make api call to create invoice
+      console.log("Creating invoice...");
+      console.log("Amount: ", amount);
+      console.log("Currency: ", currency);
+      console.log("Description: ", description);
+      const invoice: Invoice = {
+        id: "",
+        description: description,
+        issuerTelegramId: 0,
+        issuerFirstName: "",
+        issuerLastName: "",
+        issuerTelegramHandle: "",
+        issueDate: 0,
+        invoiceValidity: "valid",
+        issuerId: "",
+        amount: Number.parseInt(amount),
+        unit: currency,
+        address: "",
+      };
+      const resp = await fetch(
+        `/api/invoice/sign?invoice=${encodeURIComponent(
+          JSON.stringify(invoice)
+        )}`
+      );
+      if (resp.ok) {
+        const data = await resp.json();
+        const signedInvoice: string = data.signedInvoice;
+        console.log("Signed Invoice: ", signedInvoice);
+        // now we have a signed invoice, we can use it to create a payment link or QR code and we also need to save it in the database (or someplace else). for now I'm going to use Telegram's cloud storage to save the invoice.
+      }
+      setCreateInvoiceBtnLoading(false);
+    }
   };
 
   return (
@@ -86,13 +143,41 @@ const CreateInvoicePage = () => {
           </span>
         </div>
       </label>
-
+      {account?.bech32Address ? (
+        <button
+          className="btn btn-success w-full"
+          disabled={createInvoiceEnabled}
+          onClick={handleSubmitInvoice}
+        >
+          {!createInvoiceBtnLoading ? (
+            <p className="text-white">Create Invoice</p>
+          ) : (
+            <span className="loading loading-dots loading-lg text-white"></span>
+          )}
+        </button>
+      ) : (
+        <button
+          className="btn btn-success w-full"
+          onClick={() => handleConnect()}
+        >
+          {!isConnecting ? (
+            "Connect"
+          ) : (
+            <span className="loading loading-dots loading-lg text-white"></span>
+          )}
+        </button>
+      )}
       <button
-        className="btn btn-success w-full"
-        disabled={amount ? (Number.parseInt(amount) <= 0 ? true : false) : true}
-        onClick={handleSubmit}
+        className="btn btn-secondary w-full mt-2"
+        onClick={() => {
+          addNotification({
+            message: "1",
+            color: "warning",
+            duration: 500000,
+          });
+        }}
       >
-        Create Invoice
+        Add toast
       </button>
     </div>
   );
