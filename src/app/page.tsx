@@ -105,7 +105,7 @@ const CreateInvoicePage = () => {
       const resp = await fetch(
         `/api/invoice/sign?invoice=${encodeURIComponent(
           JSON.stringify(invoice)
-        )}&hash=${TgWebApp?.initData ?? ""}`,
+        )}&hash=${encodeURIComponent(TgWebApp?.initData ?? "")}`,
         { method: "POST" }
       );
       if (resp.ok) {
