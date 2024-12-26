@@ -94,7 +94,7 @@ const CreateInvoicePage = () => {
         amount: Number.parseInt(amount),
         unit: currency,
         address: account.bech32Address,
-        tgHash: TgWebApp?.initData ?? "",
+        tgHash: encodeURIComponent(TgWebApp?.initData ?? ""),
       };
       console.log(`invoice is: \n${JSON.stringify(invoice)}`);
 
