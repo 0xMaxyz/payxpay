@@ -2,14 +2,16 @@
 
 import { ChangeEvent, useEffect, useState } from "react";
 import { CURRENCIES } from "./consts";
-import { Invoice, SignedInvoice } from "./types";
+import { Invoice } from "./types";
 import { useAbstraxionAccount, useModal } from "@burnt-labs/abstraxion";
 import { useNotification } from "./context/NotificationContext";
+import { useTelegramContext } from "./hooks/useTelegramContext";
 // import { useAbstraxionAccount } from "@burnt-labs/abstraxion";
 
 const CreateInvoicePage = () => {
   // const { data: account } = useAbstraxionAccount();
   const { addNotification } = useNotification();
+  const { userData: telegramUserData } = useTelegramContext();
   const [createInvoiceBtnLoading, setCreateInvoiceBtnLoading] = useState(false);
   const { data: account } = useAbstraxionAccount();
   const [createInvoiceEnabled, setCreateInvoiceEnabled] = useState(false);
@@ -53,26 +55,40 @@ const CreateInvoicePage = () => {
 
   const handleSubmitInvoice = async () => {
     if (!createInvoiceBtnLoading) {
+      if (!account?.bech32Address) {
+        addNotification({
+          color: "error",
+          message: "Please connect your wallet first.",
+          children: (
+            <button
+              className="btn btn-success btn-xs"
+              onClick={() => setModalOpen(true)}
+            >
+              Connect
+            </button>
+          ),
+        });
+        return;
+      }
+      // so the required inputs are filled, we can now create the invoice
       setCreateInvoiceBtnLoading(true);
-      // make api call to create invoice
       console.log("Creating invoice...");
-      console.log("Amount: ", amount);
-      console.log("Currency: ", currency);
-      console.log("Description: ", description);
       const invoice: Invoice = {
         id: "",
         description: description,
-        issuerTelegramId: 0,
-        issuerFirstName: "",
-        issuerLastName: "",
-        issuerTelegramHandle: "",
-        issueDate: 0,
+        issuerTelegramId: telegramUserData?.id ?? 0,
+        issuerFirstName: telegramUserData?.first_name ?? "",
+        issuerLastName: telegramUserData?.last_name ?? "",
+        issuerTelegramHandle: telegramUserData?.username ?? "",
+        issueDate: Date.now() / 1000,
         invoiceValidity: "valid",
-        issuerId: "",
+        issuerPrivateId: "",
         amount: Number.parseInt(amount),
         unit: currency,
-        address: "",
+        address: account.bech32Address,
       };
+      console.log(`invoice is: \n${JSON.stringify(account)}`);
+
       const resp = await fetch(
         `/api/invoice/sign?invoice=${encodeURIComponent(
           JSON.stringify(invoice)

@@ -30,7 +30,7 @@ export interface Invoice {
   // The validity of the invoice in seconds
   invoiceValidity: number | "valid";
   // optional Id for the product or the service that the seller is creating the invoice
-  issuerId: string | null;
+  issuerPrivateId: string | null;
   // The amount of the invoice
   amount: number;
   // The currency of the invoice
