@@ -5,13 +5,16 @@ import { CURRENCIES } from "./consts";
 import { Invoice } from "./types";
 import { useAbstraxionAccount, useModal } from "@burnt-labs/abstraxion";
 import { useNotification } from "./context/NotificationContext";
-import { useTelegramContext } from "./hooks/useTelegramContext";
+import { useTelegramContext } from "./context/TelegramContext";
 // import { useAbstraxionAccount } from "@burnt-labs/abstraxion";
 
 const CreateInvoicePage = () => {
-  // const { data: account } = useAbstraxionAccount();
   const { addNotification } = useNotification();
-  const { userData: telegramUserData } = useTelegramContext();
+  const {
+    userData: telegramUserData,
+    WebApp: TgWebApp,
+    cloudStorage,
+  } = useTelegramContext();
   const [createInvoiceBtnLoading, setCreateInvoiceBtnLoading] = useState(false);
   const { data: account } = useAbstraxionAccount();
   const [createInvoiceEnabled, setCreateInvoiceEnabled] = useState(false);
@@ -86,6 +89,7 @@ const CreateInvoicePage = () => {
         amount: Number.parseInt(amount),
         unit: currency,
         address: account.bech32Address,
+        tgHash: TgWebApp?.initData ?? "",
       };
       console.log(`invoice is: \n${JSON.stringify(invoice)}`);
 
@@ -132,7 +136,7 @@ const CreateInvoicePage = () => {
         >
           {CURRENCIES.sort((a, b) => a.name.localeCompare(b.name)).map((c) => {
             return (
-              <option key={c.contract}>
+              <option key={c.contract} selected={c.unit === "TRY"}>
                 {c.name} - {c.unit}
               </option>
             );
@@ -163,7 +167,7 @@ const CreateInvoicePage = () => {
       {account?.bech32Address ? (
         <button
           className="btn btn-success w-full"
-          disabled={createInvoiceEnabled}
+          disabled={!createInvoiceEnabled}
           onClick={handleSubmitInvoice}
         >
           {!createInvoiceBtnLoading ? (
@@ -184,18 +188,65 @@ const CreateInvoicePage = () => {
           )}
         </button>
       )}
-      <button
-        className="btn btn-secondary w-full mt-2"
-        onClick={() => {
-          addNotification({
-            message: "1",
-            color: "warning",
-            duration: 500000,
-          });
-        }}
-      >
-        Add toast
-      </button>
+      <div>
+        <button
+          className="btn btn-primary w-full mt-2"
+          onClick={async () => {
+            if (cloudStorage) {
+              await cloudStorage.saveInvoice(`Invoice ${crypto.randomUUID()}`);
+              console.log("Invoice added");
+            }
+          }}
+        >
+          Add Invoice
+        </button>
+        <button
+          className="btn btn-secondary w-full mt-2"
+          onClick={async () => {
+            const invoiceId = 25;
+            if (cloudStorage) {
+              await cloudStorage.removeInvoice(invoiceId);
+              console.log("Invoice removed:", invoiceId);
+            }
+          }}
+        >
+          Remove Invoice
+        </button>
+        <button
+          className="btn btn-info w-full mt-2"
+          onClick={async () => {
+            const invoiceId = 1;
+            if (cloudStorage) {
+              const invoice = await cloudStorage.getInvoice(invoiceId);
+              console.log("Fetched Invoice:", invoice);
+            }
+          }}
+        >
+          Get Invoice
+        </button>
+        <button
+          className="btn btn-warning w-full mt-2"
+          onClick={async () => {
+            if (cloudStorage) {
+              const invoices = await cloudStorage.getInvoices(1, 10);
+              console.log("Fetched Invoices:", invoices);
+            }
+          }}
+        >
+          Get Invoices
+        </button>
+        <button
+          className="btn btn-warning w-full mt-2"
+          onClick={async () => {
+            if (cloudStorage) {
+              const isRemoved = await cloudStorage.removeAllInvoices();
+              console.log("Removed All Invoices:", isRemoved);
+            }
+          }}
+        >
+          Remove All Invoices
+        </button>
+      </div>
     </div>
   );
 };

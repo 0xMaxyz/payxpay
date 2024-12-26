@@ -1,4 +1,5 @@
-import { Invoice } from "@/app/types";
+import { Invoice, TgUserData } from "@/app/types";
+import verifyTelegramWebAppData from "@/lib/telegram-verifier";
 import { decodeInvoice, encodeSignedInvoice, signInvoice } from "@/lib/tools";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -23,6 +24,22 @@ export async function POST(req: NextRequest) {
     }
     // Decode and sign the invoice
     const invoice = decodeInvoice<Invoice>(encodedInvoice);
+    // validate the tgHash of the invoice and compare the sent userId with the userId in the hash
+    const isValid = verifyTelegramWebAppData(invoice.tgHash);
+
+    if (!isValid) {
+      // the attached hash is not valid
+      return NextResponse.json({ error: "Forbidden." }, { status: 403 });
+    }
+    if (isValid) {
+      // then the attached tgHash is valid
+      const user: TgUserData = JSON.parse(
+        Object.fromEntries(new URLSearchParams(invoice.tgHash)).user
+      );
+      if (user.id !== invoice.issuerTelegramId) {
+        return NextResponse.json({ error: "Forbidden." }, { status: 403 });
+      }
+    }
     const signature = signInvoice(invoice, bot_token);
 
     return NextResponse.json(

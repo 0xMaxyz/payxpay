@@ -6,9 +6,9 @@ import {
   useModal,
   Abstraxion,
 } from "@burnt-labs/abstraxion";
-import { useTelegramContext } from "../hooks/useTelegramContext";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useTelegramContext } from "../context/TelegramContext";
 
 const Burnt = () => {
   const { logout } = useAbstraxionSigningClient();

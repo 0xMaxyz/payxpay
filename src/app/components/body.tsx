@@ -2,8 +2,7 @@ import React from "react";
 import Image from "next/image";
 import Header from "./header";
 import Navbar from "./navbar";
-
-import { useTelegramContext } from "../hooks/useTelegramContext";
+import { useTelegramContext } from "../context/TelegramContext";
 
 const Body = ({ children }: { children: React.ReactNode }) => {
   const { isAllowed, loading } = useTelegramContext();

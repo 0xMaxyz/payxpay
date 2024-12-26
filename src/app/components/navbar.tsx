@@ -1,7 +1,7 @@
 "use client";
 import { usePathname } from "next/navigation";
-import { useTelegramContext } from "../hooks/useTelegramContext";
 import Link from "next/link";
+import { useTelegramContext } from "../context/TelegramContext";
 
 const Navbar = () => {
   const pathname = usePathname();
