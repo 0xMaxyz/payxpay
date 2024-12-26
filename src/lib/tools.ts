@@ -17,7 +17,8 @@ export const signInvoice = (invoice: Invoice, bot_token: string): string => {
   return crypto.createHmac("sha256", bot_token).update(payload).digest("hex");
 };
 export const decodeInvoice = <T extends Invoice>(encodedInvoice: string): T => {
-  return JSON.parse(decodeURIComponent(encodedInvoice)) as T;
+  const decoded = decodeURIComponent(encodedInvoice);
+  return JSON.parse(decoded) as T;
 };
 export const encodeSignedInvoice = (
   invoice: Invoice,

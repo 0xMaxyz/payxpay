@@ -23,6 +23,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing invoice." }, { status: 400 });
     }
     // Decode and sign the invoice
+    console.log("receivedInvoice: ", encodedInvoice);
     const invoice = decodeInvoice<Invoice>(encodedInvoice);
     console.log("Decoded invoice: ", invoice);
     console.log("Tg Hash is: ", invoice.tgHash);
