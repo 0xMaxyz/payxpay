@@ -24,6 +24,8 @@ export async function POST(req: NextRequest) {
     }
     // Decode and sign the invoice
     const invoice = decodeInvoice<Invoice>(encodedInvoice);
+    console.log("Decoded invoice: ", invoice);
+    console.log("Tg Hash is: ", invoice.tgHash);
     // validate the tgHash of the invoice and compare the sent userId with the userId in the hash
     const isValid = verifyTelegramWebAppData(invoice.tgHash);
 

@@ -94,9 +94,14 @@ const CreateInvoicePage = () => {
         amount: Number.parseInt(amount),
         unit: currency,
         address: account.bech32Address,
-        tgHash: JSON.stringify(encodeURIComponent(TgWebApp?.initData ?? "")),
+        tgHash: TgWebApp?.initData ?? "",
       };
       console.log(`invoice is: \n${JSON.stringify(invoice)}`);
+      console.log(
+        `invoice is(encodedUriComponent): \n${encodeURIComponent(
+          JSON.stringify(invoice)
+        )}`
+      );
 
       const resp = await fetch(
         `/api/invoice/sign?invoice=${encodeURIComponent(
