@@ -21,16 +21,17 @@ const CreateInvoicePage = () => {
   const [createInvoiceBtnLoading, setCreateInvoiceBtnLoading] = useState(false);
   const { data: account } = useAbstraxionAccount();
   const [createInvoiceEnabled, setCreateInvoiceEnabled] = useState(false);
-  const [signedInvoice, setSignedInvoice] = useState<string>("");
-  const [showInvoiceCreatedModal, setShowInvoiceCreatedModal] = useState(false);
   const [amount, setAmount] = useState("");
   const [currency, setCurrency] = useState<string>("");
   const [description, setDescription] = useState("");
   const [createdQrCode, setCreatedQrCode] = useState("");
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [shareableLink, setShareableLink] = useState<string | undefined>(
+    undefined
+  );
   const [isModalOpen, setModalOpen] = useModal();
   const changeAbstraxionModalState = () => setModalOpen(!isModalOpen);
-  const changeInvoiceSuccessModalState = () =>
-    setShowInvoiceCreatedModal(!showInvoiceCreatedModal);
+
   useEffect(() => {
     if (Number.parseInt(amount) > 0 && currency) {
       setCreateInvoiceEnabled(true);
@@ -49,20 +50,29 @@ const CreateInvoicePage = () => {
     }
   };
 
+  const showInvoiceSuccessfullModal = () => {
+    const dialog = document.getElementById("invoice-created-modal");
+    if (dialog) {
+      (dialog as HTMLDialogElement).showModal();
+    }
+  };
+
   const handleCopyToClipboard = async () => {
-    await navigator.clipboard.writeText(getShareableLink(signedInvoice));
-    addNotification({
-      color: "success",
-      message: "Invoice copied to clipboard",
-    });
+    if (shareableLink) {
+      await navigator.clipboard.writeText(shareableLink);
+      addNotification({
+        color: "success",
+        message: "Invoice copied to clipboard",
+      });
+    }
   };
 
   const handleShare = async () => {
-    if (navigator.share !== undefined) {
+    if (navigator.share !== undefined && shareableLink) {
       try {
         await navigator.share({
           title: "Invoice",
-          url: getShareableLink(signedInvoice),
+          url: shareableLink,
         });
         addNotification({
           color: "success",
@@ -78,7 +88,6 @@ const CreateInvoicePage = () => {
     }
   };
 
-  const [isConnecting, setIsConnecting] = useState(false);
   const handleConnect = () => {
     if (!isConnecting) {
       setIsConnecting(true);
@@ -138,26 +147,36 @@ const CreateInvoicePage = () => {
       };
       try {
         // sign the invoice
-        const resp = await fetch(
-          `/api/invoice/sign?invoice=${encodeURIComponent(
-            JSON.stringify(invoice)
-          )}&hash=${encodeURIComponent(TgWebApp?.initData ?? "")}`,
-          { method: "POST" }
-        );
+        // const resp = await fetch(
+        //   `/api/invoice/sign?invoice=${encodeURIComponent(
+        //     JSON.stringify(invoice)
+        //   )}&hash=${encodeURIComponent(TgWebApp?.initData ?? "")}`,
+        //   { method: "POST" }
+        // );
         // check if signing was successful
+        const resp = await fetch(`/api/invoice/create`, {
+          body: JSON.stringify({
+            invoice: encodeURIComponent(JSON.stringify(invoice)),
+            tgHash: encodeURIComponent(TgWebApp?.initData ?? ""),
+          }),
+          method: "POST",
+        });
         if (resp.ok) {
           const data = await resp.json();
           const signedInvoice: string = data.signedInvoice;
           console.log("Signed Invoice: ", signedInvoice);
+          // save to tg cloud storage
           cloudStorage?.saveInvoice(signedInvoice);
+          // inform the user that the invoice has been created
           addNotification({
             color: "success",
             message: "Invoice created successfully",
           });
-          setSignedInvoice(signedInvoice);
+          // set the shareable link
+          setShareableLink(getShareableLink(invoice.id));
           // create the qr code
           QrCode.toDataURL(
-            getShareableLink(signedInvoice),
+            getShareableLink(invoice.id),
             { errorCorrectionLevel: "H" },
             (err, url) => {
               if (err) {
@@ -172,7 +191,7 @@ const CreateInvoicePage = () => {
               }
             }
           );
-          changeInvoiceSuccessModalState();
+          showInvoiceSuccessfullModal();
         } else {
           addNotification({
             color: "error",

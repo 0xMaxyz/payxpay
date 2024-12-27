@@ -52,3 +52,6 @@ export const escapeHtml = (unsafe: string) => {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
 };
+export const getTgUserLink = (id: string) => {
+  return `tg://user?id=${id}`;
+};

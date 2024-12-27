@@ -25,8 +25,10 @@ const Burnt = () => {
   > = () => {
     if (account?.bech32Address) {
       // disconnect
-      // @ts-expect-error the element has showmodal
-      document?.getElementById("disconnect-confirmation-modal").showModal();
+      const dialog = document?.getElementById("disconnect-confirmation-modal");
+      if (dialog) {
+        (dialog as HTMLDialogElement).showModal();
+      }
     } else {
       // connect
       console.log(isModalOpen);
