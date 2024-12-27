@@ -75,22 +75,9 @@ export const POST = async (req: NextRequest) => {
         body: JSON.stringify({
           chat_id: chatId,
           parse_mode: "HTML",
-          text: `
-          You received an invoice from <b><a href="tg://user?id=${
-            signedInvoice.issuerTelegramId
-          }">${signedInvoice.issuerFirstName}</a></b>${
-            signedInvoice.issuerTelegramHandle
-              ? ` (@${signedInvoice.issuerTelegramHandle})`
-              : ""
-          }.\n
-          <b>Amount:</b> <code>${signedInvoice.amount} ${
-            signedInvoice.unit
-          }</code>\n
-          <b>Description:</b> <code>${escapeHtml(
-            signedInvoice.description
-          )}</code>\n
-          Click below to complete your payment.\n
-          <u>If their privacy settings allow, you can also chat with them directly.</u>`,
+          // eslint-disable-next-line
+          // prettier-ignore
+          text: `You received an invoice from <b><a href="tg://user?id=${signedInvoice.issuerTelegramId}">${signedInvoice.issuerFirstName}</a></b>${signedInvoice.issuerTelegramHandle? ` (@${signedInvoice.issuerTelegramHandle})`: ""}.\n<b>Amount:</b> <code>${signedInvoice.amount} ${signedInvoice.unit }</code>\n <b>Description:</b> <code>${escapeHtml( signedInvoice.description )}</code>\n Click below to complete your payment.\n<u>If their privacy settings allow, you can also chat with them directly.</u>`,
           reply_markup: {
             inline_keyboard: [
               [
