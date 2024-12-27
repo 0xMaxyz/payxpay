@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
     }
     // then the attached tgHash is valid
     const user: TgUserData = JSON.parse(
-      Object.fromEntries(new URLSearchParams(tgHash)).user
+      Object.fromEntries(new URLSearchParams(decodeURIComponent(tgHash))).user
     );
     if (user.id !== invoiceAsObject.issuerTelegramId) {
       console.log("Not valid user", user, invoiceAsObject);
