@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
     // since everything is ok till now, we'll save the invoice in the db
     const resp = await addInvoice(
       invoiceAsObject.id,
-      invoiceAsObject.issuerTelegramId.toString(),
+      invoiceAsObject.issuerTelegramId,
       signedInvoice
     );
     if (resp) {

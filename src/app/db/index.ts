@@ -1,6 +1,6 @@
 import logger from "@/lib/logger";
 import { sql } from "@vercel/postgres";
-const addInvoice = async (id: string, issuer_id: string, invoice: string) => {
+const addInvoice = async (id: string, issuer_id: number, invoice: string) => {
   try {
     const result = await sql`
         INSERT INTO invoices (invoice, invoice_id, issuer_tg_id)
