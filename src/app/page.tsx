@@ -41,6 +41,13 @@ const CreateInvoicePage = () => {
   }, [amount, currency]);
 
   const MAX_DESCRIPTION_LENGTH = 200;
+  const clearPage = () => {
+    setAmount("");
+    setCurrency("");
+    setDescription("");
+    setCreatedQrCode("");
+    setShareableLink(undefined);
+  };
   const handleDescriptionInput = (
     event: ChangeEvent<HTMLTextAreaElement>
   ): void => {
@@ -146,14 +153,6 @@ const CreateInvoicePage = () => {
         address: account.bech32Address,
       };
       try {
-        // sign the invoice
-        // const resp = await fetch(
-        //   `/api/invoice/sign?invoice=${encodeURIComponent(
-        //     JSON.stringify(invoice)
-        //   )}&hash=${encodeURIComponent(TgWebApp?.initData ?? "")}`,
-        //   { method: "POST" }
-        // );
-        // check if signing was successful
         const resp = await fetch(`/api/invoice/create`, {
           body: JSON.stringify({
             invoice: encodeURIComponent(JSON.stringify(invoice)),
@@ -354,7 +353,11 @@ const CreateInvoicePage = () => {
           </button>
         </div>
       </div>
-      <dialog id="invoice-created-modal" className="modal w-full">
+      <dialog
+        id="invoice-created-modal"
+        className="modal w-full"
+        onClose={clearPage}
+      >
         <div className="modal-box tg-bg-secondary w-9/12 max-w-5xl">
           <form method="dialog">
             <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">

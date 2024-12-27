@@ -1,3 +1,4 @@
+import { getInvoice } from "@/app/db";
 import { SignedInvoice } from "@/app/types";
 import { escapeHtml } from "@/lib/tools";
 import { NextRequest, NextResponse } from "next/server";
@@ -35,16 +36,36 @@ export const POST = async (req: NextRequest) => {
     console.log(`line 31: message text  is: ${JSON.stringify(text)}`);
 
     // Handle `/pay` command with query parameters
-    const startCommandRegex = /\/start=invoice=([^&]+)/;
+    const startCommandRegex = /\/start invoice=([^&]+)/;
     const match = text?.match(startCommandRegex);
 
     if (match) {
       console.log(`line 40: found /start match`);
       const invoice = match[1]; // Extract "12345"
       console.log(`line 42: invoice id is: ${JSON.stringify(invoice)}`);
-      // decode invoice and extract sender and sender id
+      // get the invoice from db
+      const inv = await getInvoice(invoice);
+      if (!inv) {
+        const res = await fetch(`${TELEGRAM_API}/sendMessage`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            chat_id: chatId,
+            text: `You said: "${text}"`,
+          }),
+        });
+        if (!res.ok) {
+          const error = await res.text();
+          return NextResponse.json(
+            { error: `Failed to send message: ${error}` },
+            { status: 500 }
+          );
+        }
+
+        return NextResponse.json({ success: true }, { status: 200 });
+      }
       const signedInvoice = JSON.parse(
-        decodeURIComponent(invoice)
+        decodeURIComponent(inv)
       ) as SignedInvoice;
       console.log("line 48: signed invoice is: ", signedInvoice);
       // Send a message with an inline button linking to your Telegram Mini App
@@ -54,7 +75,8 @@ export const POST = async (req: NextRequest) => {
         body: JSON.stringify({
           chat_id: chatId,
           parse_mode: "HTML",
-          text: `You received an invoice from <b><a href="tg://user?id=${
+          text: `
+          You received an invoice from <b><a href="tg://user?id=${
             signedInvoice.issuerTelegramId
           }">${signedInvoice.issuerFirstName}</a></b>${
             signedInvoice.issuerTelegramHandle
@@ -63,14 +85,11 @@ export const POST = async (req: NextRequest) => {
           }.\n
           <b>Amount:</b> <code>${signedInvoice.amount} ${
             signedInvoice.unit
-          }</code>
-          \n
+          }</code>\n
           <b>Description:</b> <code>${escapeHtml(
             signedInvoice.description
-          )}</code>
-          \n
-          Click below to complete your payment.
-          \n
+          )}</code>\n
+          Click below to complete your payment.\n
           <u>If their privacy settings allow, you can also chat with them directly.</u>`,
           reply_markup: {
             inline_keyboard: [
