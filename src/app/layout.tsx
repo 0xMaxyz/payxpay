@@ -21,19 +21,21 @@ export default function RootLayout({
           src="https://telegram.org/js/telegram-web-app.js"
         ></Script>
       </head>
-      <AbstraxionProvider
-        config={{
-          contracts: [pxpContract],
-          rpcUrl: "https://rpc.xion-testnet-1.burnt.com:443",
-          restUrl: "https://api.xion-testnet-1.burnt.com",
-        }}
-      >
-        <NotificationProvider>
-          <TelegramProvider>
-            <Body>{children}</Body>
-          </TelegramProvider>
-        </NotificationProvider>
-      </AbstraxionProvider>
+      <body className="flex flex-col h-screen app-container">
+        <AbstraxionProvider
+          config={{
+            contracts: [pxpContract],
+            rpcUrl: "https://rpc.xion-testnet-1.burnt.com:443",
+            restUrl: "https://api.xion-testnet-1.burnt.com",
+          }}
+        >
+          <NotificationProvider>
+            <TelegramProvider>
+              <Body>{children}</Body>
+            </TelegramProvider>
+          </NotificationProvider>
+        </AbstraxionProvider>
+      </body>
     </html>
   );
 }

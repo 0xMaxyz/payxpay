@@ -1,3 +1,4 @@
+import { SignedInvoice } from "@/app/types";
 import { NextRequest, NextResponse } from "next/server";
 
 const BOT_TOKEN = process.env.BOT_TOKEN as string;
@@ -33,36 +34,49 @@ export const POST = async (req: NextRequest) => {
     console.log(`line 31: message text  is: ${JSON.stringify(text)}`);
 
     // Handle `/pay` command with query parameters
-    const startCommandRegex = /\/pay=invoice=([a-zA-Z0-9]+)/;
+    const startCommandRegex = /\/start=invoice=([^&]+)/;
     const match = text?.match(startCommandRegex);
 
     if (match) {
-      console.log(`line 39: found /pay match`);
-      const query = match[1]; // Example: "invoiceId=12345"
-      const invoiceId = query.split("=")[1]; // Extract "12345"
-
-      console.log(
-        `line 42: query is ${JSON.stringify(
-          query
-        )} and invoice id is: ${JSON.stringify(invoiceId)}`
-      );
+      console.log(`line 40: found /start match`);
+      const invoice = match[1]; // Extract "12345"
+      console.log(`line 42: invoice id is: ${JSON.stringify(invoice)}`);
+      // decode invoice and extract sender and sender id
+      const signedInvoice = JSON.parse(
+        decodeURIComponent(invoice)
+      ) as SignedInvoice;
       // Send a message with an inline button linking to your Telegram Mini App
       const response = await fetch(`${TELEGRAM_API}/sendMessage`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           chat_id: chatId,
-          text: "Click below to complete your payment:",
+          parse_mode: "MarkdownV2",
+          text: `You recceived an invoice from *[${
+            signedInvoice.issuerFirstName
+          }](tg://user?id=${signedInvoice.issuerTelegramId})* ${
+            signedInvoice.issuerTelegramHandle
+              ? ` (@${signedInvoice.issuerTelegramHandle})`
+              : ""
+          }.\n
+          *Amount*: \`${signedInvoice.amount} ${signedInvoice.unit}\`\n
+          *Description*: \`${signedInvoice.description}\`\n
+          Click below to complete your payment.\n
+          __If their privacy settings allow, you can also chat with them directly.__`,
           reply_markup: {
             inline_keyboard: [
               [
                 {
-                  text: "Open Payment Page",
+                  text: `Pay ${signedInvoice.amount} ${signedInvoice.unit}`,
                   web_app: {
                     url: `https://${
                       process.env.VERCEL_PROJECT_PRODUCTION_URL as string
-                    }/pay?invoice=${invoiceId}`,
+                    }/pay?invoice=${invoice}`,
                   },
+                },
+                {
+                  text: `Chat with ${signedInvoice.issuerFirstName}`,
+                  url: `tg://user?id=${signedInvoice.issuerTelegramId}`,
                 },
               ],
             ],

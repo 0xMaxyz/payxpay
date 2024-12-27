@@ -154,7 +154,7 @@ const Burnt = () => {
             </div>
             {account?.bech32Address ? (
               <div className="flex flex-row">
-                <text>{shortenAddress(account.bech32Address)}</text>
+                <p>{shortenAddress(account.bech32Address)}</p>
                 <Link
                   href={`https://explorer.burnt.com/xion-testnet-1/account/${account.bech32Address}`}
                   target="_blank"

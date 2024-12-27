@@ -40,8 +40,8 @@ export interface Invoice {
 }
 export interface SignedInvoice extends Invoice {
   signature: string;
-  // The auth hash of the user which shows that the user is the owner of the invoice
-  tgHash: string;
+  // // The auth hash of the user which shows that the user is the owner of the invoice
+  // tgHash: string;
 }
 
 export interface Currency {
