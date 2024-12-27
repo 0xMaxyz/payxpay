@@ -60,17 +60,17 @@ export const POST = async (req: NextRequest) => {
             signedInvoice.issuerTelegramHandle
               ? ` (@${signedInvoice.issuerTelegramHandle})`
               : ""
-          }.<br>
+          }.\n
           <b>Amount:</b> <code>${signedInvoice.amount} ${
             signedInvoice.unit
           }</code>
-          <br>
+          \n
           <b>Description:</b> <code>${escapeHtml(
             signedInvoice.description
           )}</code>
-          <br>
+          \n
           Click below to complete your payment.
-          <br>
+          \n
           <u>If their privacy settings allow, you can also chat with them directly.</u>`,
           reply_markup: {
             inline_keyboard: [
