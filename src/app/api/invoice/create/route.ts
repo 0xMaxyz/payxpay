@@ -17,16 +17,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Forbidden." }, { status: 403 });
   }
   try {
-    const { encodedInvoice, tgHash } = await req.json();
+    const { invoice, tgHash } = await req.json();
 
-    if (!encodedInvoice || !tgHash) {
+    if (!invoice || !tgHash) {
       return NextResponse.json(
         { error: "Missing required variables." },
         { status: 400 }
       );
     }
     // Decode and sign the invoice
-    const invoice = decodeInvoice<Invoice>(encodedInvoice);
+    const invoiceAsObject = decodeInvoice<Invoice>(invoice);
     // validate the tgHash of the invoice and compare the sent userId with the userId in the hash
     const isValid = verifyTelegramWebAppData(tgHash);
 
@@ -38,18 +38,18 @@ export async function POST(req: NextRequest) {
     const user: TgUserData = JSON.parse(
       Object.fromEntries(new URLSearchParams(tgHash)).user
     );
-    if (user.id !== invoice.issuerTelegramId) {
+    if (user.id !== invoiceAsObject.issuerTelegramId) {
       return NextResponse.json({ error: "Forbidden." }, { status: 403 });
     }
 
-    const signature = signInvoice(invoice, bot_token);
+    const signature = signInvoice(invoiceAsObject, bot_token);
     // create the signed invoice
-    const signedInvoice = encodeSignedInvoice(invoice, signature);
+    const signedInvoice = encodeSignedInvoice(invoiceAsObject, signature);
 
     // since everything is ok till now, we'll save the invoice in the db
     const resp = await addInvoice(
-      invoice.id,
-      invoice.issuerTelegramId.toString(),
+      invoiceAsObject.id,
+      invoiceAsObject.issuerTelegramId.toString(),
       signedInvoice
     );
     if (resp) {
