@@ -31,6 +31,7 @@ export async function POST(req: NextRequest) {
     const isValid = verifyTelegramWebAppData(tgHash);
 
     if (!isValid) {
+      console.log("Not valid hash", tgHash, invoiceAsObject);
       // the attached hash is not valid
       return NextResponse.json({ error: "Forbidden." }, { status: 403 });
     }
@@ -39,6 +40,7 @@ export async function POST(req: NextRequest) {
       Object.fromEntries(new URLSearchParams(tgHash)).user
     );
     if (user.id !== invoiceAsObject.issuerTelegramId) {
+      console.log("Not valid user", user, invoiceAsObject);
       return NextResponse.json({ error: "Forbidden." }, { status: 403 });
     }
 

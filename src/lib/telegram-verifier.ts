@@ -5,7 +5,7 @@ const verifyTelegramWebAppData = (initData: string) => {
   const botToken = process.env.BOT_TOKEN as string;
 
   // The data is a query string, which is composed of a series of field-value pairs.
-  const encoded = decodeURIComponent(initData);
+  const encoded = decodeURIComponent(decodeURIComponent(initData));
 
   // HMAC-SHA-256 signature of the bot's token with the constant string WebAppData used as a key.
   const secret = crypto.createHmac("sha256", "WebAppData").update(botToken);
