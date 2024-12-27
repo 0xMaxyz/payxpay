@@ -50,7 +50,7 @@ const CreateInvoicePage = () => {
   };
 
   const handleCopyToClipboard = async () => {
-    await navigator.clipboard.writeText(signedInvoice);
+    await navigator.clipboard.writeText(getShareableLink(signedInvoice));
     addNotification({
       color: "success",
       message: "Invoice copied to clipboard",
@@ -157,7 +157,7 @@ const CreateInvoicePage = () => {
           setSignedInvoice(signedInvoice);
           // create the qr code
           QrCode.toDataURL(
-            signedInvoice,
+            getShareableLink(signedInvoice),
             { errorCorrectionLevel: "H" },
             (err, url) => {
               if (err) {
@@ -336,7 +336,7 @@ const CreateInvoicePage = () => {
         </div>
       </div>
       <dialog id="invoice-created-modal" className="modal w-full">
-        <div className="modal-box w-9/12 max-w-5xl">
+        <div className="modal-box tg-bg-secondary w-9/12 max-w-5xl">
           <form method="dialog">
             <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
               ✕

@@ -1,4 +1,5 @@
 import { SignedInvoice } from "@/app/types";
+import { escapeHtml } from "@/lib/tools";
 import { NextRequest, NextResponse } from "next/server";
 
 const BOT_TOKEN = process.env.BOT_TOKEN as string;
@@ -45,24 +46,32 @@ export const POST = async (req: NextRequest) => {
       const signedInvoice = JSON.parse(
         decodeURIComponent(invoice)
       ) as SignedInvoice;
+      console.log("line 48: signed invoice is: ", signedInvoice);
       // Send a message with an inline button linking to your Telegram Mini App
       const response = await fetch(`${TELEGRAM_API}/sendMessage`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           chat_id: chatId,
-          parse_mode: "MarkdownV2",
-          text: `You recceived an invoice from *[${
-            signedInvoice.issuerFirstName
-          }](tg://user?id=${signedInvoice.issuerTelegramId})* ${
+          parse_mode: "HTML",
+          text: `You received an invoice from <b><a href="tg://user?id=${
+            signedInvoice.issuerTelegramId
+          }">${signedInvoice.issuerFirstName}</a></b>${
             signedInvoice.issuerTelegramHandle
               ? ` (@${signedInvoice.issuerTelegramHandle})`
               : ""
-          }.\n
-          *Amount*: \`${signedInvoice.amount} ${signedInvoice.unit}\`\n
-          *Description*: \`${signedInvoice.description}\`\n
-          Click below to complete your payment.\n
-          __If their privacy settings allow, you can also chat with them directly.__`,
+          }.<br>
+          <b>Amount:</b> <code>${signedInvoice.amount} ${
+            signedInvoice.unit
+          }</code>
+          <br>
+          <b>Description:</b> <code>${escapeHtml(
+            signedInvoice.description
+          )}</code>
+          <br>
+          Click below to complete your payment.
+          <br>
+          <u>If their privacy settings allow, you can also chat with them directly.</u>`,
           reply_markup: {
             inline_keyboard: [
               [
