@@ -80,7 +80,7 @@ const CreateInvoicePage = () => {
       setTgShareLoading(true);
       try {
         const resp = await fetch("/api/telegram/prepare-message", {
-          body: JSON.stringify(invoiceId),
+          body: JSON.stringify({ invoiceId }),
           method: "POST",
           headers: { "Content-Type": "application/json" },
         });

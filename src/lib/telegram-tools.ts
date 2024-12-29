@@ -41,9 +41,15 @@ export const createTelegramShareMessage = async (
       body: JSON.stringify(savePreparedInlineMessage),
     });
     if (response.ok) {
-      const resp = (await response.json()) as PreparedInlineMessage;
-      console.log("Received response for save Prepared message is: ", resp);
-      return resp;
+      const respFromTg = await response.json();
+      if (respFromTg.ok) {
+        const preparedMessage = respFromTg.result as PreparedInlineMessage;
+        console.log(
+          "Received response for save Prepared message is: ",
+          preparedMessage
+        );
+        return preparedMessage;
+      }
     }
   } catch (error) {
     throw new Error(
