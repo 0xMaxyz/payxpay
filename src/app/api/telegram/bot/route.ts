@@ -1,5 +1,5 @@
 import { getInvoice } from "@/app/db";
-import { SignedInvoice } from "@/app/types";
+import { SignedInvoice, TelegramUpdate } from "@/app/types";
 import { escapeHtml } from "@/lib/tools";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -77,12 +77,12 @@ export const POST = async (req: NextRequest) => {
           parse_mode: "HTML",
           // eslint-disable-next-line
           // prettier-ignore
-          text: `You received an invoice from <b><a href="tg://user?id=${signedInvoice.issuerTelegramId}">${signedInvoice.issuerFirstName}</a></b>${signedInvoice.issuerTelegramHandle? ` (@${signedInvoice.issuerTelegramHandle})`: ""}.\n<b>Amount:</b> <code>${signedInvoice.amount} ${signedInvoice.unit }</code>\n <b>Description:</b> <code>${escapeHtml( signedInvoice.description )}</code>\n Click below to complete your payment.\n<u>If their privacy settings allow, you can also chat with them directly.</u>`,
+          text: `You received an invoice from <b><a href="tg://user?id=${signedInvoice.issuerTelegramId}">${signedInvoice.issuerFirstName}</a></b>${signedInvoice.issuerTelegramHandle? ` (@${signedInvoice.issuerTelegramHandle})`: ""}.\n<b>Amount:</b> <code>${signedInvoice.amount} ${signedInvoice.unit }</code>\n<b>Description:</b> <code>${escapeHtml( signedInvoice.description )}</code>\nClick pay to complete your payment.\n<u>If their privacy settings allow, you can also chat with them directly.</u>`,
           reply_markup: {
             inline_keyboard: [
               [
                 {
-                  text: `Pay ${signedInvoice.amount} ${signedInvoice.unit}`,
+                  text: `Pay`,
                   web_app: {
                     url: `https://${
                       process.env.VERCEL_PROJECT_PRODUCTION_URL as string
@@ -144,55 +144,3 @@ export const GET = async () => {
   // Simple GET handler to verify that the route is live
   return NextResponse.json({ message: "Hello from Telegram Bot API!" });
 };
-
-export interface TelegramUpdate {
-  update_id: number;
-  message: TelegramMessage;
-}
-
-export interface TelegramMessage {
-  message_id: number;
-  from: TelegramUser;
-  chat: TelegramChat;
-  date: number; // Unix timestamp
-  text: string;
-  entities?: TelegramEntity[]; // Optional because it might not always exist
-}
-
-export interface TelegramUser {
-  id: number;
-  is_bot: boolean;
-  first_name: string;
-  last_name?: string; // Optional because `last_name` may not always be present
-  username?: string; // Optional because `username` may not always be present
-  language_code?: string; // Optional because `language_code` may not always be present
-}
-
-export interface TelegramChat {
-  id: number;
-  first_name?: string; // Optional because group chats may not have `first_name`
-  last_name?: string; // Optional because group chats may not have `last_name`
-  username?: string; // Optional because group chats may not have `username`
-  type: "private" | "group" | "supergroup" | "channel";
-}
-
-export interface TelegramEntity {
-  offset: number;
-  length: number;
-  type:
-    | "mention"
-    | "hashtag"
-    | "cashtag"
-    | "bot_command"
-    | "url"
-    | "email"
-    | "phone_number"
-    | "bold"
-    | "italic"
-    | "underline"
-    | "strikethrough"
-    | "code"
-    | "pre"
-    | "text_link"
-    | "text_mention";
-}

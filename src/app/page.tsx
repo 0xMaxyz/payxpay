@@ -2,14 +2,13 @@
 
 import { ChangeEvent, useEffect, useState } from "react";
 import { CURRENCIES } from "./consts";
-import { Invoice } from "./types";
+import { Invoice, PreparedInlineMessage } from "./types";
 import { useAbstraxionAccount, useModal } from "@burnt-labs/abstraxion";
 import { useNotification } from "./context/NotificationContext";
 import { useTelegramContext } from "./context/TelegramContext";
 import Image from "next/image";
 import QrCode from "qrcode";
 import { getShareableLink } from "@/lib/tools";
-// import { useAbstraxionAccount } from "@burnt-labs/abstraxion";
 
 const CreateInvoicePage = () => {
   const { addNotification } = useNotification();
@@ -26,9 +25,11 @@ const CreateInvoicePage = () => {
   const [description, setDescription] = useState("");
   const [createdQrCode, setCreatedQrCode] = useState("");
   const [isConnecting, setIsConnecting] = useState(false);
+  const [invoiceId, setInvoiceId] = useState("");
   const [shareableLink, setShareableLink] = useState<string | undefined>(
     undefined
   );
+  const [tgShareLoading, setTgShareLoading] = useState(false);
   const [isModalOpen, setModalOpen] = useModal();
   const changeAbstraxionModalState = () => setModalOpen(!isModalOpen);
 
@@ -47,6 +48,7 @@ const CreateInvoicePage = () => {
     setDescription("");
     setCreatedQrCode("");
     setShareableLink(undefined);
+    setInvoiceId("");
   };
   const handleDescriptionInput = (
     event: ChangeEvent<HTMLTextAreaElement>
@@ -71,6 +73,33 @@ const CreateInvoicePage = () => {
         color: "success",
         message: "Invoice copied to clipboard",
       });
+    }
+  };
+  const handleTgShare = async () => {
+    if (!tgShareLoading) {
+      setTgShareLoading(true);
+      try {
+        const resp = await fetch("/api/telegram/prepare-message", {
+          body: JSON.stringify(invoiceId),
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        });
+        if (resp.ok) {
+          const prepMsg = (await resp.json()) as PreparedInlineMessage;
+          // savedMessage is received
+          TgWebApp?.shareMessage(prepMsg.id, (state: boolean) =>
+            state
+              ? console.log("Message shared.")
+              : console.error("Error sharing the message")
+          );
+        }
+      } catch (error) {
+        console.error("Error in creating the telegram share message", error);
+        addNotification({
+          color: "error",
+          message: "Can't create the share message",
+        });
+      }
     }
   };
 
@@ -173,6 +202,7 @@ const CreateInvoicePage = () => {
           });
           // set the shareable link
           setShareableLink(getShareableLink(invoice.id));
+          setInvoiceId(invoice.id);
           // create the qr code
           QrCode.toDataURL(
             getShareableLink(invoice.id),
@@ -424,7 +454,7 @@ const CreateInvoicePage = () => {
                 Share
               </button>
             )}
-            <button className="btn btn-primary" onClick={handleCopyToClipboard}>
+            <button className="btn btn-primary" onClick={handleTgShare}>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-6 w-6"

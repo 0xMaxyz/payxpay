@@ -20,6 +20,7 @@ interface TelegramWebApp {
   };
   platform: string;
   initData: string;
+  shareMessage: (msg_id: string, callback?: (isSent: boolean) => void) => void;
   CloudStorage: {
     setItem(
       key: string,
