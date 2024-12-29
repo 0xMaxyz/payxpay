@@ -84,15 +84,23 @@ const CreateInvoicePage = () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
         });
+        console.log("Response from prepare-message", resp);
         if (resp.ok) {
           const prepMsg = (await resp.json()) as PreparedInlineMessage;
+          console.log("Prepared Message: ", prepMsg);
           // savedMessage is received
-          TgWebApp?.shareMessage(prepMsg.id, (state: boolean) =>
-            state
-              ? console.log("Message shared.")
-              : console.error("Error sharing the message")
-          );
+          //   TgWebApp?.shareMessage(prepMsg.id, (state: boolean) =>
+          //     state
+          //       ? console.log("Message shared.")
+          //       : console.error("Error sharing the message")
+          //   );
+          TgWebApp?.shareMessage(prepMsg.id);
+          setTgShareLoading(false);
+          console.log("Message shared.");
+          return;
         }
+        console.error("Failed to prepare the message");
+        throw new Error("Failed to prepare the message");
       } catch (error) {
         console.error("Error in creating the telegram share message", error);
         addNotification({

@@ -35,8 +35,10 @@ export async function POST(req: NextRequest) {
           headers: HEADERS,
         });
       }
+      console.error("Error creating the saved message");
       throw new Error("Error creating the saved message");
     }
+    console.error("Invalid input");
     throw new Error("Invalid input");
   } catch (error) {
     console.error("Error creating the prepared message:", error);
