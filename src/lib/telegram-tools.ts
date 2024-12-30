@@ -51,6 +51,7 @@ export const createTelegramShareMessage = async (
         return preparedMessage;
       }
     }
+    throw new Error("Error in creating a Telegram share message");
   } catch (error) {
     throw new Error(
       `Error in creating a Telegram share message ${

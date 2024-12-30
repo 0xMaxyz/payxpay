@@ -29,7 +29,9 @@ export async function POST(req: NextRequest) {
         decodeURIComponent(invoiceStr)
       ) as SignedInvoice;
       const savedMsg = await createTelegramShareMessage(signedInvoice);
+      console.log("Saved message is: ", savedMsg);
       if (savedMsg) {
+        console.log("Saved message created successfully");
         return NextResponse.json(JSON.stringify(savedMsg), {
           status: 200,
           headers: HEADERS,
