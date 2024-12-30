@@ -89,11 +89,11 @@ const CreateInvoicePage = () => {
           const prepMsg = (await resp.json()) as PreparedInlineMessage;
           console.log("Prepared Message: ", prepMsg);
           // savedMessage is received
-          TgWebApp?.shareMessage(prepMsg.id, (state: boolean) =>
-            state
-              ? console.log("Message shared.")
-              : console.error("Error sharing the message")
-          );
+          // TgWebApp?.shareMessage(prepMsg.id, (state: boolean) =>
+          //   state
+          //     ? console.log("Message shared.")
+          //     : console.error("Error sharing the message")
+          // );
           console.log("Message shared.");
         } else {
           console.error("Failed to prepare the message");
