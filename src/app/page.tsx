@@ -26,6 +26,9 @@ const CreateInvoicePage = () => {
   const [createdQrCode, setCreatedQrCode] = useState("");
   const [isConnecting, setIsConnecting] = useState(false);
   const [invoiceId, setInvoiceId] = useState("");
+  const [preppedMsg, setPreppedMsg] = useState<
+    PreparedInlineMessage | undefined
+  >(undefined);
   const [shareableLink, setShareableLink] = useState<string | undefined>(
     undefined
   );
@@ -49,6 +52,7 @@ const CreateInvoicePage = () => {
     setCreatedQrCode("");
     setShareableLink(undefined);
     setInvoiceId("");
+    setPreppedMsg(undefined);
   };
   const handleDescriptionInput = (
     event: ChangeEvent<HTMLTextAreaElement>
@@ -76,7 +80,13 @@ const CreateInvoicePage = () => {
     }
   };
   const handleTgShare = async () => {
-    if (!tgShareLoading) {
+    if (preppedMsg) {
+      window.Telegram.WebApp.shareMessage(preppedMsg.id, (state: boolean) =>
+        state
+          ? console.log("Message shared.")
+          : console.error("Error sharing the message")
+      );
+    } else if (!tgShareLoading) {
       setTgShareLoading(true);
       try {
         const resp = await fetch("/api/telegram/prepare-message", {
@@ -87,13 +97,14 @@ const CreateInvoicePage = () => {
         console.log("Response from prepare-message", resp);
         if (resp.ok) {
           const prepMsg = (await resp.json()) as PreparedInlineMessage;
+          setPreppedMsg(prepMsg);
           console.log("Prepared Message: ", prepMsg);
           // savedMessage is received
-          // TgWebApp?.shareMessage(prepMsg.id, (state: boolean) =>
-          //   state
-          //     ? console.log("Message shared.")
-          //     : console.error("Error sharing the message")
-          // );
+          window.Telegram.WebApp.shareMessage(prepMsg.id, (state: boolean) =>
+            state
+              ? console.log("Message shared.")
+              : console.error("Error sharing the message")
+          );
           console.log("Message shared.");
         } else {
           console.error("Failed to prepare the message");
