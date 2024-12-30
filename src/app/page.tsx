@@ -94,19 +94,19 @@ const CreateInvoicePage = () => {
               ? console.log("Message shared.")
               : console.error("Error sharing the message")
           );
-          // TgWebApp?.shareMessage(prepMsg.id);
-          setTgShareLoading(false);
           console.log("Message shared.");
-          return;
+        } else {
+          console.error("Failed to prepare the message");
+          throw new Error("Failed to prepare the message");
         }
-        console.error("Failed to prepare the message");
-        throw new Error("Failed to prepare the message");
       } catch (error) {
         console.error("Error in creating the telegram share message", error);
         addNotification({
           color: "error",
           message: "Can't create the share message",
         });
+      } finally {
+        setTgShareLoading(false);
       }
     }
   };
