@@ -70,6 +70,26 @@ const CreateInvoicePage = () => {
     }
   };
 
+  const testShareMessage = () => {
+    try {
+      const testId = "cg06u6qnSR8KpfKG"; // Replace with a real ID
+      console.log("Testing shareMessage with ID:", testId);
+      if (window?.Telegram?.WebApp) {
+        window.Telegram.WebApp.shareMessage(testId, (state: boolean) => {
+          console.log(state ? "Message shared." : "Error sharing the message");
+        });
+      } else {
+        console.error("Telegram WebApp is not available");
+        addNotification({
+          color: "error",
+          message: "Telegram WebApp is not available",
+        });
+      }
+    } catch (error) {
+      console.error("Error during testShareMessage:", error);
+    }
+  };
+
   const handleCopyToClipboard = async () => {
     if (shareableLink) {
       await navigator.clipboard.writeText(shareableLink);
@@ -82,9 +102,7 @@ const CreateInvoicePage = () => {
   const handleTgShare = async () => {
     if (preppedMsg) {
       window.Telegram.WebApp.shareMessage(preppedMsg.id, (state: boolean) =>
-        state
-          ? console.log("Message shared.")
-          : console.error("Error sharing the message")
+        console.log(state ? "Message shared." : "Error sharing the message")
       );
     } else if (!tgShareLoading) {
       setTgShareLoading(true);
@@ -483,6 +501,17 @@ const CreateInvoicePage = () => {
                 <path d="M120-160v-640l760 320-760 320Zm80-120 474-200-474-200v140l240 60-240 60v140Zm0 0v-400 400Z" />
               </svg>
               Send to Telegram
+            </button>
+            <button className="btn btn-primary" onClick={testShareMessage}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                viewBox="0 -960 960 960"
+                fill="white"
+              >
+                <path d="M120-160v-640l760 320-760 320Zm80-120 474-200-474-200v140l240 60-240 60v140Zm0 0v-400 400Z" />
+              </svg>
+              TEST
             </button>
           </div>
         </div>
