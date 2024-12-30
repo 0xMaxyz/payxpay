@@ -48,9 +48,10 @@ const CreateInvoicePage = () => {
     console.log("USE EFFECT - Prepped Message: ", preppedMsg);
     if (preppedMsg) {
       // savedMessage is received
-      window.Telegram.WebApp.shareMessage(preppedMsg.id, (state: boolean) =>
-        console.log(state ? "Message shared." : "Error sharing the message")
-      );
+      // window.Telegram.WebApp.shareMessage(preppedMsg.id, (state: boolean) =>
+      //   console.log(state ? "Message shared." : "Error sharing the message")
+      // );
+      console.log("Prepped message id is", preppedMsg.id);
       console.log("Message shared.");
     }
   }, [preppedMsg]);
