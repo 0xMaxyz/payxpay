@@ -44,6 +44,17 @@ const CreateInvoicePage = () => {
     }
   }, [amount, currency]);
 
+  useEffect(() => {
+    console.log("USE EFFECT - Prepped Message: ", preppedMsg);
+    if (preppedMsg) {
+      // savedMessage is received
+      window.Telegram.WebApp.shareMessage(preppedMsg.id, (state: boolean) =>
+        console.log(state ? "Message shared." : "Error sharing the message")
+      );
+      console.log("Message shared.");
+    }
+  }, [preppedMsg]);
+
   const MAX_DESCRIPTION_LENGTH = 200;
   const clearPage = () => {
     setAmount("");
@@ -115,15 +126,8 @@ const CreateInvoicePage = () => {
         console.log("Response from prepare-message", resp);
         if (resp.ok) {
           const prepMsg = (await resp.json()) as PreparedInlineMessage;
+          console.log("HandleTgShare - Prepared Message: ", prepMsg);
           setPreppedMsg(prepMsg);
-          console.log("Prepared Message: ", prepMsg);
-          // savedMessage is received
-          window.Telegram.WebApp.shareMessage(prepMsg.id, (state: boolean) =>
-            state
-              ? console.log("Message shared.")
-              : console.error("Error sharing the message")
-          );
-          console.log("Message shared.");
         } else {
           console.error("Failed to prepare the message");
           throw new Error("Failed to prepare the message");
