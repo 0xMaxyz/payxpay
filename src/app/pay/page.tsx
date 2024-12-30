@@ -3,7 +3,6 @@
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { SignedInvoice } from "../types";
-import { getInvoice } from "../db";
 import { decodeInvoice } from "@/lib/tools";
 
 const PayPage = () => {
@@ -15,10 +14,24 @@ const PayPage = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const getInvoice = async (id: string) => {
+      try {
+        const res = await fetch("/api/invoice/get", {
+          body: JSON.stringify({ id }),
+        });
+        if (!res.ok) {
+          throw new Error("Failed to fetch invoice details");
+        }
+        const data = await res.json();
+        return data.invoice as string;
+      } catch (error) {
+        setError(`Something went wrong, ${JSON.stringify(error)}`);
+        return null;
+      }
+    };
     const validateInvoiceSignature = async (
       signedInvocie: string
     ): Promise<boolean> => {
-      setLoading(true);
       setError(null);
       try {
         const res = await fetch(`/api/invoice/validate/${signedInvocie}`);
@@ -30,8 +43,6 @@ const PayPage = () => {
       } catch (error) {
         setError(`Something went wrong, ${JSON.stringify(error)}`);
         return false;
-      } finally {
-        setLoading(false);
       }
     };
     const CheckInvoice = async (id: string) => {
@@ -57,10 +68,12 @@ const PayPage = () => {
         }
       }
     };
-
     const invoiceId = searchParams.get("invoice");
-
-    CheckInvoice(invoiceId as string);
+    if (invoiceId) {
+      setLoading(true);
+      CheckInvoice(invoiceId as string);
+      setLoading(false);
+    }
   }, [searchParams]);
 
   const handleScanQrCode = () => {};
@@ -127,7 +140,12 @@ const PayPage = () => {
       </div>
 
       {/* Loading/Errors */}
-      {loading && <p className="text-blue-500 text-center">Loading...</p>}
+      {loading && (
+        <p className="text-blue-500 text-center">
+          Loading Invoice{" "}
+          <span className="loading loading-dots loading-lg"></span>
+        </p>
+      )}
       {error && <p className="text-red-500 text-center">{error}</p>}
 
       {/* Invoice Details */}
