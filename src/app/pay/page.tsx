@@ -66,7 +66,9 @@ const PayPage = () => {
         }
       }
     };
+    console.log("search params is: ", searchParams);
     const invoiceId = searchParams.get("invoice");
+    console.log("Invoice id is: ", invoiceId);
     if (invoiceId) {
       setLoading(true);
       CheckInvoice(invoiceId as string);

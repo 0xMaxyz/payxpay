@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
       );
     }
     console.log("received id", id);
-    const invoice = getInvoice(id);
+    const invoice = await getInvoice(id);
     if (!invoice) {
       throw new Error("No valid invoice found.");
     }
