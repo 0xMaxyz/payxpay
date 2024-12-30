@@ -16,9 +16,7 @@ const PayPage = () => {
   useEffect(() => {
     const getInvoice = async (id: string) => {
       try {
-        const res = await fetch("/api/invoice/get", {
-          body: JSON.stringify({ id }),
-        });
+        const res = await fetch(`/api/invoice/get?id=${id}`);
         if (!res.ok) {
           throw new Error("Failed to fetch invoice details");
         }

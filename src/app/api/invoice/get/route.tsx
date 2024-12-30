@@ -12,7 +12,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Forbidden." }, { status: 403 });
   }
   try {
-    const { id } = await req.json();
+    const url = new URL(req.url);
+    const id = url.searchParams.get("id");
 
     if (!id) {
       return NextResponse.json(
