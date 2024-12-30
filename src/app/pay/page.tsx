@@ -4,6 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { SignedInvoice } from "../types";
 import { decodeInvoice } from "@/lib/tools";
+import { HEADERS } from "../consts";
 
 const PayPage = () => {
   const searchParams = useSearchParams();
@@ -32,7 +33,11 @@ const PayPage = () => {
     ): Promise<boolean> => {
       setError(null);
       try {
-        const res = await fetch(`/api/invoice/validate/${signedInvocie}`);
+        const res = await fetch(`/api/invoice/validate`, {
+          method: "post",
+          headers: HEADERS,
+          body: JSON.stringify({ invoice: signedInvocie }),
+        });
         if (!res.ok) {
           throw new Error("Failed to fetch invoice details");
         }

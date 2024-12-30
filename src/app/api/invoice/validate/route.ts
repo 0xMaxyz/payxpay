@@ -15,8 +15,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Forbidden." }, { status: 403 });
   }
   try {
-    const { searchParams } = new URL(req.url);
-    const encodedInvoice = searchParams.get("invoice");
+    const { invoice: encodedInvoice } = await req.json();
 
     if (!encodedInvoice) {
       return NextResponse.json({ error: "Missing invoice." }, { status: 400 });
