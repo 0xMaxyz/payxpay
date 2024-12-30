@@ -126,7 +126,8 @@ const CreateInvoicePage = () => {
         });
         console.log("Response from prepare-message", resp);
         if (resp.ok) {
-          const prepMsg = (await resp.json()) as PreparedInlineMessage;
+          const parsed = await resp.json();
+          const prepMsg = JSON.parse(parsed) as PreparedInlineMessage;
           console.log("HandleTgShare - Prepared Message: ", prepMsg);
           setPreppedMsg(prepMsg);
         } else {
