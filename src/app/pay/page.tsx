@@ -3,6 +3,8 @@
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { SignedInvoice } from "../types";
+import { getInvoice } from "../db";
+import { decodeInvoice } from "@/lib/tools";
 
 const PayPage = () => {
   const searchParams = useSearchParams();
@@ -32,23 +34,22 @@ const PayPage = () => {
         setLoading(false);
       }
     };
-    const CheckInvoice = async (invoive: string) => {
-      if (invoive) {
+    const CheckInvoice = async (id: string) => {
+      if (id) {
         try {
-          // decode the invoice
-          const signedInvoice = JSON.parse(decodeURIComponent(invoive));
-
-          if (
-            signedInvoice.signature &&
-            signedInvoice.id &&
-            signedInvoice.id &&
-            signedInvoice.issuerTelegramId
-          ) {
-            // validate signature
-            const isValid = await validateInvoiceSignature(invoive);
+          // get the invoice from db
+          const invoice = await getInvoice(id);
+          console.log("Received invoice is: ", invoice);
+          if (invoice) {
+            // validate the invoice signature
+            const isValid = await validateInvoiceSignature(invoice);
             if (isValid) {
-              // The signature is valid
-              setSignedInvoice(signedInvoice as SignedInvoice);
+              // set the invoice details
+              const decodedInvoice = decodeInvoice<SignedInvoice>(invoice);
+              console.log("Decoded invoice is: ", decodedInvoice);
+              setSignedInvoice(decodedInvoice);
+            } else {
+              setError("Invalid invoice signature");
             }
           }
         } catch (error) {
@@ -57,9 +58,9 @@ const PayPage = () => {
       }
     };
 
-    const encodedSignedInvoice = searchParams.get("invoice");
+    const invoiceId = searchParams.get("invoice");
 
-    CheckInvoice(encodedSignedInvoice as string);
+    CheckInvoice(invoiceId as string);
   }, [searchParams]);
 
   const handleScanQrCode = () => {};

@@ -77,7 +77,7 @@ export const POST = async (req: NextRequest) => {
           parse_mode: "HTML",
           // eslint-disable-next-line
           // prettier-ignore
-          text: `You received an invoice from <b><a href="tg://user?id=${signedInvoice.issuerTelegramId}">${signedInvoice.issuerFirstName}</a></b>${signedInvoice.issuerTelegramHandle? ` (@${signedInvoice.issuerTelegramHandle})`: ""}.\n<b>Amount:</b> <code>${signedInvoice.amount} ${signedInvoice.unit }</code>\n<b>Description:</b> <code>${escapeHtml( signedInvoice.description )}</code>\nClick pay to complete your payment.\n<u>If their privacy settings allow, you can also chat with them directly.</u>`,
+          text: `You received an invoice from <b><a href="tg://user?id=${signedInvoice.issuerTelegramId}">${signedInvoice.issuerFirstName}</a></b>${signedInvoice.issuerTelegramHandle? ` (@${signedInvoice.issuerTelegramHandle})`: ""}.\n<b>Amount:</b> <code>${signedInvoice.amount}</code> $${signedInvoice.unit.replaceAll(' ','').split('-')[1] }\n<b>Description:</b> <code>${escapeHtml( signedInvoice.description )}</code>\nClick pay to complete your payment.\n<u>If their privacy settings allow, you can also chat with them directly.</u>`,
           reply_markup: {
             inline_keyboard: [
               [
