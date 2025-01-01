@@ -138,7 +138,7 @@ const PayPage = () => {
         console.log("Text from clipboard is a url");
         // try to extract the invoice id from the url
         const url = new URL(textFromClipboard);
-        const sParams = url.searchParams.get("invoice");
+        const sParams = url.searchParams.get("start");
         if (sParams) {
           invoiceId = sParams.split("invoice=")[1];
         }
