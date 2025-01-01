@@ -55,3 +55,16 @@ export const escapeHtml = (unsafe: string) => {
 export const getTgUserLink = (id: string) => {
   return `tg://user?id=${id}`;
 };
+
+export const copyFromClipboard = async () => {
+  if (!navigator.clipboard) {
+    console.error("Clipboard API not available");
+    throw new Error("Clipboard API not available");
+  }
+  try {
+    return await navigator.clipboard.readText();
+  } catch (error) {
+    console.error("Failed to copy text from clipboard:", error);
+    throw error;
+  }
+};

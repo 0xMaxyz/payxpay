@@ -3,10 +3,14 @@
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { SignedInvoice } from "../types";
-import { decodeInvoice } from "@/lib/tools";
+import { copyFromClipboard, decodeInvoice } from "@/lib/tools";
 import { HEADERS } from "../consts";
+import { useNotification } from "../context/NotificationContext";
+import { useTelegramContext } from "../context/TelegramContext";
 
 const PayPage = () => {
+  const { addNotification } = useNotification();
+  const { scanQrCode } = useTelegramContext();
   const searchParams = useSearchParams();
   const [signedInvoice, setSignedInvoice] = useState<SignedInvoice | null>(
     null
@@ -81,8 +85,83 @@ const PayPage = () => {
     }
   }, [searchParams]);
 
-  const handleScanQrCode = () => {};
-  const handlePasteFromClipboard = () => {};
+  const handleScanQrCode = async () => {
+    try {
+      setLoading(true);
+
+      const qrText = await scanQrCode?.showScanQrPopup({
+        text: "Scan the QR code of an invoice",
+      });
+      if (!qrText) {
+        addNotification({ color: "warning", message: "QR code is empty" });
+        return;
+      }
+      let invoiceId: string | null = "";
+      if (qrText.startsWith("https://")) {
+        invoiceId = new URL(qrText).searchParams.get("invoice");
+      } else {
+        invoiceId = qrText;
+      }
+      if (invoiceId) {
+        // try to fetch the invoice details
+        const res = await fetch(`/api/invoice/get-validated?id=${invoiceId}`);
+        if (!res.ok) {
+          throw new Error("Failed to fetch invoice details");
+        }
+        const data = await res.json();
+        const decodedInvoice = decodeInvoice<SignedInvoice>(
+          data.invoice as string
+        );
+        setSignedInvoice(decodedInvoice);
+      }
+    } catch (error) {
+      console.error("Failed to scan the QR code:", error);
+      addNotification({
+        message: "Failed to scan the QR code",
+        color: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+  const handlePasteFromClipboard = async () => {
+    try {
+      setLoading(true);
+      const textFromClipboard = await copyFromClipboard();
+      if (!textFromClipboard) {
+        addNotification({ color: "warning", message: "Clipboard is empty" });
+        return;
+      }
+      let invoiceId: string | null = "";
+      if (textFromClipboard.startsWith("https://")) {
+        // try to extract the invoice id from the url
+        const url = new URL(textFromClipboard);
+        invoiceId = url.searchParams.get("invoice");
+      } else {
+        invoiceId = textFromClipboard;
+      }
+      if (invoiceId) {
+        // try to fetch the invoice details
+        const res = await fetch(`/api/invoice/get-validated?id=${invoiceId}`);
+        if (!res.ok) {
+          throw new Error("Failed to fetch invoice details");
+        }
+        const data = await res.json();
+        const decodedInvoice = decodeInvoice<SignedInvoice>(
+          data.invoice as string
+        );
+        setSignedInvoice(decodedInvoice);
+      }
+    } catch (error) {
+      console.error("Failed to copy text from clipboard:", error);
+      addNotification({
+        message: "Failed to copy text from clipboard",
+        color: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="p-4">

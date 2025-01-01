@@ -14,6 +14,7 @@ interface TelegramContextProps {
   loading: boolean;
   theme: "light" | "dark";
   cloudStorage: CloudStorageFunctions | null;
+  scanQrCode: QrCodeScanFunctions | null;
 }
 
 interface CloudStorageFunctions {
@@ -32,6 +33,13 @@ interface CloudStorageFunctions {
   setConfig: (key: number, value: string) => Promise<boolean>;
   getConfig: (key: number) => Promise<string | null>;
   removeConfig: (key: number) => Promise<boolean>;
+}
+
+interface QrCodeScanFunctions {
+  showScanQrPopup: (
+    params?: ScanQrPopupParams,
+    callback?: (text: string) => void
+  ) => Promise<string | null>;
 }
 
 export const TelegramContext = createContext<TelegramContextProps | undefined>(
@@ -53,6 +61,17 @@ export const TelegramProvider = ({
   const isProduction =
     (process.env.NEXT_PUBLIC_ENV as EnvironmentType) === "production";
   const isInit = useRef(false);
+  // Qr Code Scanner
+  const scanQrCode: QrCodeScanFunctions | null = WebApp?.showScanQrPopup
+    ? {
+        showScanQrPopup: (params?: ScanQrPopupParams) =>
+          new Promise((resolve) => {
+            WebApp.showScanQrPopup(params, (text) => {
+              resolve(text);
+            });
+          }),
+      }
+    : null;
   // Cloud Storage
   const cloudStorage: CloudStorageFunctions | null = WebApp?.CloudStorage
     ? {
@@ -280,7 +299,15 @@ export const TelegramProvider = ({
   }, [isProduction]);
   return (
     <TelegramContext.Provider
-      value={{ WebApp, userData, isAllowed, loading, theme, cloudStorage }}
+      value={{
+        WebApp,
+        userData,
+        isAllowed,
+        loading,
+        theme,
+        cloudStorage,
+        scanQrCode,
+      }}
     >
       {children}
     </TelegramContext.Provider>

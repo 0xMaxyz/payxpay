@@ -13,6 +13,10 @@ interface TelegramWebApp {
       id?: number;
     };
   };
+  showScanQrPopup(
+    params?: ScanQrPopupParams,
+    callback?: (text: string) => void
+  ): void;
   MainButton: {
     setText(text: string): void;
     show(): void;
@@ -51,4 +55,8 @@ interface Window {
   Telegram: {
     WebApp: TelegramWebApp;
   };
+}
+
+interface ScanQrPopupParams {
+  text?: string; // The text to be displayed under the 'Scan QR' heading, 0-64 characters.
 }
