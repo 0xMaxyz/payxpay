@@ -84,8 +84,8 @@ export const TelegramProvider = ({
               if (!txt) {
                 reject("QR code popup closed without scanning");
                 WebApp.offEvent("qrTextReceived", onQrTextReceived); // Clean up the event listener
-                return true; // Close the popup
               }
+              return true; // Close the popup
             });
           }),
       }
