@@ -36,10 +36,7 @@ interface CloudStorageFunctions {
 }
 
 interface QrCodeScanFunctions {
-  showScanQrPopup: (
-    params?: ScanQrPopupParams,
-    callback?: (text: string) => void
-  ) => Promise<string | null>;
+  showScanQrPopup: (params?: ScanQrPopupParams) => Promise<string | null>;
 }
 
 export const TelegramContext = createContext<TelegramContextProps | undefined>(
@@ -68,7 +65,9 @@ export const TelegramProvider = ({
           new Promise((resolve, reject) => {
             // Listen for the qrTextReceived event
             const onQrTextReceived = (event: { data: string }) => {
-              const text = event.data; // Extract the text from the event
+              console.log("received event:", event);
+              const text = event.data;
+              console.log("received text:", text);
               if (text) {
                 resolve(text); // Resolve with the scanned text
                 WebApp.offEvent("qrTextReceived", onQrTextReceived); // Clean up the event listener
@@ -78,14 +77,15 @@ export const TelegramProvider = ({
             };
 
             // Attach the event listener
-            WebApp.onEvent("qrTextReceived", onQrTextReceived);
+            WebApp.onEvent("qr_text_received", onQrTextReceived);
 
             // Show the QR scanner popup
-            WebApp.showScanQrPopup(params, () => {
-              // Handle when the user closes the popup without scanning
-              reject("QR code popup closed without scanning");
-              WebApp.offEvent("qrTextReceived", onQrTextReceived); // Clean up the event listener
-              return true; // Close the popup
+            WebApp.showScanQrPopup(params, (txt: string) => {
+              if (!txt) {
+                reject("QR code popup closed without scanning");
+                WebApp.offEvent("qr_text_received", onQrTextReceived); // Clean up the event listener
+                return true; // Close the popup
+              }
             });
           }),
       }
