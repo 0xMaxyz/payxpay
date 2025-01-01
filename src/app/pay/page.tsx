@@ -132,15 +132,22 @@ const PayPage = () => {
         addNotification({ color: "warning", message: "Clipboard is empty" });
         return;
       }
-      let invoiceId: string | null = "";
+      console.log("Text from clipboard is: ", textFromClipboard);
+      let invoiceId: string | null = null;
       if (textFromClipboard.startsWith("https://")) {
+        console.log("Text from clipboard is a url");
         // try to extract the invoice id from the url
         const url = new URL(textFromClipboard);
-        invoiceId = url.searchParams.get("invoice");
+        const sParams = url.searchParams.get("invoice");
+        if (sParams) {
+          invoiceId = sParams.split("invoice=")[1];
+        }
       } else {
+        console.log("Text from clipboard is not a url");
         invoiceId = textFromClipboard;
       }
       if (invoiceId) {
+        console.log("Invoice id is: ", invoiceId);
         // try to fetch the invoice details
         const res = await fetch(`/api/invoice/get-validated?id=${invoiceId}`);
         if (!res.ok) {
