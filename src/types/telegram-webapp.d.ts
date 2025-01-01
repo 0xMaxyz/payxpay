@@ -3,8 +3,8 @@ interface TelegramWebApp {
   setHeaderColor(color: string): void;
   setBottomBarColor(color: string): void;
   colorScheme: "light" | "dark";
-  onEvent(event: string, callback: () => void): void;
-  offEvent(event: string, callback: () => void): void;
+  onEvent(event: string, callback: (params?) => void): void;
+  offEvent(event: string, callback: (params?) => void): void;
   initDataUnsafe: {
     user?: {
       first_name?: string;

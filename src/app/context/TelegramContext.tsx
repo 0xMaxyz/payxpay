@@ -65,10 +65,27 @@ export const TelegramProvider = ({
   const scanQrCode: QrCodeScanFunctions | null = WebApp?.showScanQrPopup
     ? {
         showScanQrPopup: (params?: ScanQrPopupParams) =>
-          new Promise((resolve) => {
-            WebApp.showScanQrPopup(params, (text) => {
-              resolve(text);
-              return true;
+          new Promise((resolve, reject) => {
+            // Listen for the qrTextReceived event
+            const onQrTextReceived = (event: { data: string }) => {
+              const text = event.data; // Extract the text from the event
+              if (text) {
+                resolve(text); // Resolve with the scanned text
+                WebApp.offEvent("qrTextReceived", onQrTextReceived); // Clean up the event listener
+              } else {
+                reject("QR code scanning failed or returned empty text");
+              }
+            };
+
+            // Attach the event listener
+            WebApp.onEvent("qrTextReceived", onQrTextReceived);
+
+            // Show the QR scanner popup
+            WebApp.showScanQrPopup(params, () => {
+              // Handle when the user closes the popup without scanning
+              reject("QR code popup closed without scanning");
+              WebApp.offEvent("qrTextReceived", onQrTextReceived); // Clean up the event listener
+              return true; // Close the popup
             });
           }),
       }

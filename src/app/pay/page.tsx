@@ -88,31 +88,35 @@ const PayPage = () => {
   const handleScanQrCode = async () => {
     try {
       setLoading(true);
-
-      const qrText = await scanQrCode?.showScanQrPopup({
-        text: "Scan the QR code of an invoice",
-      });
-      if (!qrText) {
-        addNotification({ color: "warning", message: "QR code is empty" });
-        return;
-      }
-      let invoiceId: string | null = "";
-      if (qrText.startsWith("https://")) {
-        invoiceId = new URL(qrText).searchParams.get("invoice");
-      } else {
-        invoiceId = qrText;
-      }
-      if (invoiceId) {
-        // try to fetch the invoice details
-        const res = await fetch(`/api/invoice/get-validated?id=${invoiceId}`);
-        if (!res.ok) {
-          throw new Error("Failed to fetch invoice details");
+      if (scanQrCode) {
+        const qrText = await scanQrCode.showScanQrPopup({
+          text: "Scan the QR code of an invoice",
+        });
+        console.log("Scanned QR code is: ", qrText);
+        if (!qrText) {
+          addNotification({ color: "warning", message: "QR code is empty" });
+          return;
         }
-        const data = await res.json();
-        const decodedInvoice = decodeInvoice<SignedInvoice>(
-          data.invoice as string
-        );
-        setSignedInvoice(decodedInvoice);
+        let invoiceId: string | null = "";
+        if (qrText.startsWith("https://")) {
+          invoiceId = new URL(qrText).searchParams.get("invoice");
+        } else {
+          invoiceId = qrText;
+        }
+        if (invoiceId) {
+          // try to fetch the invoice details
+          const res = await fetch(`/api/invoice/get-validated?id=${invoiceId}`);
+          if (!res.ok) {
+            throw new Error("Failed to fetch invoice details");
+          }
+          const data = await res.json();
+          const decodedInvoice = decodeInvoice<SignedInvoice>(
+            data.invoice as string
+          );
+          setSignedInvoice(decodedInvoice);
+        }
+      } else {
+        throw new Error("Scan QR code is not available");
       }
     } catch (error) {
       console.error("Failed to scan the QR code:", error);
