@@ -77,13 +77,13 @@ export const TelegramProvider = ({
             };
 
             // Attach the event listener
-            WebApp.onEvent("qr_text_received", onQrTextReceived);
+            WebApp.onEvent("qrTextReceived", onQrTextReceived);
 
             // Show the QR scanner popup
             WebApp.showScanQrPopup(params, (txt: string) => {
               if (!txt) {
                 reject("QR code popup closed without scanning");
-                WebApp.offEvent("qr_text_received", onQrTextReceived); // Clean up the event listener
+                WebApp.offEvent("qrTextReceived", onQrTextReceived); // Clean up the event listener
                 return true; // Close the popup
               }
             });
