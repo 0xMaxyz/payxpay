@@ -68,6 +68,7 @@ export const TelegramProvider = ({
           new Promise((resolve) => {
             WebApp.showScanQrPopup(params, (text) => {
               resolve(text);
+              return true;
             });
           }),
       }
