@@ -99,7 +99,10 @@ const PayPage = () => {
         }
         let invoiceId: string | null = "";
         if (qrText.startsWith("https://")) {
-          invoiceId = new URL(qrText).searchParams.get("invoice");
+          const sParams = new URL(qrText).searchParams.get("start");
+          if (sParams) {
+            invoiceId = sParams.split("invoice=")[1];
+          }
         } else {
           invoiceId = qrText;
         }
