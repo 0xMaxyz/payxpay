@@ -4,13 +4,15 @@ use cosmwasm_std::{Addr, Api, Coin, StdResult};
 
 use cw20::{Cw20Coin, Cw20ReceiveMsg};
 
+use crate::state::EscrowType;
+
 #[cw_serde]
 pub struct InstantiateMsg {}
 
 #[cw_serde]
 pub enum ExecuteMsg {
     Create(CreateMsg),
-    /// Adds all sent native tokens to the contract
+    /// Adds all sent native tokens to the contract (only for blindTransfer escrow type)
     TopUp {
         id: String,
     },
@@ -46,17 +48,18 @@ pub enum ReceiveMsg {
 
 #[cw_serde]
 pub struct CreateMsg {
-    /// id is a human-readable name for the escrow to use later
-    /// 3-20 bytes of utf-8 text
+    /// invoice id
     pub id: String,
-    /// arbiter can decide to approve or refund the escrow
-    pub arbiter: String,
+    /// escrow type
+    pub escrow_type: EscrowType,
     /// if approved, funds go to the recipient
     pub recipient: Option<String>,
-    /// Telegram ID of the invoice issuer
-    pub invoice_issuer_tg_id: String,
+    /// email address of the recepient
+    pub recepient_email: Option<String>,
     /// Telegram ID of the invoice receiver
-    pub invoice_receiver_tg_id: String,
+    pub recepient_telegram_id: Option<String>,
+    /// Telegram ID of the invoice issuer
+    pub source_telegram_id: Option<String>,
     /// Title of the escrow
     pub title: String,
     /// Longer description of the escrow, e.g. what conditions should be met
@@ -98,14 +101,13 @@ pub enum QueryMsg {
     #[returns(ListResponse)]
     ListAll {},
 
-    /// Show all open escrows by a given issuer address. Return type is ListResponse.
-    #[returns(ListResponse)]
-    ListAllByIssuerAddress { issuer: Addr },
+    // /// Show all open escrows by a given issuer address. Return type is ListResponse.
+    // #[returns(ListResponse)]
+    // ListAllByIssuerAddress { issuer: Addr },
 
-    /// Show all open escrows by a given issuer telegram id. Return type is ListResponse.
-    #[returns(ListResponse)]
-    ListAllByIssuerTgId { issuer: Addr },
-
+    // /// Show all open escrows by a given issuer telegram id. Return type is ListResponse.
+    // #[returns(ListResponse)]
+    // ListAllByIssuerTelegramId { issuer: Addr },
     /// Returns the details of the named escrow, error if not created
     /// Return type: DetailsResponse.
     #[returns(DetailsResponse)]
@@ -120,18 +122,20 @@ pub struct ListResponse {
 
 #[cw_serde]
 pub struct DetailsResponse {
+    /// Invoice for invoice escrows and BlindTransfer for escrowing tokens that are claimable with either email or telegram
+    pub escrow_type: EscrowType,
     /// id of this escrow
     pub id: String,
-    /// arbiter can decide to approve or refund the escrow
-    pub arbiter: String,
     /// if approved, funds go to the recipient
     pub recipient: Option<String>,
+    /// email address of the recepient
+    pub recepient_email: Option<String>,
+    /// Telegram ID of the recipient
+    pub recepient_telegram_id: Option<String>,
     /// if refunded, funds go to the source
     pub source: String,
-    /// Telegram ID of the invoice issuer
-    pub invoice_issuer_tg_id: String,
-    /// Telegram ID of the invoice receiver
-    pub invoice_receiver_tg_id: String,
+    /// Telegram ID of the source
+    pub source_telegram_id: Option<String>,
     /// Title of the escrow
     pub title: String,
     /// Longer description of the escrow, e.g. what conditions should be met

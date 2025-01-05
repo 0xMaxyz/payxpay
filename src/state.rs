@@ -2,7 +2,7 @@ use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Addr, Coin, Env, Order, StdResult, Storage, Timestamp};
 
 use cw20::{Balance, Cw20CoinVerified};
-use cw_storage_plus::Map;
+use cw_storage_plus::{Item, Map};
 
 #[cw_serde]
 #[derive(Default)]
@@ -47,17 +47,38 @@ impl GenericBalance {
 }
 
 #[cw_serde]
+pub enum TransferType {
+    Email,
+    Telegram,
+}
+#[cw_serde]
+pub struct InvoiceAmount {
+    pub amount: String,
+    pub currency: String,
+}
+
+#[cw_serde]
+pub enum EscrowType {
+    Invoice { amount: InvoiceAmount },
+    BlindTransfer { transfer: TransferType },
+}
+
+#[cw_serde]
 pub struct Escrow {
+    /// Invoice for invoice escrows and BlindTransfer for escrowing tokens that are claimable with either email or telegram
+    pub escrow_type: EscrowType,
     /// arbiter can decide to approve or refund the escrow
     pub arbiter: Addr,
     /// if approved, funds go to the recipient, cannot approve if recipient is none
     pub recipient: Option<Addr>,
+    /// email address of the recepient
+    pub recepient_email: Option<String>,
+    /// Telegram ID of the recipient
+    pub recepient_telegram_id: Option<String>,
     /// if refunded, funds go to the source
     pub source: Addr,
-    /// Telegram ID of the invoice issuer
-    pub invoice_issuer_tg_id: String,
-    /// Telegram ID of the invoice receiver
-    pub invoice_receiver_tg_id: String,
+    /// Telegram ID of the source
+    pub source_telegram_id: Option<String>,
     /// Title of the escrow, for example for a bug bounty "Fix issue in contract.rs"
     pub title: String,
     /// Description of the escrow, a more in depth description of how to meet the escrow condition
@@ -98,6 +119,7 @@ impl Escrow {
 }
 
 pub const ESCROWS: Map<&str, Escrow> = Map::new("escrow");
+pub const ARBITER: Item<String> = Item::new("arbiter");
 
 /// This returns the list of ids for all registered escrows
 pub fn all_escrow_ids(storage: &dyn Storage) -> StdResult<Vec<String>> {
@@ -121,8 +143,18 @@ mod tests {
 
     fn dummy_escrow() -> Escrow {
         Escrow {
+            escrow_type: EscrowType::Invoice {
+                amount: {
+                    InvoiceAmount {
+                        amount: "123".to_string(),
+                        currency: "USD".to_string(),
+                    }
+                },
+            },
             arbiter: Addr::unchecked("arb"),
             recipient: Some(Addr::unchecked("recip")),
+            recepient_telegram_id: Some("receiver_id".to_string()),
+            recepient_email: None,
             source: Addr::unchecked("source"),
             title: "some_escrow".to_string(),
             description: "some escrow desc".to_string(),
@@ -130,8 +162,7 @@ mod tests {
             end_time: None,
             balance: Default::default(),
             cw20_whitelist: vec![],
-            invoice_issuer_tg_id: "issuer_id".to_string(),
-            invoice_receiver_tg_id: "receiver_id".to_string(),
+            source_telegram_id: Some("issuer_id".to_string()),
         }
     }
 

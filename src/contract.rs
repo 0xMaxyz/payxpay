@@ -12,10 +12,9 @@ use crate::error::ContractError;
 use crate::msg::{
     CreateMsg, DetailsResponse, ExecuteMsg, InstantiateMsg, ListResponse, QueryMsg, ReceiveMsg,
 };
-use crate::state::{all_escrow_ids, Escrow, GenericBalance, ESCROWS};
+use crate::state::{all_escrow_ids, Escrow, GenericBalance, ARBITER, ESCROWS};
 
-// version info for migration info
-const CONTRACT_NAME: &str = "crates.io:cw20-escrow";
+const CONTRACT_NAME: &str = "payxpay-escrow";
 const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -26,8 +25,13 @@ pub fn instantiate(
     _msg: InstantiateMsg,
 ) -> StdResult<Response> {
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
-    // no setup
-    Ok(Response::default())
+    ARBITER.save(deps.storage, &_info.sender.to_string())?; // Set the admin
+
+    Ok(Response::default()
+        .add_attribute("action", "instantiate")
+        .add_attribute("contract", CONTRACT_NAME)
+        .add_attribute("version", CONTRACT_VERSION)
+        .add_attribute("admin", _info.sender))
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -79,6 +83,9 @@ pub fn execute_create(
     if balance.is_empty() {
         return Err(ContractError::EmptyBalance {});
     }
+    // get arbiter from the ADMIN state variable
+    let arbiter_string = ARBITER.load(deps.storage).unwrap();
+    let arbiter = deps.api.addr_validate(&arbiter_string)?;
 
     let mut cw20_whitelist = msg.addr_whitelist(deps.api)?;
 
@@ -104,16 +111,18 @@ pub fn execute_create(
         .and_then(|addr| deps.api.addr_validate(&addr).ok());
 
     let escrow = Escrow {
-        arbiter: deps.api.addr_validate(&msg.arbiter)?,
+        escrow_type: msg.escrow_type,
+        arbiter,
         recipient,
+        recepient_email: msg.recepient_email,
+        recepient_telegram_id: msg.recepient_telegram_id,
         source: sender.clone(),
+        source_telegram_id: msg.source_telegram_id,
         title: msg.title,
         description: msg.description,
         end_height: msg.end_height,
         end_time: msg.end_time,
         balance: escrow_balance,
-        invoice_issuer_tg_id: msg.invoice_issuer_tg_id,
-        invoice_receiver_tg_id: msg.invoice_receiver_tg_id,
         cw20_whitelist,
     };
 
@@ -135,6 +144,7 @@ pub fn execute_set_recipient(
     recipient: String,
 ) -> Result<Response, ContractError> {
     let mut escrow = ESCROWS.load(deps.storage, &id)?;
+    // only the arbiter (ADMIN) can set the recepient
     if info.sender != escrow.arbiter {
         return Err(ContractError::Unauthorized {});
     }
@@ -158,8 +168,12 @@ pub fn execute_top_up(
     if balance.is_empty() {
         return Err(ContractError::EmptyBalance {});
     }
-    // this fails is no escrow there
-    let mut escrow = ESCROWS.load(deps.storage, &id)?;
+
+    // get the escrow or return an error in case there was no escrow
+    let mut escrow = ESCROWS
+        .may_load(deps.storage, &id)
+        .map_err(|_| ContractError::InvalidEscrow { id: id.clone() })?
+        .ok_or(ContractError::InvalidEscrow { id: id.clone() })?;
 
     if let Balance::Cw20(token) = &balance {
         // ensure the token is on the whitelist
@@ -183,8 +197,11 @@ pub fn execute_approve(
     info: MessageInfo,
     id: String,
 ) -> Result<Response, ContractError> {
-    // this fails is no escrow there
-    let escrow = ESCROWS.load(deps.storage, &id)?;
+    // get the escrow or return an error in case there was no escrow
+    let escrow = ESCROWS
+        .may_load(deps.storage, &id)
+        .map_err(|_| ContractError::InvalidEscrow { id: id.clone() })?
+        .ok_or(ContractError::InvalidEscrow { id: id.clone() })?;
 
     if info.sender != escrow.arbiter {
         return Err(ContractError::Unauthorized {});
@@ -214,8 +231,11 @@ pub fn execute_refund(
     info: MessageInfo,
     id: String,
 ) -> Result<Response, ContractError> {
-    // this fails is no escrow there
-    let escrow = ESCROWS.load(deps.storage, &id)?;
+    // get the escrow or return an error in case there was no escrow
+    let escrow = ESCROWS
+        .may_load(deps.storage, &id)
+        .map_err(|_| ContractError::InvalidEscrow { id: id.clone() })?
+        .ok_or(ContractError::InvalidEscrow { id: id.clone() })?;
 
     // the arbiter can send anytime OR anyone can send after expiration
     if !escrow.is_expired(&env) && info.sender != escrow.arbiter {
@@ -271,8 +291,6 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::ListAll {} => to_json_binary(&query_list(deps)?),
         QueryMsg::Details { id } => to_json_binary(&query_details(deps, id)?),
-        QueryMsg::ListAllByIssuerAddress { issuer } => todo!(),
-        QueryMsg::ListAllByIssuerTgId { issuer } => todo!(),
     }
 }
 
@@ -299,18 +317,19 @@ fn query_details(deps: Deps, id: String) -> StdResult<DetailsResponse> {
     let recipient = escrow.recipient.map(|addr| addr.into_string());
 
     let details = DetailsResponse {
+        escrow_type: escrow.escrow_type,
         id,
-        arbiter: escrow.arbiter.into(),
         recipient,
+        recepient_email: escrow.recepient_email,
+        recepient_telegram_id: escrow.recepient_telegram_id,
         source: escrow.source.into(),
+        source_telegram_id: escrow.source_telegram_id,
         title: escrow.title,
         description: escrow.description,
         end_height: escrow.end_height,
         end_time: escrow.end_time,
         native_balance,
         cw20_balance: cw20_balance?,
-        invoice_issuer_tg_id: escrow.invoice_issuer_tg_id,
-        invoice_receiver_tg_id: escrow.invoice_receiver_tg_id,
         cw20_whitelist,
     };
     Ok(details)
@@ -328,6 +347,7 @@ mod tests {
     use cosmwasm_std::{attr, coin, coins, to_json_binary, CosmosMsg, StdError, Uint128};
 
     use crate::msg::ExecuteMsg::TopUp;
+    use crate::state::InvoiceAmount;
 
     use super::*;
 
@@ -343,15 +363,21 @@ mod tests {
 
         // create an escrow
         let create = CreateMsg {
+            escrow_type: crate::state::EscrowType::Invoice {
+                amount: InvoiceAmount {
+                    amount: "123".to_string(),
+                    currency: "USD".to_string(),
+                },
+            },
+            recepient_email: None,
             id: "foobar".to_string(),
-            arbiter: String::from("arbitrate"),
             recipient: Some(String::from("recd")),
             title: "some_title".to_string(),
             end_time: None,
             end_height: Some(123456),
             cw20_whitelist: None,
-            invoice_issuer_tg_id: "123".to_string(),
-            invoice_receiver_tg_id: "456".to_string(),
+            source_telegram_id: Some("123".to_string()),
+            recepient_telegram_id: Some("456".to_string()),
             description: "some_description".to_string(),
         };
         let sender = String::from("source");
@@ -367,15 +393,21 @@ mod tests {
         assert_eq!(
             details,
             DetailsResponse {
+                escrow_type: crate::state::EscrowType::Invoice {
+                    amount: InvoiceAmount {
+                        amount: "123".to_string(),
+                        currency: "USD".to_string(),
+                    },
+                },
+                recepient_email: None,
+                source_telegram_id: Some("123".to_string()),
+                recepient_telegram_id: Some("456".to_string()),
                 id: "foobar".to_string(),
-                arbiter: String::from("arbitrate"),
                 recipient: Some(String::from("recd")),
                 source: String::from("source"),
                 title: "some_title".to_string(),
                 description: "some_description".to_string(),
                 end_height: Some(123456),
-                invoice_issuer_tg_id: "123".to_string(),
-                invoice_receiver_tg_id: "456".to_string(),
                 end_time: None,
                 native_balance: balance.clone(),
                 cw20_balance: vec![],
@@ -383,9 +415,11 @@ mod tests {
             }
         );
 
+        let arbiter: String = String::from("arbitrate");
+
         // approve it
         let id = create.id.clone();
-        let info = mock_info(&create.arbiter, &[]);
+        let info = mock_info(&arbiter, &[]);
         let res = execute(deps.as_mut(), mock_env(), info, ExecuteMsg::Approve { id }).unwrap();
         assert_eq!(1, res.messages.len());
         assert_eq!(("action", "approve"), res.attributes[0]);
@@ -399,7 +433,7 @@ mod tests {
 
         // second attempt fails (not found)
         let id = create.id.clone();
-        let info = mock_info(&create.arbiter, &[]);
+        let info = mock_info(&arbiter, &[]);
         let err = execute(deps.as_mut(), mock_env(), info, ExecuteMsg::Approve { id }).unwrap_err();
         assert!(matches!(err, ContractError::Std(StdError::NotFound { .. })));
     }
@@ -416,16 +450,22 @@ mod tests {
 
         // create an escrow
         let create = CreateMsg {
+            escrow_type: crate::state::EscrowType::Invoice {
+                amount: InvoiceAmount {
+                    amount: "123".to_string(),
+                    currency: "USD".to_string(),
+                },
+            },
+            recepient_email: None,
+            source_telegram_id: Some("123".to_string()),
+            recepient_telegram_id: Some("456".to_string()),
             id: "foobar".to_string(),
-            arbiter: String::from("arbitrate"),
             recipient: Some(String::from("recd")),
             title: "some_title".to_string(),
             end_time: None,
             end_height: None,
             cw20_whitelist: Some(vec![String::from("other-token")]),
             description: "some_description".to_string(),
-            invoice_issuer_tg_id: "123".to_string(),
-            invoice_receiver_tg_id: "456".to_string(),
         };
         let receive = Cw20ReceiveMsg {
             sender: String::from("source"),
@@ -445,13 +485,19 @@ mod tests {
             details,
             DetailsResponse {
                 id: "foobar".to_string(),
-                arbiter: String::from("arbitrate"),
+                escrow_type: crate::state::EscrowType::Invoice {
+                    amount: InvoiceAmount {
+                        amount: "123".to_string(),
+                        currency: "USD".to_string(),
+                    },
+                },
+                recepient_email: None,
+                source_telegram_id: Some("123".to_string()),
+                recepient_telegram_id: Some("456".to_string()),
                 recipient: Some(String::from("recd")),
                 source: String::from("source"),
                 title: "some_title".to_string(),
                 description: "some_description".to_string(),
-                invoice_issuer_tg_id: "123".to_string(),
-                invoice_receiver_tg_id: "456".to_string(),
                 end_height: None,
                 end_time: None,
                 native_balance: vec![],
@@ -462,10 +508,11 @@ mod tests {
                 cw20_whitelist: vec![String::from("other-token"), String::from("my-cw20-token")],
             }
         );
+        let arbiter: String = String::from("arbitrate");
 
         // approve it
         let id = create.id.clone();
-        let info = mock_info(&create.arbiter, &[]);
+        let info = mock_info(&arbiter, &[]);
         let res = execute(deps.as_mut(), mock_env(), info, ExecuteMsg::Approve { id }).unwrap();
         assert_eq!(1, res.messages.len());
         assert_eq!(("action", "approve"), res.attributes[0]);
@@ -484,7 +531,7 @@ mod tests {
 
         // second attempt fails (not found)
         let id = create.id.clone();
-        let info = mock_info(&create.arbiter, &[]);
+        let info = mock_info(&arbiter, &[]);
         let err = execute(deps.as_mut(), mock_env(), info, ExecuteMsg::Approve { id }).unwrap_err();
         assert!(matches!(err, ContractError::Std(StdError::NotFound { .. })));
     }
@@ -501,14 +548,20 @@ mod tests {
 
         // create an escrow
         let create = CreateMsg {
+            escrow_type: crate::state::EscrowType::Invoice {
+                amount: InvoiceAmount {
+                    amount: "123".to_string(),
+                    currency: "USD".to_string(),
+                },
+            },
+            recepient_email: None,
+            source_telegram_id: Some("123".to_string()),
+            recepient_telegram_id: Some("456".to_string()),
             id: "foobar".to_string(),
-            arbiter: String::from("arbitrate"),
             recipient: None,
             title: "some_title".to_string(),
             end_time: None,
             end_height: Some(123456),
-            invoice_issuer_tg_id: "123".to_string(),
-            invoice_receiver_tg_id: "456".to_string(),
             cw20_whitelist: None,
             description: "some_description".to_string(),
         };
@@ -526,10 +579,16 @@ mod tests {
             details,
             DetailsResponse {
                 id: "foobar".to_string(),
-                arbiter: String::from("arbitrate"),
+                escrow_type: crate::state::EscrowType::Invoice {
+                    amount: InvoiceAmount {
+                        amount: "123".to_string(),
+                        currency: "USD".to_string(),
+                    },
+                },
+                recepient_email: None,
+                source_telegram_id: Some("123".to_string()),
+                recepient_telegram_id: Some("456".to_string()),
                 recipient: None,
-                invoice_issuer_tg_id: "123".to_string(),
-                invoice_receiver_tg_id: "456".to_string(),
                 source: String::from("source"),
                 title: "some_title".to_string(),
                 description: "some_description".to_string(),
@@ -540,10 +599,11 @@ mod tests {
                 cw20_whitelist: vec![],
             }
         );
+        let arbiter: String = String::from("arbitrate");
 
         // approve it, should fail as we have not set recipient
         let id = create.id.clone();
-        let info = mock_info(&create.arbiter, &[]);
+        let info = mock_info(&arbiter, &[]);
         let res = execute(deps.as_mut(), mock_env(), info, ExecuteMsg::Approve { id });
         match res {
             Err(ContractError::RecipientNotSet {}) => {}
@@ -567,7 +627,7 @@ mod tests {
             id: create.id.clone(),
             recipient: "recp".to_string(),
         };
-        let info = mock_info(&create.arbiter, &[]);
+        let info = mock_info(&arbiter, &[]);
         let res = execute(deps.as_mut(), mock_env(), info, msg).unwrap();
         assert_eq!(res.messages.len(), 0);
         assert_eq!(
@@ -581,7 +641,7 @@ mod tests {
 
         // approve it, should now work with recp
         let id = create.id.clone();
-        let info = mock_info(&create.arbiter, &[]);
+        let info = mock_info(&arbiter, &[]);
         let res = execute(deps.as_mut(), mock_env(), info, ExecuteMsg::Approve { id }).unwrap();
         assert_eq!(1, res.messages.len());
         assert_eq!(("action", "approve"), res.attributes[0]);
@@ -653,11 +713,18 @@ mod tests {
         // create an escrow with 2 native tokens
         let create = CreateMsg {
             id: "foobar".to_string(),
-            arbiter: String::from("arbitrate"),
+            escrow_type: crate::state::EscrowType::Invoice {
+                amount: InvoiceAmount {
+                    amount: "123".to_string(),
+                    currency: "USD".to_string(),
+                },
+            },
+            recepient_email: None,
+            source_telegram_id: Some("123".to_string()),
+            recepient_telegram_id: Some("456".to_string()),
             recipient: Some(String::from("recd")),
             title: "some_title".to_string(),
-            invoice_issuer_tg_id: "123".to_string(),
-            invoice_receiver_tg_id: "456".to_string(),
+
             end_time: None,
             end_height: None,
             cw20_whitelist: Some(whitelist),
@@ -726,9 +793,11 @@ mod tests {
         assert_eq!(0, res.messages.len());
         assert_eq!(("action", "top_up"), res.attributes[0]);
 
+        let arbiter: String = String::from("arbitrate");
+
         // approve it
         let id = create.id.clone();
-        let info = mock_info(&create.arbiter, &[]);
+        let info = mock_info(&arbiter, &[]);
         let res = execute(deps.as_mut(), mock_env(), info, ExecuteMsg::Approve { id }).unwrap();
         assert_eq!(("action", "approve"), res.attributes[0]);
         assert_eq!(3, res.messages.len());
