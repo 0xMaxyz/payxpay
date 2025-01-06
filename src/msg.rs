@@ -17,6 +17,7 @@ pub enum ExecuteMsg {
         id: String,
     },
     /// Set the recipient of the given escrow
+    /// Only the arbiter can do this
     SetRecipient {
         id: String,
         recipient: String,
@@ -101,17 +102,25 @@ pub enum QueryMsg {
     #[returns(ListResponse)]
     ListAll {},
 
-    // /// Show all open escrows by a given issuer address. Return type is ListResponse.
-    // #[returns(ListResponse)]
-    // ListAllByIssuerAddress { issuer: Addr },
-
-    // /// Show all open escrows by a given issuer telegram id. Return type is ListResponse.
-    // #[returns(ListResponse)]
-    // ListAllByIssuerTelegramId { issuer: Addr },
-    /// Returns the details of the named escrow, error if not created
-    /// Return type: DetailsResponse.
     #[returns(DetailsResponse)]
     Details { id: String },
+
+    #[returns(BlindTransfersResponse)]
+    BlindTransfers { transfer_type: TransferTypeDetails },
+}
+
+#[cw_serde]
+pub enum TransferTypeDetails {
+    Email { email: String },
+    Telegram { id: String },
+}
+
+#[cw_serde]
+pub struct BlindTransfersResponse {
+    /// Balance in native tokens
+    pub native_balance: Vec<Coin>,
+    /// Balance in cw20 tokens
+    pub cw20_balance: Vec<Cw20Coin>,
 }
 
 #[cw_serde]

@@ -1,8 +1,12 @@
+use std::fmt::{self};
+
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Addr, Coin, Env, Order, StdResult, Storage, Timestamp};
 
-use cw20::{Balance, Cw20CoinVerified};
-use cw_storage_plus::{Item, Map};
+use cw20::{Balance, Cw20Coin, Cw20CoinVerified};
+use cw_storage_plus::{Index, IndexList, IndexedMap, Item, MultiIndex};
+
+use crate::msg::BlindTransfersResponse;
 
 #[cw_serde]
 #[derive(Default)]
@@ -50,6 +54,16 @@ impl GenericBalance {
 pub enum TransferType {
     Email,
     Telegram,
+}
+
+impl fmt::Display for TransferType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let str = match self {
+            TransferType::Email => "Email",
+            TransferType::Telegram => "Telegram",
+        };
+        write!(f, "{}", str)
+    }
 }
 #[cw_serde]
 pub struct InvoiceAmount {
@@ -118,14 +132,157 @@ impl Escrow {
     }
 }
 
-pub const ESCROWS: Map<&str, Escrow> = Map::new("escrow");
+// pub const ESCROWS: Map<&str, Escrow> = Map::new("escrow");
+pub struct EscrowIndices {
+    // Secondary index for escrow type
+    pub escrow_type: MultiIndex<'static, String, Escrow, &'static str>,
+    // Secondary index for recipient email
+    pub email_index: MultiIndex<'static, String, Escrow, &'static str>,
+    // Secondary index for recipient Telegram ID
+    pub telegram_index: MultiIndex<'static, String, Escrow, &'static str>,
+}
+
+impl IndexList<Escrow> for EscrowIndices {
+    fn get_indexes(&self) -> Box<dyn Iterator<Item = &dyn Index<Escrow>> + '_> {
+        Box::new(
+            std::iter::once(&self.escrow_type as &dyn Index<Escrow>)
+                .chain(std::iter::once(&self.email_index as &dyn Index<Escrow>))
+                .chain(std::iter::once(&self.telegram_index as &dyn Index<Escrow>)),
+        )
+    }
+}
+
+pub fn escrows() -> IndexedMap<&'static str, Escrow, EscrowIndices> {
+    let indices = EscrowIndices {
+        // escrow type index: this could be Invoice, Email or Telegram
+        escrow_type: MultiIndex::new(
+            |_, escrow| {
+                let escrow_type = match &escrow.escrow_type {
+                    EscrowType::BlindTransfer { transfer } => transfer.to_string(), // either telegram or email
+                    EscrowType::Invoice { .. } => "Invoice".to_string(),
+                };
+                escrow_type
+            },
+            "escrow",
+            "escrow__type",
+        ),
+        // recipient email index
+        email_index: MultiIndex::new(
+            |_, escrow| {
+                if let EscrowType::BlindTransfer { transfer } = &escrow.escrow_type {
+                    if transfer == &TransferType::Email {
+                        return normalize_string(
+                            &escrow.recepient_email.clone().unwrap_or_default(),
+                        );
+                    }
+                }
+                String::new()
+            },
+            "escrow",
+            "escrow__email_index",
+        ),
+        // recipient Telegram ID index
+        telegram_index: MultiIndex::new(
+            |_, escrow| {
+                if let EscrowType::BlindTransfer { transfer } = &escrow.escrow_type {
+                    if transfer == &TransferType::Telegram {
+                        return normalize_string(
+                            &escrow.recepient_telegram_id.clone().unwrap_or_default(),
+                        );
+                    }
+                }
+                String::new()
+            },
+            "escrow",
+            "escrow__telegram_index",
+        ),
+    };
+    IndexedMap::new("escrow", indices)
+}
+
 pub const ARBITER: Item<String> = Item::new("arbiter");
 
 /// This returns the list of ids for all registered escrows
-pub fn all_escrow_ids(storage: &dyn Storage) -> StdResult<Vec<String>> {
-    ESCROWS
+pub fn query_all_escrow_ids(storage: &dyn Storage) -> StdResult<Vec<String>> {
+    escrows()
         .keys(storage, None, None, Order::Ascending)
         .collect()
+}
+
+pub fn query_by_recepient_email(storage: &dyn Storage, email: &str) -> StdResult<Vec<Escrow>> {
+    escrows()
+        .idx
+        .email_index
+        .prefix(normalize_string(email))
+        .range(storage, None, None, Order::Ascending)
+        .map(|item| item.map(|(_, escrow)| escrow))
+        .collect()
+}
+
+pub fn query_by_recepient_email_balance(
+    storage: &dyn Storage,
+    email: &str,
+) -> StdResult<Vec<BlindTransfersResponse>> {
+    escrows()
+        .idx
+        .email_index
+        .prefix(normalize_string(email))
+        .range(storage, None, None, Order::Ascending)
+        .map(|item| {
+            item.map(|(_, escrow)| BlindTransfersResponse {
+                native_balance: escrow.balance.native.clone(),
+                cw20_balance: escrow
+                    .balance
+                    .cw20
+                    .iter()
+                    .map(|cw20| Cw20Coin {
+                        address: cw20.address.clone().into_string(),
+                        amount: cw20.amount,
+                    })
+                    .collect(),
+            })
+        })
+        .collect()
+}
+
+pub fn query_by_telegram_id(storage: &dyn Storage, tg_id: &str) -> StdResult<Vec<Escrow>> {
+    escrows()
+        .idx
+        .telegram_index
+        .prefix(normalize_string(tg_id))
+        .range(storage, None, None, Order::Ascending)
+        .map(|item| item.map(|(_, escrow)| escrow))
+        .collect()
+}
+
+pub fn query_by_telegram_id_balance(
+    storage: &dyn Storage,
+    tg_id: &str,
+) -> StdResult<Vec<BlindTransfersResponse>> {
+    escrows()
+        .idx
+        .telegram_index
+        .prefix(normalize_string(tg_id))
+        .range(storage, None, None, Order::Ascending)
+        .map(|item| {
+            item.map(|(_, escrow)| BlindTransfersResponse {
+                native_balance: escrow.balance.native.clone(),
+                cw20_balance: escrow
+                    .balance
+                    .cw20
+                    .iter()
+                    .map(|cw20| Cw20Coin {
+                        amount: cw20.amount,
+                        address: cw20.address.clone().into_string(),
+                    })
+                    .collect(),
+            })
+        })
+        .collect()
+}
+
+pub fn normalize_string(str: &str) -> String {
+    str.trim().to_lowercase()
 }
 
 #[cfg(test)]
@@ -137,7 +294,7 @@ mod tests {
     #[test]
     fn no_escrow_ids() {
         let storage = MockStorage::new();
-        let ids = all_escrow_ids(&storage).unwrap();
+        let ids = query_all_escrow_ids(&storage).unwrap();
         assert_eq!(0, ids.len());
     }
 
@@ -169,13 +326,17 @@ mod tests {
     #[test]
     fn all_escrow_ids_in_order() {
         let mut storage = MockStorage::new();
-        ESCROWS.save(&mut storage, "lazy", &dummy_escrow()).unwrap();
-        ESCROWS
+        escrows()
+            .save(&mut storage, "lazy", &dummy_escrow())
+            .unwrap();
+        escrows()
             .save(&mut storage, "assign", &dummy_escrow())
             .unwrap();
-        ESCROWS.save(&mut storage, "zen", &dummy_escrow()).unwrap();
+        escrows()
+            .save(&mut storage, "zen", &dummy_escrow())
+            .unwrap();
 
-        let ids = all_escrow_ids(&storage).unwrap();
+        let ids = query_all_escrow_ids(&storage).unwrap();
         assert_eq!(3, ids.len());
         assert_eq!(
             vec!["assign".to_string(), "lazy".to_string(), "zen".to_string()],

@@ -2,6 +2,7 @@ use cosmwasm_std::StdError;
 use thiserror::Error;
 
 #[derive(Error, Debug, PartialEq)]
+
 pub enum ContractError {
     #[error("{0}")]
     Std(#[from] StdError),
@@ -29,4 +30,7 @@ pub enum ContractError {
 
     #[error("This id is invalid")]
     InvalidEscrow { id: String },
+
+    #[error("Can't remove this escrow")]
+    RemoveEscrow { id: String },
 }

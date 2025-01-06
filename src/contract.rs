@@ -10,9 +10,13 @@ use cw20::{Balance, Cw20Coin, Cw20CoinVerified, Cw20ExecuteMsg, Cw20ReceiveMsg};
 
 use crate::error::ContractError;
 use crate::msg::{
-    CreateMsg, DetailsResponse, ExecuteMsg, InstantiateMsg, ListResponse, QueryMsg, ReceiveMsg,
+    BlindTransfersResponse, CreateMsg, DetailsResponse, ExecuteMsg, InstantiateMsg, ListResponse,
+    QueryMsg, ReceiveMsg, TransferTypeDetails,
 };
-use crate::state::{all_escrow_ids, Escrow, GenericBalance, ARBITER, ESCROWS};
+use crate::state::{
+    escrows, query_all_escrow_ids, query_by_recepient_email_balance, query_by_telegram_id_balance,
+    Escrow, GenericBalance, ARBITER,
+};
 
 const CONTRACT_NAME: &str = "payxpay-escrow";
 const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -127,7 +131,7 @@ pub fn execute_create(
     };
 
     // try to store it, fail if the id was already in use
-    ESCROWS.update(deps.storage, &msg.id, |existing| match existing {
+    escrows().update(deps.storage, &msg.id, |existing| match existing {
         None => Ok(escrow),
         Some(_) => Err(ContractError::AlreadyInUse {}),
     })?;
@@ -143,7 +147,7 @@ pub fn execute_set_recipient(
     id: String,
     recipient: String,
 ) -> Result<Response, ContractError> {
-    let mut escrow = ESCROWS.load(deps.storage, &id)?;
+    let mut escrow = escrows().load(deps.storage, &id)?;
     // only the arbiter (ADMIN) can set the recepient
     if info.sender != escrow.arbiter {
         return Err(ContractError::Unauthorized {});
@@ -151,7 +155,7 @@ pub fn execute_set_recipient(
 
     let recipient = deps.api.addr_validate(recipient.as_str())?;
     escrow.recipient = Some(recipient.clone());
-    ESCROWS.save(deps.storage, &id, &escrow)?;
+    escrows().save(deps.storage, &id, &escrow)?;
 
     Ok(Response::new().add_attributes(vec![
         ("action", "set_recipient"),
@@ -170,7 +174,7 @@ pub fn execute_top_up(
     }
 
     // get the escrow or return an error in case there was no escrow
-    let mut escrow = ESCROWS
+    let mut escrow = escrows()
         .may_load(deps.storage, &id)
         .map_err(|_| ContractError::InvalidEscrow { id: id.clone() })?
         .ok_or(ContractError::InvalidEscrow { id: id.clone() })?;
@@ -185,7 +189,7 @@ pub fn execute_top_up(
     escrow.balance.add_tokens(balance);
 
     // and save
-    ESCROWS.save(deps.storage, &id, &escrow)?;
+    escrows().save(deps.storage, &id, &escrow)?;
 
     let res = Response::new().add_attributes(vec![("action", "top_up"), ("id", id.as_str())]);
     Ok(res)
@@ -198,7 +202,7 @@ pub fn execute_approve(
     id: String,
 ) -> Result<Response, ContractError> {
     // get the escrow or return an error in case there was no escrow
-    let escrow = ESCROWS
+    let escrow = escrows()
         .may_load(deps.storage, &id)
         .map_err(|_| ContractError::InvalidEscrow { id: id.clone() })?
         .ok_or(ContractError::InvalidEscrow { id: id.clone() })?;
@@ -213,7 +217,9 @@ pub fn execute_approve(
     let recipient = escrow.recipient.ok_or(ContractError::RecipientNotSet {})?;
 
     // we delete the escrow
-    ESCROWS.remove(deps.storage, &id);
+    escrows()
+        .remove(deps.storage, &id)
+        .map_err(|_| ContractError::RemoveEscrow { id: id.clone() })?;
 
     // send all tokens out
     let messages: Vec<SubMsg> = send_tokens(&recipient, &escrow.balance)?;
@@ -232,7 +238,7 @@ pub fn execute_refund(
     id: String,
 ) -> Result<Response, ContractError> {
     // get the escrow or return an error in case there was no escrow
-    let escrow = ESCROWS
+    let escrow = escrows()
         .may_load(deps.storage, &id)
         .map_err(|_| ContractError::InvalidEscrow { id: id.clone() })?
         .ok_or(ContractError::InvalidEscrow { id: id.clone() })?;
@@ -242,7 +248,9 @@ pub fn execute_refund(
         Err(ContractError::Unauthorized {})
     } else {
         // we delete the escrow
-        ESCROWS.remove(deps.storage, &id);
+        escrows()
+            .remove(deps.storage, &id)
+            .map_err(|_| ContractError::RemoveEscrow { id: id.clone() })?;
 
         // send all tokens out
         let messages = send_tokens(&escrow.source, &escrow.balance)?;
@@ -291,11 +299,14 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::ListAll {} => to_json_binary(&query_list(deps)?),
         QueryMsg::Details { id } => to_json_binary(&query_details(deps, id)?),
+        QueryMsg::BlindTransfers { transfer_type } => {
+            to_json_binary(&query_blind_transfers(deps, transfer_type)?)
+        }
     }
 }
 
 fn query_details(deps: Deps, id: String) -> StdResult<DetailsResponse> {
-    let escrow = ESCROWS.load(deps.storage, &id)?;
+    let escrow = escrows().load(deps.storage, &id)?;
 
     let cw20_whitelist = escrow.human_whitelist();
 
@@ -337,10 +348,24 @@ fn query_details(deps: Deps, id: String) -> StdResult<DetailsResponse> {
 
 fn query_list(deps: Deps) -> StdResult<ListResponse> {
     Ok(ListResponse {
-        escrows: all_escrow_ids(deps.storage)?,
+        escrows: query_all_escrow_ids(deps.storage)?,
     })
 }
 
+fn query_blind_transfers(
+    deps: Deps,
+    tt: TransferTypeDetails,
+) -> StdResult<Vec<BlindTransfersResponse>> {
+    if let TransferTypeDetails::Email { email } = &tt {
+        // query emails for the received email address
+        return query_by_recepient_email_balance(deps.storage, &email);
+    }
+    if let TransferTypeDetails::Telegram { id } = &tt {
+        // query tg trasnfers for the received id
+        return query_by_telegram_id_balance(deps.storage, &id);
+    }
+    Ok(vec![])
+}
 #[cfg(test)]
 mod tests {
     use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
