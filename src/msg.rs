@@ -21,6 +21,8 @@ pub enum ExecuteMsg {
     SetRecipient {
         id: String,
         recipient: String,
+        email: Option<String>,
+        telegram_id: Option<String>,
     },
     /// Approve sends all tokens to the recipient.
     /// Only the arbiter can do this

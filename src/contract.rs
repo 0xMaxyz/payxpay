@@ -29,13 +29,13 @@ pub fn instantiate(
     _msg: InstantiateMsg,
 ) -> StdResult<Response> {
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
-    ARBITER.save(deps.storage, &_info.sender.to_string())?; // Set the admin
+    ARBITER.save(deps.storage, &_info.sender.to_string())?; // Set the arbiter
 
     Ok(Response::default()
         .add_attribute("action", "instantiate")
         .add_attribute("contract", CONTRACT_NAME)
         .add_attribute("version", CONTRACT_VERSION)
-        .add_attribute("admin", _info.sender))
+        .add_attribute("arbiter", _info.sender))
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -49,9 +49,12 @@ pub fn execute(
         ExecuteMsg::Create(msg) => {
             execute_create(deps, msg, Balance::from(info.funds), &info.sender)
         }
-        ExecuteMsg::SetRecipient { id, recipient } => {
-            execute_set_recipient(deps, env, info, id, recipient)
-        }
+        ExecuteMsg::SetRecipient {
+            id,
+            recipient,
+            email,
+            telegram_id,
+        } => execute_set_recipient(deps, env, info, id, recipient, email, telegram_id),
         ExecuteMsg::Approve { id } => execute_approve(deps, env, info, id),
         ExecuteMsg::TopUp { id } => execute_top_up(deps, id, Balance::from(info.funds)),
         ExecuteMsg::Refund { id } => execute_refund(deps, env, info, id),
@@ -87,7 +90,7 @@ pub fn execute_create(
     if balance.is_empty() {
         return Err(ContractError::EmptyBalance {});
     }
-    // get arbiter from the ADMIN state variable
+    // get arbiter from the ARBITER state variable
     let arbiter_string = ARBITER.load(deps.storage).unwrap();
     let arbiter = deps.api.addr_validate(&arbiter_string)?;
 
@@ -146,15 +149,19 @@ pub fn execute_set_recipient(
     info: MessageInfo,
     id: String,
     recipient: String,
+    email: Option<String>,
+    telegram_id: Option<String>,
 ) -> Result<Response, ContractError> {
     let mut escrow = escrows().load(deps.storage, &id)?;
-    // only the arbiter (ADMIN) can set the recepient
+    // only the arbiter (ARBITER) can set the recepient
     if info.sender != escrow.arbiter {
         return Err(ContractError::Unauthorized {});
     }
 
     let recipient = deps.api.addr_validate(recipient.as_str())?;
     escrow.recipient = Some(recipient.clone());
+    escrow.recepient_email = email;
+    escrow.recepient_telegram_id = telegram_id;
     escrows().save(deps.storage, &id, &escrow)?;
 
     Ok(Response::new().add_attributes(vec![
@@ -639,6 +646,8 @@ mod tests {
         let msg = ExecuteMsg::SetRecipient {
             id: create.id.clone(),
             recipient: "recp".to_string(),
+            email: None,
+            telegram_id: None,
         };
         let info = mock_info("someoneelse", &[]);
         let res = execute(deps.as_mut(), mock_env(), info, msg);
@@ -651,6 +660,8 @@ mod tests {
         let msg = ExecuteMsg::SetRecipient {
             id: create.id.clone(),
             recipient: "recp".to_string(),
+            email: None,
+            telegram_id: None,
         };
         let info = mock_info(&arbiter, &[]);
         let res = execute(deps.as_mut(), mock_env(), info, msg).unwrap();

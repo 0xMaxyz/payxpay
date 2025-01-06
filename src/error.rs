@@ -25,8 +25,8 @@ pub enum ContractError {
     #[error("Recipient is not set")]
     RecipientNotSet {},
 
-    #[error("Admin not set")]
-    NoAdmin {},
+    #[error("Arbiter not set")]
+    NoArbiter {},
 
     #[error("This id is invalid")]
     InvalidEscrow { id: String },
