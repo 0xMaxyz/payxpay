@@ -3,7 +3,7 @@ import Script from "next/script";
 import { AbstraxionProvider } from "@burnt-labs/abstraxion";
 
 import "./globals.css";
-import { pxpContract } from "./consts";
+import { pxpContract, pxpTreasury, xionREST, xionRPC } from "./consts";
 import { TelegramProvider } from "./context/TelegramContext";
 import Body from "./components/body";
 import { NotificationProvider } from "./context/NotificationContext";
@@ -25,8 +25,9 @@ export default function RootLayout({
         <AbstraxionProvider
           config={{
             contracts: [pxpContract],
-            rpcUrl: "https://rpc.xion-testnet-1.burnt.com:443",
-            restUrl: "https://api.xion-testnet-1.burnt.com",
+            treasury: pxpTreasury,
+            rpcUrl: xionRPC,
+            restUrl: xionREST,
           }}
         >
           <NotificationProvider>

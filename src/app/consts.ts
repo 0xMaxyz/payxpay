@@ -1,7 +1,9 @@
 import { Currency } from "./types";
 
-export const pxpContract: string =
-  "xion1z70cvc08qv5764zeg3dykcyymj5z6nu4sqr7x8vl4zjef2gyp69s9mmdka";
+export const pxpContract: string = process.env.NEXT_PUBLIC_CONTRACT!;
+export const pxpTreasury: string = process.env.NEXT_PUBLIC_TREASURY!;
+export const xionRPC: string = process.env.NEXT_PUBLIC_XION_RPC!;
+export const xionREST: string = process.env.NEXT_PUBLIC_XION_REST!;
 
 export const HEADERS = {
   "Content-Type": "application/json",
