@@ -181,6 +181,7 @@ const CreateInvoicePage = () => {
       setCreateInvoiceBtnLoading(true);
 
       console.log("Creating invoice...");
+      console.log("Time", Date.now() / 1000);
       const invoice: Invoice = {
         id: crypto.randomUUID(),
         description: description,
