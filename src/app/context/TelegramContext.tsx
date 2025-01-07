@@ -288,14 +288,15 @@ export const TelegramProvider = ({
                 mb.setParams({
                   is_visible: true,
                   is_active: false,
-                });
+                }).showProgress();
                 const countdownInterval = setInterval(() => {
                   if (remainingTime <= 0) {
                     clearInterval(countdownInterval);
                     mb.setParams({
                       text: text,
                       is_active: true,
-                    });
+                      color: "#32CD32",
+                    }).hideProgress();
                     resolve(true);
                   } else {
                     mb.setText(
@@ -307,6 +308,7 @@ export const TelegramProvider = ({
               } else {
                 mb.setParams({
                   text: text,
+                  color: "#32CD32",
                   is_active: true,
                   is_visible: true,
                 });
