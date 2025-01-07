@@ -2,6 +2,7 @@ import React, {
   createContext,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -15,9 +16,22 @@ interface TelegramContextProps {
   theme: "light" | "dark";
   cloudStorage: CloudStorageFunctions | null;
   scanQrCode: QrCodeScanFunctions | null;
+  mainButton: MainButtonFunctions | null;
 }
 
-interface CloudStorageFunctions {
+interface MainButtonFunctions {
+  enableAndShowMainButton: (
+    text: string,
+    onClickHandler: () => void,
+    buttonColor?: string,
+    textColor?: string,
+    waitDuration?: number,
+    waitText?: string
+  ) => void;
+  disableMainButton: () => void;
+}
+
+export interface CloudStorageFunctions {
   setItem: (key: string, value: string) => Promise<boolean>;
   getItem: (key: string) => Promise<string | null>;
   getItems: (keys: string[]) => Promise<string[]>;
@@ -55,9 +69,12 @@ export const TelegramProvider = ({
   const [userData, setUserData] = useState<TgUserData | null>(null);
   const [isAllowed, setIsAllowed] = useState(false);
   const [loading, setLoading] = useState(true);
-  const isProduction =
-    (process.env.NEXT_PUBLIC_ENV as EnvironmentType) === "production";
+  const isProduction = useMemo(
+    () => (process.env.NEXT_PUBLIC_ENV as EnvironmentType) === "production",
+    []
+  );
   const isInit = useRef(false);
+
   // Qr Code Scanner
   const scanQrCode: QrCodeScanFunctions | null = WebApp?.showScanQrPopup
     ? {
@@ -65,27 +82,22 @@ export const TelegramProvider = ({
           new Promise((resolve, reject) => {
             // Listen for the qrTextReceived event
             const onQrTextReceived = (event: { data: string }) => {
-              console.log("received event:", event);
               const text = event.data;
-              console.log("received text:", text);
               if (text) {
-                resolve(text); // Resolve with the scanned text
-                WebApp.offEvent("qrTextReceived", onQrTextReceived); // Clean up the event listener
+                resolve(text);
+                WebApp.offEvent("qrTextReceived", onQrTextReceived);
               } else {
                 reject("QR code scanning failed or returned empty text");
               }
             };
-
-            // Attach the event listener
             WebApp.onEvent("qrTextReceived", onQrTextReceived);
-
             // Show the QR scanner popup
             WebApp.showScanQrPopup(params, (txt: string) => {
               if (!txt) {
                 reject("QR code popup closed without scanning");
-                WebApp.offEvent("qrTextReceived", onQrTextReceived); // Clean up the event listener
+                WebApp.offEvent("qrTextReceived", onQrTextReceived);
               }
-              return true; // Close the popup
+              return true;
             });
           }),
       }
@@ -242,6 +254,66 @@ export const TelegramProvider = ({
       }
     : null;
   //
+
+  const mainButton: MainButtonFunctions | null = WebApp?.MainButton
+    ? {
+        enableAndShowMainButton: (
+          text: string,
+          onClickHandler: () => void,
+          buttonColor?: string,
+          textColor?: string,
+          waitDuration?: number,
+          waitText?: string
+        ) => {
+          new Promise((resolve, reject) => {
+            try {
+              const { MainButton: mb } = WebApp;
+              mb.onClick(onClickHandler).setParams({
+                color: buttonColor,
+                text_color: textColor,
+              });
+              if (waitDuration) {
+                let delay = 0;
+                mb.setParams({
+                  is_visible: true,
+                  is_active: false,
+                });
+                while (waitDuration > delay) {
+                  mb.setText(
+                    `${waitText} ${(waitDuration - delay) / 1000} seconds`
+                  );
+                  setTimeout(() => {
+                    delay += 1000;
+                  }, 1000);
+                }
+                mb.setParams({
+                  text: text,
+                  is_active: true,
+                });
+              } else {
+                mb.setParams({
+                  text: text,
+                  is_active: true,
+                  is_visible: true,
+                });
+              }
+              resolve(true);
+            } catch {
+              reject("An error occured during enabling the main button");
+            }
+          });
+        },
+        disableMainButton: () => {
+          WebApp.MainButton.setParams({
+            color: "",
+            text: "",
+            text_color: "",
+            is_active: false,
+            is_visible: false,
+          });
+        },
+      }
+    : null;
   useEffect(() => {
     if (isInit.current) {
       return;
@@ -315,6 +387,7 @@ export const TelegramProvider = ({
       }
     }
   }, [isProduction]);
+
   return (
     <TelegramContext.Provider
       value={{
@@ -325,6 +398,7 @@ export const TelegramProvider = ({
         theme,
         cloudStorage,
         scanQrCode,
+        mainButton,
       }}
     >
       {children}

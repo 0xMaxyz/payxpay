@@ -10,13 +10,36 @@ import { useTelegramContext } from "../context/TelegramContext";
 
 const PayPage = () => {
   const { addNotification } = useNotification();
-  const { scanQrCode } = useTelegramContext();
+  const { scanQrCode, mainButton } = useTelegramContext();
   const searchParams = useSearchParams();
   const [signedInvoice, setSignedInvoice] = useState<SignedInvoice | null>(
     null
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const onClose = () => {
+      mainButton?.disableMainButton();
+    };
+    return () => {
+      onClose();
+      console.log("Clear MainButton");
+    };
+  }, [mainButton]);
+
+  useEffect(() => {
+    if (signedInvoice && mainButton) {
+      mainButton.enableAndShowMainButton(
+        "Pay",
+        () => console.log("Payment in process..."),
+        undefined,
+        undefined,
+        5000,
+        "Payment in "
+      );
+    }
+  }, [signedInvoice, mainButton]);
 
   useEffect(() => {
     const getInvoice = async (id: string) => {

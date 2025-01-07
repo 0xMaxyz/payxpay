@@ -17,11 +17,7 @@ interface TelegramWebApp {
     params?: ScanQrPopupParams,
     callback?: (text: string) => void
   ): void;
-  MainButton: {
-    setText(text: string): void;
-    show(): void;
-    hide(): void;
-  };
+  MainButton: BottomButton;
   platform: string;
   initData: string;
   shareMessage: (msg_id: string, callback?: (isSent: boolean) => void) => void;
@@ -59,4 +55,35 @@ interface Window {
 
 interface ScanQrPopupParams {
   text?: string; // The text to be displayed under the 'Scan QR' heading, 0-64 characters.
+}
+
+interface BottomButton {
+  readonly type: "main" | "secondary";
+  text: string;
+  color: string;
+  textColor: string;
+  isVisible: boolean;
+  isActive: boolean;
+  hasShineEffect: boolean;
+  position?: "left" | "right" | "top" | "bottom";
+  readonly isProgressVisible: boolean;
+
+  setText(text: string): BottomButton;
+  onClick(callback: () => void): BottomButton;
+  offClick(callback: () => void): BottomButton;
+  show(): BottomButton;
+  hide(): BottomButton;
+  enable(): BottomButton;
+  disable(): BottomButton;
+  showProgress(leaveActive?: boolean): BottomButton;
+  hideProgress(): BottomButton;
+  setParams(params: {
+    text?: string;
+    color?: string;
+    text_color?: string;
+    has_shine_effect?: boolean;
+    position?: "left" | "right" | "top" | "bottom";
+    is_active?: boolean;
+    is_visible?: boolean;
+  }): BottomButton;
 }
