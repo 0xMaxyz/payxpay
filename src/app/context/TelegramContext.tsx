@@ -315,9 +315,6 @@ export const TelegramProvider = ({
         },
         disableMainButton: () => {
           WebApp.MainButton.setParams({
-            color: "",
-            text: "",
-            text_color: "",
             is_active: false,
             is_visible: false,
           });
