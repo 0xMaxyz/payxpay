@@ -254,7 +254,11 @@ export const TelegramProvider = ({
       }
     : null;
   //
-
+  const getButtonColor = () => {
+    const re = document.documentElement;
+    const cs = getComputedStyle(re);
+    return cs.getPropertyValue("--tg-theme-button-color").trim();
+  };
   const mainButton: MainButtonFunctions | null = WebApp?.MainButton
     ? {
         enableAndShowMainButton: (
@@ -286,6 +290,8 @@ export const TelegramProvider = ({
               if (waitDuration) {
                 let remainingTime = waitDuration;
                 mb.setParams({
+                  text: waitText,
+                  color: getButtonColor(), // reset to theme color
                   is_visible: true,
                   is_active: false,
                 }).showProgress();
