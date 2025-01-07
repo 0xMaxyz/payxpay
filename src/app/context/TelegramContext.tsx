@@ -268,13 +268,17 @@ export const TelegramProvider = ({
           new Promise((resolve, reject) => {
             try {
               const { MainButton: mb } = WebApp;
+              // set onClick handler
+              mb.onClick(onClickHandler);
+              // set buttonColor
               if (buttonColor) {
-                mb.onClick(onClickHandler).setParams({
+                mb.setParams({
                   color: buttonColor,
                 });
               }
+              // set textColor
               if (textColor) {
-                mb.onClick(onClickHandler).setParams({
+                mb.setParams({
                   text_color: textColor,
                 });
               }
