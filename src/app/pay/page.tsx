@@ -279,12 +279,13 @@ const PayPage = () => {
         </div>
       ) : (
         // show connect button
-        <div>
+        <div className="flex flex-col align-middle justify-center">
           <p className="tg-text mb-2">
-            Please connect to your xion account before proceeding with payment.
+            Please connect to your xion account before proceeding with the
+            payment.
           </p>
           <button
-            className={`btn btn-xs btn-success`}
+            className={`btn btn-sm btn-success`}
             onClick={() => changeModalState()}
           >
             Connect
