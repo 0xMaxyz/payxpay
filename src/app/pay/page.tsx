@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { SignedInvoice } from "../types";
 import { copyFromClipboard, decodeInvoice } from "@/lib/tools";
 import { HEADERS } from "../consts";
@@ -10,6 +10,7 @@ import { useTelegramContext } from "../context/TelegramContext";
 
 const PayPage = () => {
   const { addNotification } = useNotification();
+  const paymentRef = useRef<HTMLDivElement>(null);
   const { scanQrCode, mainButton } = useTelegramContext();
   const searchParams = useSearchParams();
   const [signedInvoice, setSignedInvoice] = useState<SignedInvoice | null>(
@@ -40,6 +41,15 @@ const PayPage = () => {
       );
     }
   }, [signedInvoice, mainButton]);
+
+  useEffect(() => {
+    if (signedInvoice && paymentRef.current) {
+      paymentRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }
+  }, [signedInvoice]);
 
   useEffect(() => {
     const getInvoice = async (id: string) => {
@@ -271,7 +281,7 @@ const PayPage = () => {
 
       {/* Invoice Details */}
       {signedInvoice && (
-        <div className="border-t pt-6 mt-6">
+        <div ref={paymentRef} className="border-t pt-6 mt-6">
           <h2 className="text-xl font-bold mb-4">Invoice Details</h2>
           <p className="mb-2">
             <strong>Description:</strong> {signedInvoice.description}
