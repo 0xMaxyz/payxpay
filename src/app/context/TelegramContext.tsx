@@ -273,23 +273,26 @@ export const TelegramProvider = ({
                 text_color: textColor,
               });
               if (waitDuration) {
-                let delay = 0;
+                let remainingTime = waitDuration;
                 mb.setParams({
                   is_visible: true,
                   is_active: false,
                 });
-                while (waitDuration > delay) {
-                  mb.setText(
-                    `${waitText} ${(waitDuration - delay) / 1000} seconds`
-                  );
-                  setTimeout(() => {
-                    delay += 1000;
-                  }, 1000);
-                }
-                mb.setParams({
-                  text: text,
-                  is_active: true,
-                });
+                const countdownInterval = setInterval(() => {
+                  if (remainingTime <= 0) {
+                    clearInterval(countdownInterval);
+                    mb.setParams({
+                      text: text,
+                      is_active: true,
+                    });
+                    resolve(true);
+                  } else {
+                    mb.setText(
+                      `${waitText} ${Math.ceil(remainingTime / 1000)} seconds`
+                    );
+                    remainingTime -= 1000;
+                  }
+                }, 1000);
               } else {
                 mb.setParams({
                   text: text,
