@@ -1,0 +1,8 @@
+[submodule "frontend"]
+	path = frontend
+	url = https://github.com/0xMaxyz/payxpay.git
+	branch = frontend
+[submodule "contract"]
+	path = contract
+	url = https://github.com/0xMaxyz/payxpay.git
+	branch = contract
