@@ -9,14 +9,23 @@ import { useNotification } from "../context/NotificationContext";
 import { useTelegramContext } from "../context/TelegramContext";
 import Link from "next/link";
 import { useAbstraxionAccount, useModal } from "@burnt-labs/abstraxion";
+import {
+  Balance,
+  CreateMsg,
+  EscrowType,
+  usePxpContract,
+} from "../context/PxpContractContext";
 
 const PayPage = () => {
+  // use PxpContract
+  const { createEscrow } = usePxpContract();
+  //
   const { data: xionAccount } = useAbstraxionAccount();
   const [isModalOpen, setModalOpen] = useModal();
   const changeModalState = () => setModalOpen(!isModalOpen);
   const { addNotification } = useNotification();
   const paymentRef = useRef<HTMLDivElement>(null);
-  const { scanQrCode, mainButton } = useTelegramContext();
+  const { scanQrCode, mainButton, platform } = useTelegramContext();
   const searchParams = useSearchParams();
   const [signedInvoice, setSignedInvoice] = useState<SignedInvoice | null>(
     null
@@ -215,68 +224,160 @@ const PayPage = () => {
       setLoading(false);
     }
   };
+  const escrowType: EscrowType = {
+    invoice: { amount: { amount: "1", currency: "TRY" } },
+  };
+
+  const handleQueryBalance = async () => {
+    try {
+      setLoading(true);
+      // const res = await bankTransfer(
+      //   [{ amount: "10", denom: "uxion" }],
+      //   "xion1vr7ylck35y956tw45ndmcwpkdsz75y2fez8ggx",
+      //   "hello"
+      // );
+      const createMsg: CreateMsg = {
+        id: crypto.randomUUID(),
+        escrow_type: escrowType,
+        recipient: "xion1vr7ylck35y956tw45ndmcwpkdsz75y2fez8ggx",
+        recepient_email: "",
+        recepient_telegram_id: "",
+        source_telegram_id: "7312975997",
+        title: "escrow title",
+        description: "description",
+      };
+      const balance: Balance = {
+        cw20_balance: [
+          {
+            address:
+              "xion1jfzcfyvznelca47utxwqt5nmc8c8yr9jcng3v8fz0jpert9kmtsqq23aml",
+            amount: "1",
+          },
+        ],
+        native_balance: [
+          // {
+          //   amount: "10",
+          //   denom:
+          //     "ibc/57097251ED81A232CE3C9D899E7C8096D6D87EF84BA203E12E424AA4C9B57A64",
+          // },
+          // {
+          //   amount: "10",
+          //   denom: "uxion",
+          // },
+        ],
+      };
+      const res = await createEscrow(createMsg, balance);
+      console.log(res);
+    } catch (error) {
+      console.error(error);
+      addNotification({ color: "error", message: error as string });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="p-4">
+      <div>
+        <button className="btn btn-sm" onClick={handleQueryBalance}>
+          QueryBalance
+        </button>
+      </div>
       <h1 className="text-xl font-bold mb-4">Pay</h1>
       {xionAccount?.bech32Address ? (
-        <div className="form-control mb-6">
-          <label className="label">
-            <span className="label-text">Invoice ID</span>
-          </label>
-          <input
-            type="text"
-            value={signedInvoice?.id || ""}
-            placeholder="Scan the QR code or paste the invoice"
-            className="input input-bordered w-full tg-input"
-          />
-          <div className="flex gap-4 mt-4">
-            <button
-              onClick={handleScanQrCode}
-              className="btn btn-primary flex-1"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                role="img"
+        <>
+          <div className="form-control mb-6">
+            <label className="label">
+              <span className="label-text">Invoice ID</span>
+            </label>
+            <input
+              type="text"
+              value={signedInvoice?.id || ""}
+              placeholder="Scan the QR code or paste the invoice"
+              className="input input-bordered w-full tg-input"
+            />
+            <div className="flex gap-4 mt-4">
+              {(platform === "android" || platform === "ios") && (
+                <button
+                  onClick={handleScanQrCode}
+                  className="btn btn-primary flex-1"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    role="img"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="0.1"
+                      className="svg-fill"
+                      d="M9.5,6.5v3h-3v-3H9.5 M11,5H5v6h6V5L11,5z M9.5,14.5v3h-3v-3H9.5 M11,13H5v6h6V13L11,13z M17.5,6.5v3h-3v-3H17.5 M19,5h-6v6 h6V5L19,5z M13,13h1.5v1.5H13V13z M14.5,14.5H16V16h-1.5V14.5z M16,13h1.5v1.5H16V13z M13,16h1.5v1.5H13V16z M14.5,17.5H16V19h-1.5 V17.5z M16,16h1.5v1.5H16V16z M17.5,14.5H19V16h-1.5V14.5z M17.5,17.5H19V19h-1.5V17.5z M22,7h-2V4h-3V2h5V7z M22,22v-5h-2v3h-3v2 H22z M2,22h5v-2H4v-3H2V22z M2,2v5h2V4h3V2H2z"
+                    ></path>
+                  </svg>
+                  Scan Qr Code
+                </button>
+              )}
+              <button
+                onClick={handlePasteFromClipboard}
+                className="btn btn-secondary flex-1"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="0.1"
-                  className="svg-fill"
-                  d="M9.5,6.5v3h-3v-3H9.5 M11,5H5v6h6V5L11,5z M9.5,14.5v3h-3v-3H9.5 M11,13H5v6h6V13L11,13z M17.5,6.5v3h-3v-3H17.5 M19,5h-6v6 h6V5L19,5z M13,13h1.5v1.5H13V13z M14.5,14.5H16V16h-1.5V14.5z M16,13h1.5v1.5H16V13z M13,16h1.5v1.5H13V16z M14.5,17.5H16V19h-1.5 V17.5z M16,16h1.5v1.5H16V16z M17.5,14.5H19V16h-1.5V14.5z M17.5,17.5H19V19h-1.5V17.5z M22,7h-2V4h-3V2h5V7z M22,22v-5h-2v3h-3v2 H22z M2,22h5v-2H4v-3H2V22z M2,2v5h2V4h3V2H2z"
-                ></path>
-              </svg>
-              Scan Qr Code
-            </button>
-            <button
-              onClick={handlePasteFromClipboard}
-              className="btn btn-secondary flex-1"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                role="img"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="0.1"
-                  className="svg-fill"
-                  d="M19 2h-4.18C14.4.84 13.3 0 12 0c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm7 18H5V4h2v3h10V4h2v16z"
-                ></path>
-              </svg>
-              Paste from Clipboard
-            </button>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  role="img"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="0.1"
+                    className="svg-fill"
+                    d="M19 2h-4.18C14.4.84 13.3 0 12 0c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm7 18H5V4h2v3h10V4h2v16z"
+                  ></path>
+                </svg>
+                Paste from Clipboard
+              </button>
+            </div>
           </div>
-        </div>
+          {signedInvoice && (
+            <div ref={paymentRef} className="border-t pt-6 mt-6">
+              <h2 className="text-xl font-bold mb-4">Invoice Details</h2>
+              <p className="mb-2">
+                <strong>Description:</strong> {signedInvoice.description}
+              </p>
+              <p className="mb-2">
+                <strong>Created At:</strong>{" "}
+                {new Date(signedInvoice.issueDate * 1000).toLocaleString()}
+              </p>
+              <p className="mb-2">
+                <strong>Price:</strong>{" "}
+                {`${signedInvoice.amount} ${signedInvoice.unit}`}
+              </p>
+              <div className="flex flex-row">
+                <p className="mb-2">
+                  <strong>Issuer:</strong> {signedInvoice.issuerFirstName}
+                </p>
+                <Link
+                  href={`https://t.me/${signedInvoice.issuerTelegramHandle}`}
+                  target="_blank"
+                  className="text-blue-500 underline"
+                >
+                  Chat with {signedInvoice.issuerFirstName}
+                </Link>
+              </div>
+              <p className="mb-2">
+                <strong>Validity:</strong>{" "}
+                {signedInvoice.invoiceValidity || "Unlimited"}
+              </p>
+            </div>
+          )}
+        </>
       ) : (
         // show connect button
         <div className="flex flex-col align-middle justify-center">
@@ -301,40 +402,6 @@ const PayPage = () => {
         </p>
       )}
       {error && <p className="text-red-500 text-center">{error}</p>}
-
-      {/* Invoice Details */}
-      {signedInvoice && (
-        <div ref={paymentRef} className="border-t pt-6 mt-6">
-          <h2 className="text-xl font-bold mb-4">Invoice Details</h2>
-          <p className="mb-2">
-            <strong>Description:</strong> {signedInvoice.description}
-          </p>
-          <p className="mb-2">
-            <strong>Created At:</strong>{" "}
-            {new Date(signedInvoice.issueDate * 1000).toLocaleString()}
-          </p>
-          <p className="mb-2">
-            <strong>Price:</strong>{" "}
-            {`${signedInvoice.amount} ${signedInvoice.unit}`}
-          </p>
-          <div className="flex flex-row">
-            <p className="mb-2">
-              <strong>Issuer:</strong> {signedInvoice.issuerFirstName}
-            </p>
-            <Link
-              href={`https://t.me/${signedInvoice.issuerTelegramHandle}`}
-              target="_blank"
-              className="text-blue-500 underline"
-            >
-              Chat with {signedInvoice.issuerFirstName}
-            </Link>
-          </div>
-          <p className="mb-2">
-            <strong>Validity:</strong>{" "}
-            {signedInvoice.invoiceValidity || "Unlimited"}
-          </p>
-        </div>
-      )}
     </div>
   );
 };

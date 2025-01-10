@@ -1,7 +1,7 @@
 import { Invoice } from "@/app/types";
 import crypto from "crypto";
 export const blockExplorerUrl = (txHash: string) => {
-  return `https://explorer.burnt.com/xion-testnet-1/tx/${txHash}`;
+  return `https://testnet.xion.explorers.guru/transaction/${txHash}`;
 };
 export const getTimestampInSeconds = (date: Date | null) => {
   if (!date) return 0;
@@ -67,4 +67,70 @@ export const copyFromClipboard = async () => {
     console.error("Failed to copy text from clipboard:", error);
     throw error;
   }
+};
+
+export const formatBalance = (
+  rawBalance: string,
+  decimals: number,
+  name?: string
+): string => {
+  const balanceBigInt = BigInt(rawBalance);
+  const divisor = BigInt(10 ** decimals);
+  const wholeUnits = balanceBigInt / divisor;
+  const fractionalPart = balanceBigInt % divisor;
+  const fractionalString = fractionalPart.toString().padStart(decimals, "0");
+  return `${wholeUnits}.${fractionalString}`
+    .replace(/\.?0+$/, "")
+    .concat(name ? ` ${name}` : "");
+};
+
+export type IbcDenomTrace = {
+  denom_trace: {
+    path: string;
+    base_denom: string;
+  };
+};
+
+export const queryIbcDenom = async (hash: string) => {
+  const XION_REST = process.env.NEXT_PUBLIC_XION_REST!;
+  const apiUrl = `${XION_REST}/ibc/apps/transfer/v1/denom_traces/${hash}`;
+
+  try {
+    const response = await fetch(apiUrl, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const data: IbcDenomTrace = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching denom trace:", error);
+    throw error;
+  }
+};
+
+export const decodeInitData = (init: string) => {
+  const decoded = new URLSearchParams(init);
+  const userData = decoded.get("user");
+  let user_id: number = 0;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let user: any = undefined;
+  if (userData) {
+    const usrJson = decodeURIComponent(userData);
+    user = JSON.parse(usrJson);
+    user_id = user.id ?? 0;
+  }
+  return {
+    user_id: user_id,
+    hash: decoded.get("hash") ?? "",
+    signature: decoded.get("signature") ?? "",
+    auth_date: 1000 * Number.parseInt(decoded.get("auth_date")!),
+    user: user ?? "",
+  };
 };

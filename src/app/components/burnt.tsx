@@ -158,7 +158,7 @@ const Burnt = () => {
               <div className="flex flex-row">
                 <p>{shortenAddress(account.bech32Address)}</p>
                 <Link
-                  href={`https://explorer.burnt.com/xion-testnet-1/account/${account.bech32Address}`}
+                  href={`https://testnet.xion.explorers.guru/contract/${account.bech32Address}`}
                   target="_blank"
                 >
                   <svg

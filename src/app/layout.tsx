@@ -3,10 +3,11 @@ import Script from "next/script";
 import { AbstraxionProvider } from "@burnt-labs/abstraxion";
 
 import "./globals.css";
-import { pxpContract, pxpTreasury, xionREST, xionRPC } from "./consts";
+import { pxpTreasury, xionREST, xionRPC } from "./consts";
 import { TelegramProvider } from "./context/TelegramContext";
 import Body from "./components/body";
 import { NotificationProvider } from "./context/NotificationContext";
+import { PxpContractProvider } from "./context/PxpContractContext";
 
 export default function RootLayout({
   children,
@@ -22,9 +23,9 @@ export default function RootLayout({
         ></Script>
       </head>
       <body className="flex flex-col h-screen app-container">
+        <noscript>You need to enable JavaScript to run this app.</noscript>
         <AbstraxionProvider
           config={{
-            contracts: [pxpContract],
             treasury: pxpTreasury,
             rpcUrl: xionRPC,
             restUrl: xionREST,
@@ -32,7 +33,9 @@ export default function RootLayout({
         >
           <NotificationProvider>
             <TelegramProvider>
-              <Body>{children}</Body>
+              <PxpContractProvider>
+                <Body>{children}</Body>
+              </PxpContractProvider>
             </TelegramProvider>
           </NotificationProvider>
         </AbstraxionProvider>

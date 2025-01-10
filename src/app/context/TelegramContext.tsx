@@ -17,7 +17,10 @@ interface TelegramContextProps {
   cloudStorage: CloudStorageFunctions | null;
   scanQrCode: QrCodeScanFunctions | null;
   mainButton: MainButtonFunctions | null;
+  platform: Platform;
 }
+
+type Platform = "android" | "ios" | "macos" | "tdesktop" | "web" | null;
 
 interface MainButtonFunctions {
   enableAndShowMainButton: (
@@ -341,7 +344,8 @@ export const TelegramProvider = ({
     const validateInitData = async (initData: string) => {
       try {
         const response = await fetch(
-          `/api/telegram/validate-userdata?initData=${encodeURIComponent(
+          `/api/telegram/validate2?initData=${encodeURIComponent(
+            // `/api/telegram/validate-userdata?initData=${encodeURIComponent(
             initData
           )}`
         );
@@ -349,6 +353,7 @@ export const TelegramProvider = ({
 
         if (response.ok && data.isValid) {
           console.info("Validation successful");
+          console.log("TOKEN AND VALIDITY", data);
           setIsAllowed(true);
           const user = Object.fromEntries(new URLSearchParams(initData));
           setUserData(JSON.parse(user.user));
@@ -418,6 +423,7 @@ export const TelegramProvider = ({
         cloudStorage,
         scanQrCode,
         mainButton,
+        platform: WebApp?.platform as Platform,
       }}
     >
       {children}

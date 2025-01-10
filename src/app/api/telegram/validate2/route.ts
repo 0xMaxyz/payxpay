@@ -1,6 +1,6 @@
 import { HEADERS } from "@/app/consts";
 import logger from "@/lib/logger";
-import verifyTelegramWebAppData from "@/lib/telegram-verifier";
+import verifyTelegramWebAppData2 from "@/lib/telegram-verifier2";
 import { NextRequest } from "next/server";
 
 export const GET = async function (req: NextRequest) {
@@ -9,11 +9,23 @@ export const GET = async function (req: NextRequest) {
     const initData = url.searchParams.get("initData");
     if (initData) {
       // validate the data and return the result
-      const isValid = verifyTelegramWebAppData(initData);
-      return new Response(JSON.stringify({ isValid }), {
-        status: 200,
-        headers: HEADERS,
-      });
+      const res = verifyTelegramWebAppData2(initData);
+      if (!res) {
+        return new Response(
+          JSON.stringify({ error: "Invalid/expired initData" }),
+          {
+            status: 403,
+            headers: HEADERS,
+          }
+        );
+      }
+      return new Response(
+        JSON.stringify({ isValid: res.validHash, jwt: res.token }),
+        {
+          status: 200,
+          headers: HEADERS,
+        }
+      );
     } else {
       return new Response(JSON.stringify({ error: "initData misssing" }), {
         status: 400,
