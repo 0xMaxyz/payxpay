@@ -43,6 +43,9 @@ const PayPage = () => {
   const [paymentType, setPaymentType] = useState<"direct" | "escrow">("direct");
 
   const getPrice = (s: number = 600) => {
+    if (!priceFeeds) {
+      return null;
+    }
     const price = priceFeeds[0].getPriceNoOlderThan(s);
     if (price) {
       return {
@@ -449,7 +452,7 @@ const PayPage = () => {
                   />
                   <span className="ml-2">Escrow</span>
                 </label>
-                {getPrice(600) && (
+                {priceFeeds && getPrice(600) && (
                   <p className="tg-text">
                     {`Estimated price: ${
                       BigInt(signedInvoice.amount) * getPrice(600)!.price
