@@ -40,7 +40,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
       value={{ addNotification, removeNotification }}
     >
       {children}
-      <div className="toast toast-end min-w-80 ">
+      <div className="toast toast-end min-w-80 bottom-14">
         {notifications.map(({ id, color, message, children }) => (
           <div
             key={id}
