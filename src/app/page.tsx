@@ -16,6 +16,7 @@ const CreateInvoicePage = () => {
     userData: telegramUserData,
     WebApp: TgWebApp,
     cloudStorage,
+    token: jwtToken,
   } = useTelegramContext();
   const [createInvoiceBtnLoading, setCreateInvoiceBtnLoading] = useState(false);
   const { data: account } = useAbstraxionAccount();
@@ -198,6 +199,10 @@ const CreateInvoicePage = () => {
       };
       try {
         const resp = await fetch(`/api/invoice/create`, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${jwtToken}`,
+          },
           body: JSON.stringify({
             invoice: encodeURIComponent(JSON.stringify(invoice)),
             tgHash: encodeURIComponent(TgWebApp?.initData ?? ""),
