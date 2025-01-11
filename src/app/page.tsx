@@ -285,6 +285,9 @@ const CreateInvoicePage = () => {
             value={currency}
             onChange={(e) => setCurrency(e.target.value)}
           >
+            <option value="" disabled>
+              Select a currency ...
+            </option>
             {CURRENCIES.sort((a, b) => a.name.localeCompare(b.name)).map(
               (c) => {
                 return (
@@ -341,7 +344,7 @@ const CreateInvoicePage = () => {
             )}
           </button>
         )}
-        <div>
+        {/* <div>
           <button
             className="btn btn-primary w-full mt-2"
             onClick={async () => {
@@ -401,7 +404,7 @@ const CreateInvoicePage = () => {
           >
             Remove All Invoices
           </button>
-        </div>
+        </div> */}
       </div>
       <dialog
         id="invoice-created-modal"
