@@ -457,7 +457,7 @@ const PayPage = () => {
                 {priceFeeds && (
                   <p className="tg-text">
                     {`Estimated price: ${
-                      BigInt(signedInvoice.amount) * getPrice(600)!.price
+                      BigInt(signedInvoice.amount) / getPrice(600)!.price
                     } USDC`}{" "}
                     <span className="italic">{`(Price feed updated at ${
                       getPrice(600)?.date
