@@ -47,4 +47,4 @@ export const CURRENCIES: Array<Currency> = [
   },
 ];
 
-export const JWT_VALIDITY_DURATION = 2; // minutes
+export const JWT_VALIDITY_DURATION = 15; // minutes

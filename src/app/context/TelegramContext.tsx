@@ -360,7 +360,6 @@ export const TelegramProvider = ({
         const data = await response.json();
 
         if (response.ok && data.isValid) {
-          console.log("Token is", data.jwt);
           setToken(data.jwt);
           setIsAllowed(data.isValid);
           setUserData(decodeInitData(initData).user);
@@ -421,23 +420,17 @@ export const TelegramProvider = ({
   }, [isProduction]);
 
   useEffect(() => {
-    console.log("Token is changed", token);
     if (token) {
-      console.log("Token is set", token);
       const decodedJwt = JSON.parse(atob(token.split(".")[1]));
       const expiration = decodedJwt.exp * 1000;
-      console.log("Expiration", expiration);
       const currentTime = Date.now();
-      console.log("Current timne", currentTime);
 
       if (expiration < currentTime) {
         setIsTokenExpired(true);
-        console.log("token expired");
       } else {
-        console.log("Token is valid");
         const timeout = setTimeout(() => {
           setIsTokenExpired(true);
-          console.log("Token expired");
+          console.warn("Token expired");
         }, expiration - currentTime);
         return () => clearTimeout(timeout);
       }

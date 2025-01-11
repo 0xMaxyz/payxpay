@@ -3,13 +3,11 @@ import { useEffect } from "react";
 const TokenExpiryCheck = () => {
   const { isTokenExpired, WebApp } = useTelegramContext();
   useEffect(() => {
-    console.log("isTokenExpired changed:", isTokenExpired);
     if (isTokenExpired) {
-      console.log("Token Expired");
       WebApp?.showPopup(
         {
           title: "Session Expired",
-          message: "Session expired, please close and re-open the app",
+          message: "Session expired, please close and re-open the app.",
           buttons: [{ type: "destructive", text: "Close" }],
         },
         () => window.Telegram.WebApp.close()
