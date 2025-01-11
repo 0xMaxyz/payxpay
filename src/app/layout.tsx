@@ -8,6 +8,7 @@ import { TelegramProvider } from "./context/TelegramContext";
 import Body from "./components/body";
 import { NotificationProvider } from "./context/NotificationContext";
 import { PxpContractProvider } from "./context/PxpContractContext";
+import CheckToken from "./components/tokenExpiryCheck";
 
 export default function RootLayout({
   children,
@@ -33,6 +34,7 @@ export default function RootLayout({
         >
           <NotificationProvider>
             <TelegramProvider>
+              <CheckToken />
               <PxpContractProvider>
                 <Body>{children}</Body>
               </PxpContractProvider>

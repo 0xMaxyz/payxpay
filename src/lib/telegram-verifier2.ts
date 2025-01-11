@@ -12,9 +12,13 @@ const verifyTelegramWebAppData2 = (initData: string) => {
   const encoded = decodeURIComponent(decodeURIComponent(initData));
   const decoded = decodeInitData(encoded);
   // check if timestamp is valid
-  const timestampValidity = Date.now() - decoded.auth_date < 15 * 60 * 1000;
-  if (!timestampValidity) {
-    return null;
+  const timestampValidity = Date.now() - decoded.auth_date > 15 * 60 * 1000;
+  if (timestampValidity) {
+    return {
+      validHash: false,
+      token: "",
+      expired: true,
+    };
   }
 
   // HMAC-SHA-256 signature of the bot's token with the constant string WebAppData used as a key.
@@ -47,6 +51,7 @@ const verifyTelegramWebAppData2 = (initData: string) => {
     return {
       validHash: hashIsValid,
       token,
+      expired: timestampValidity,
     };
   }
   return null;

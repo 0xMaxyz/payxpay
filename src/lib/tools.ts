@@ -1,4 +1,4 @@
-import { Invoice } from "@/app/types";
+import { Invoice, TgUserData } from "@/app/types";
 import crypto from "crypto";
 export const blockExplorerUrl = (txHash: string) => {
   return `https://testnet.xion.explorers.guru/transaction/${txHash}`;
@@ -120,17 +120,17 @@ export const decodeInitData = (init: string) => {
   const userData = decoded.get("user");
   let user_id: number = 0;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let user: any = undefined;
+  let user: TgUserData | undefined = undefined;
   if (userData) {
     const usrJson = decodeURIComponent(userData);
     user = JSON.parse(usrJson);
-    user_id = user.id ?? 0;
+    user_id = user?.id ?? 0;
   }
   return {
     user_id: user_id,
     hash: decoded.get("hash") ?? "",
     signature: decoded.get("signature") ?? "",
     auth_date: 1000 * Number.parseInt(decoded.get("auth_date")!),
-    user: user ?? "",
+    user: user ?? undefined,
   };
 };

@@ -11,16 +11,17 @@ export const GET = async function (req: NextRequest) {
       // validate the data and return the result
       const res = verifyTelegramWebAppData2(initData);
       if (!res) {
-        return new Response(
-          JSON.stringify({ error: "Invalid/expired initData" }),
-          {
-            status: 403,
-            headers: HEADERS,
-          }
-        );
+        return new Response(JSON.stringify({ error: "Invalid initData" }), {
+          status: 403,
+          headers: HEADERS,
+        });
       }
       return new Response(
-        JSON.stringify({ isValid: res.validHash, jwt: res.token }),
+        JSON.stringify({
+          isValid: res.validHash,
+          jwt: res.token,
+          expired: res.expired,
+        }),
         {
           status: 200,
           headers: HEADERS,

@@ -7,10 +7,11 @@ import React, {
   useState,
 } from "react";
 import { EnvironmentType, TgUserData } from "../types";
+import { decodeInitData } from "@/lib/tools";
 
 interface TelegramContextProps {
   WebApp: typeof window.Telegram.WebApp | null;
-  userData: TgUserData | null;
+  userData: TgUserData | undefined;
   isAllowed: boolean;
   loading: boolean;
   theme: "light" | "dark";
@@ -18,6 +19,7 @@ interface TelegramContextProps {
   scanQrCode: QrCodeScanFunctions | null;
   mainButton: MainButtonFunctions | null;
   platform: Platform;
+  token: string | null;
 }
 
 type Platform = "android" | "ios" | "macos" | "tdesktop" | "web" | null;
@@ -69,9 +71,11 @@ export const TelegramProvider = ({
     null
   );
   const [theme, setTheme] = useState<"light" | "dark">("light");
-  const [userData, setUserData] = useState<TgUserData | null>(null);
+  const [userData, setUserData] = useState<TgUserData | undefined>(undefined);
   const [isAllowed, setIsAllowed] = useState(false);
   const [loading, setLoading] = useState(true);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [token, setToken] = useState<string | null>(null);
   const isProduction = useMemo(
     () => (process.env.NEXT_PUBLIC_ENV as EnvironmentType) === "production",
     []
@@ -352,22 +356,23 @@ export const TelegramProvider = ({
         const data = await response.json();
 
         if (response.ok && data.isValid) {
-          console.info("Validation successful");
-          console.log("TOKEN AND VALIDITY", data);
-          setIsAllowed(true);
-          const user = Object.fromEntries(new URLSearchParams(initData));
-          setUserData(JSON.parse(user.user));
+          setToken(data.token);
+          setIsAllowed(data.isValid);
+          // const user = Object.fromEntries(new URLSearchParams(initData));
+          const user = decodeInitData(initData).user;
+          // setUserData(JSON.parse(user.user));
+          setUserData(user);
           // set the html theme to telegram
           document.documentElement.setAttribute("data-theme", "telegram");
         } else {
           console.warn("Validation failed");
           setIsAllowed(false);
-          setUserData(null);
+          setUserData(undefined);
         }
       } catch (error) {
         console.error(`Error validating user data: ${error}`);
         setIsAllowed(false);
-        setUserData(null);
+        setUserData(undefined);
       } finally {
         setLoading(false);
       }
@@ -376,12 +381,12 @@ export const TelegramProvider = ({
     if (!isProduction) {
       // In development, skip validation for testing purposes
       setIsAllowed(true);
-      setUserData(null);
+      setUserData(undefined);
       setLoading(false);
     } else {
       if (typeof window !== "undefined" && window.Telegram?.WebApp) {
         const tgWebApp = window.Telegram.WebApp;
-        tgWebApp.ready();
+        // Set Telegram Webapp
         setWebApp(tgWebApp);
 
         // set theme
@@ -403,6 +408,8 @@ export const TelegramProvider = ({
         } else {
           setLoading(false);
         }
+        // execute the ready() function after doing the initial checks
+        tgWebApp.ready();
 
         // Cleanup event listener
         return () => {
@@ -424,6 +431,7 @@ export const TelegramProvider = ({
         scanQrCode,
         mainButton,
         platform: WebApp?.platform as Platform,
+        token,
       }}
     >
       {children}
