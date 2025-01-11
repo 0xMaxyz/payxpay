@@ -1,6 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
+import Decimal from "decimal.js";
 import { useEffect, useRef, useState } from "react";
 import { SignedInvoice } from "../types";
 import { copyFromClipboard, decodeInvoice } from "@/utils/tools";
@@ -47,7 +48,7 @@ const PayPage = () => {
     undefined
   );
   interface LatestPrice {
-    price: bigint;
+    price: Decimal;
     date: string;
   }
   useEffect(() => {
@@ -58,7 +59,7 @@ const PayPage = () => {
       if (price) {
         console.log(`Found price in last ${200_000} seconds: `, price);
         setLatestPrice({
-          price: BigInt(price.price) * BigInt(10 ** price.expo),
+          price: new Decimal(price.price).mul(new Decimal(10).pow(price.expo)),
           date: new Date(price.publishTime * 1000).toLocaleString(),
         });
       }
@@ -462,9 +463,9 @@ const PayPage = () => {
                 </label>
                 {latestPrice && (
                   <p className="tg-text">
-                    {`Estimated price: ${
-                      BigInt(signedInvoice.amount) / latestPrice.price
-                    } USDC`}{" "}
+                    {`Estimated price: ${new Decimal(signedInvoice.amount)
+                      .dividedBy(latestPrice.price)
+                      .toDecimalPlaces(2)} USDC`}{" "}
                     <span className="italic">{`(Price feed updated at ${latestPrice.date})`}</span>
                   </p>
                 )}
