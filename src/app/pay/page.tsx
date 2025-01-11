@@ -50,6 +50,7 @@ const PayPage = () => {
     }
     const price = priceFeeds[0].getPriceNoOlderThan(s);
     if (price) {
+      console.log(`Found price in last ${s} seconds: `, price);
       return {
         price: BigInt(price.price) * BigInt(10 ** price.expo),
         date: new Date(price.publishTime * 1000).toLocaleString(),
