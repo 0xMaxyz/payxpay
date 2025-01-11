@@ -1,6 +1,6 @@
 import { getInvoice } from "@/app/db";
 import { SignedInvoice, TelegramUpdate } from "@/app/types";
-import { escapeHtml } from "@/lib/tools";
+import { escapeHtml } from "@/utils/tools";
 import { NextRequest, NextResponse } from "next/server";
 
 const BOT_TOKEN = process.env.BOT_TOKEN as string;

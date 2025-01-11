@@ -7,7 +7,7 @@ import React, {
   useState,
 } from "react";
 import { EnvironmentType, TgUserData } from "../types";
-import { decodeInitData } from "@/lib/tools";
+import { decodeInitData } from "@/utils/tools";
 
 interface TelegramContextProps {
   WebApp: typeof window.Telegram.WebApp | null;

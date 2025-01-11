@@ -3,7 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { SignedInvoice } from "../types";
-import { copyFromClipboard, decodeInvoice } from "@/lib/tools";
+import { copyFromClipboard, decodeInvoice } from "@/utils/tools";
 import { HEADERS } from "../consts";
 import { useNotification } from "../context/NotificationContext";
 import { useTelegramContext } from "../context/TelegramContext";

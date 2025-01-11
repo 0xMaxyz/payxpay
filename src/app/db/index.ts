@@ -1,4 +1,4 @@
-import logger from "@/lib/logger";
+import logger from "@/utils/logger";
 import { sql } from "@vercel/postgres";
 // Types
 type EscrowOut = "direct" | "approve" | "refund";

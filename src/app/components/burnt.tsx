@@ -1,4 +1,4 @@
-import { shortenAddress } from "@/lib/tools";
+import { shortenAddress } from "@/utils/tools";
 import Image from "next/image";
 import {
   useAbstraxionSigningClient,

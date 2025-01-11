@@ -1,12 +1,22 @@
 import { addInvoice } from "@/app/db";
 import { Invoice, TgUserData } from "@/app/types";
-import verifyTelegramWebAppData from "@/lib/telegram-verifier";
-import { decodeInvoice, encodeSignedInvoice, signInvoice } from "@/lib/tools";
+import verifyTelegramWebAppData from "@/utils/telegram-verifier";
+import { decodeInvoice, encodeSignedInvoice, signInvoice } from "@/utils/tools";
+import { verifyJWT } from "@/utils/verify_jwt";
 import { NextRequest, NextResponse } from "next/server";
 
 const bot_token = process.env.BOT_TOKEN as string;
 
 export async function POST(req: NextRequest) {
+  // Verify the JWT
+  const jwtPayload = verifyJWT(req);
+  if (jwtPayload instanceof NextResponse) {
+    // If verification fails, return the response
+    return jwtPayload;
+  }
+  //
+  console.log("Payload", jwtPayload);
+
   const referer = req.headers.get("referer");
   if (
     !referer ||

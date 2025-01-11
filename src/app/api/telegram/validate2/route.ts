@@ -1,6 +1,6 @@
 import { HEADERS } from "@/app/consts";
-import logger from "@/lib/logger";
-import verifyTelegramWebAppData2 from "@/lib/telegram-verifier2";
+import logger from "@/utils/logger";
+import verifyTelegramWebAppData2 from "@/utils/telegram-verifier2";
 import { NextRequest } from "next/server";
 
 export const GET = async function (req: NextRequest) {

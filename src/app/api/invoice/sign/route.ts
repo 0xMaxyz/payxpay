@@ -1,6 +1,6 @@
 import { Invoice, TgUserData } from "@/app/types";
-import verifyTelegramWebAppData from "@/lib/telegram-verifier";
-import { decodeInvoice, encodeSignedInvoice, signInvoice } from "@/lib/tools";
+import verifyTelegramWebAppData from "@/utils/telegram-verifier";
+import { decodeInvoice, encodeSignedInvoice, signInvoice } from "@/utils/tools";
 import { NextRequest, NextResponse } from "next/server";
 
 const bot_token = process.env.BOT_TOKEN as string;

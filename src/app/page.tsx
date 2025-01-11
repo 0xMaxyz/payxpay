@@ -8,7 +8,7 @@ import { useNotification } from "./context/NotificationContext";
 import { useTelegramContext } from "./context/TelegramContext";
 import Image from "next/image";
 import QrCode from "qrcode";
-import { getShareableLink } from "@/lib/tools";
+import { getShareableLink } from "@/utils/tools";
 
 const CreateInvoicePage = () => {
   const { addNotification } = useNotification();

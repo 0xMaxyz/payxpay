@@ -1,6 +1,6 @@
 import { getInvoice } from "@/app/db";
 import { SignedInvoice } from "@/app/types";
-import { decodeInvoice, signInvoice } from "@/lib/tools";
+import { decodeInvoice, signInvoice } from "@/utils/tools";
 import { NextRequest, NextResponse } from "next/server";
 
 const bot_token = process.env.BOT_TOKEN as string;

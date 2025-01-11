@@ -1,7 +1,7 @@
 import { HEADERS } from "@/app/consts";
 import { getInvoice } from "@/app/db";
 import { SignedInvoice } from "@/app/types";
-import { createTelegramShareMessage } from "@/lib/telegram-tools";
+import { createTelegramShareMessage } from "@/utils/telegram-tools";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {

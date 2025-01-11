@@ -7,7 +7,7 @@ import { Coin, DeliverTxResponse } from "@cosmjs/stargate";
 import { CosmWasmClient, ExecuteResult } from "@cosmjs/cosmwasm-stargate";
 import React, { createContext, useContext } from "react";
 import { env } from "process";
-import { queryIbcDenom } from "@/lib/tools";
+import { queryIbcDenom } from "@/utils/tools";
 
 type ExecuteCreateMsg = {
   create: CreateMsg;
