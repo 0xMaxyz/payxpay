@@ -38,7 +38,9 @@ const PayPage = () => {
     null
   );
   const [loading, setLoading] = useState(false);
-  const [priceFeeds, setPriceFeeds] = useState<PriceFeed[]>([]);
+  const [priceFeeds, setPriceFeeds] = useState<PriceFeed[] | undefined>(
+    undefined
+  );
   const [error, setError] = useState<string | null>(null);
   const [paymentType, setPaymentType] = useState<"direct" | "escrow">("direct");
 
@@ -452,7 +454,7 @@ const PayPage = () => {
                   />
                   <span className="ml-2">Escrow</span>
                 </label>
-                {priceFeeds && getPrice(600) && (
+                {priceFeeds && (
                   <p className="tg-text">
                     {`Estimated price: ${
                       BigInt(signedInvoice.amount) * getPrice(600)!.price
