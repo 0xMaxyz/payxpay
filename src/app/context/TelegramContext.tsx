@@ -423,15 +423,19 @@ export const TelegramProvider = ({
     if (token) {
       const decodedJwt = JSON.parse(atob(token.split(".")[1]));
       const expiration = decodedJwt.exp * 1000;
+      console.log("Expiration", expiration);
       const currentTime = Date.now();
+      console.log("Current timne", currentTime);
 
       if (expiration < currentTime) {
         setIsTokenExpired(true);
+        console.log("token expired");
       } else {
-        const timeout = setTimeout(
-          () => setIsTokenExpired(true),
-          expiration - currentTime
-        );
+        console.log("Token is valid");
+        const timeout = setTimeout(() => {
+          setIsTokenExpired(true);
+          console.log("Token expired");
+        }, expiration - currentTime);
         return () => clearTimeout(timeout);
       }
     }

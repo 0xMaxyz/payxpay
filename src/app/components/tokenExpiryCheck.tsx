@@ -3,6 +3,7 @@ import { useEffect } from "react";
 const TokenExpiryCheck = () => {
   const { isTokenExpired, WebApp } = useTelegramContext();
   useEffect(() => {
+    console.log("isTokenExpired changed:", isTokenExpired);
     if (isTokenExpired) {
       WebApp?.showPopup(
         {
