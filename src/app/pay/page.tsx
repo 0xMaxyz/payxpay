@@ -15,6 +15,8 @@ import {
   EscrowType,
   usePxpContract,
 } from "../context/PxpContractContext";
+import { getRates } from "@/utils/get-rates";
+import { PriceFeed } from "@pythnetwork/price-service-client";
 
 const PayPage = () => {
   // use PxpContract
@@ -36,7 +38,21 @@ const PayPage = () => {
     null
   );
   const [loading, setLoading] = useState(false);
+  const [priceFeeds, setPriceFeeds] = useState<PriceFeed[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [paymentType, setPaymentType] = useState<"direct" | "escrow">("direct");
+
+  const getPrice = (s: number = 600) => {
+    const price = priceFeeds[0].getPriceNoOlderThan(s);
+    if (price) {
+      return {
+        price: BigInt(price.price) * BigInt(10 ** price.expo),
+        date: new Date(price.publishTime * 1000).toLocaleString(),
+      };
+    } else {
+      return null;
+    }
+  };
 
   useEffect(() => {
     const onClose = () => {
@@ -63,13 +79,25 @@ const PayPage = () => {
   }, [signedInvoice, mainButton]);
 
   useEffect(() => {
+    const rates = async (c: string[]) => {
+      const r = await getRates(c);
+      if (r) {
+        setPriceFeeds(r);
+      } else {
+        addNotification({ color: "error", message: "Can't update the rates." });
+      }
+    };
+    if (signedInvoice) {
+      // get rates
+      rates([signedInvoice.unit]);
+    }
     if (signedInvoice && paymentRef.current) {
       paymentRef.current.scrollIntoView({
         behavior: "smooth",
         block: "center",
       });
     }
-  }, [signedInvoice]);
+  }, [addNotification, signedInvoice]);
 
   useEffect(() => {
     const getInvoice = async (id: string) => {
@@ -140,7 +168,7 @@ const PayPage = () => {
       CheckInvoice(invoiceId as string);
       setLoading(false);
     }
-  }, [searchParams]);
+  }, [jwtToken, searchParams]);
 
   const handleScanQrCode = async () => {
     try {
@@ -393,8 +421,45 @@ const PayPage = () => {
               </div>
               <p className="mb-2">
                 <strong>Validity:</strong>{" "}
-                {signedInvoice.invoiceValidity || "Unlimited"}
+                {typeof signedInvoice.invoiceValidity === "number"
+                  ? new Date(signedInvoice.invoiceValidity).toLocaleString()
+                  : signedInvoice.invoiceValidity}
               </p>
+              <div className="w-full flex flex-col">
+                <label className="flex items-center cursor-pointer">
+                  <input
+                    type="radio"
+                    name="paymentType"
+                    value="direct"
+                    checked={paymentType === "direct"}
+                    onChange={() => setPaymentType("direct")}
+                    className="radio radio-primary"
+                  />
+                  <span className="ml-2">Direct</span>
+                </label>
+
+                <label className="flex items-center cursor-pointer">
+                  <input
+                    type="radio"
+                    name="paymentType"
+                    value="escrow"
+                    checked={paymentType === "escrow"}
+                    onChange={() => setPaymentType("escrow")}
+                    className="radio radio-primary"
+                  />
+                  <span className="ml-2">Escrow</span>
+                </label>
+                {getPrice(600) && (
+                  <p className="tg-text">
+                    {`Estimated price: ${
+                      BigInt(signedInvoice.amount) * getPrice(600)!.price
+                    } USDC`}{" "}
+                    <span className="italic">{`(Price feed updated at ${
+                      getPrice(600)?.date
+                    })`}</span>
+                  </p>
+                )}
+              </div>
             </div>
           )}
         </>
