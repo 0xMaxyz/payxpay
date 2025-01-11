@@ -2,30 +2,18 @@ import { addInvoice } from "@/app/db";
 import { Invoice, TgUserData } from "@/app/types";
 import verifyTelegramWebAppData from "@/utils/telegram-verifier";
 import { decodeInvoice, encodeSignedInvoice, signInvoice } from "@/utils/tools";
-import { verifyJWT } from "@/utils/verify_jwt";
+import { verifyJWTAndReferer } from "@/utils/verify_jwt";
 import { NextRequest, NextResponse } from "next/server";
 
 const bot_token = process.env.BOT_TOKEN as string;
 
 export async function POST(req: NextRequest) {
-  // Verify the JWT
-  const jwtPayload = verifyJWT(req);
+  // verify token
+  const jwtPayload = verifyJWTAndReferer(req);
   if (jwtPayload instanceof NextResponse) {
-    // If verification fails, return the response
     return jwtPayload;
   }
-  //
-  console.log("Payload", jwtPayload);
 
-  const referer = req.headers.get("referer");
-  if (
-    !referer ||
-    !referer.startsWith(
-      `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL as string}`
-    )
-  ) {
-    return NextResponse.json({ error: "Forbidden." }, { status: 403 });
-  }
   try {
     const { invoice, tgHash } = await req.json();
 

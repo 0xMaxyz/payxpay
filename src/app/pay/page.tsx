@@ -25,7 +25,12 @@ const PayPage = () => {
   const changeModalState = () => setModalOpen(!isModalOpen);
   const { addNotification } = useNotification();
   const paymentRef = useRef<HTMLDivElement>(null);
-  const { scanQrCode, mainButton, platform } = useTelegramContext();
+  const {
+    scanQrCode,
+    mainButton,
+    platform,
+    token: jwtToken,
+  } = useTelegramContext();
   const searchParams = useSearchParams();
   const [signedInvoice, setSignedInvoice] = useState<SignedInvoice | null>(
     null
@@ -69,7 +74,11 @@ const PayPage = () => {
   useEffect(() => {
     const getInvoice = async (id: string) => {
       try {
-        const res = await fetch(`/api/invoice/get?id=${id}`);
+        const res = await fetch(`/api/invoice/get?id=${id}`, {
+          headers: {
+            Authorization: `Bearer ${jwtToken}`,
+          },
+        });
         if (!res.ok) {
           throw new Error("Failed to fetch invoice details");
         }
@@ -156,7 +165,14 @@ const PayPage = () => {
         }
         if (invoiceId) {
           // try to fetch the invoice details
-          const res = await fetch(`/api/invoice/get-validated?id=${invoiceId}`);
+          const res = await fetch(
+            `/api/invoice/get-validated?id=${invoiceId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${jwtToken}`,
+              },
+            }
+          );
           if (!res.ok) {
             throw new Error("Failed to fetch invoice details");
           }
@@ -204,7 +220,11 @@ const PayPage = () => {
       if (invoiceId) {
         console.log("Invoice id is: ", invoiceId);
         // try to fetch the invoice details
-        const res = await fetch(`/api/invoice/get-validated?id=${invoiceId}`);
+        const res = await fetch(`/api/invoice/get-validated?id=${invoiceId}`, {
+          headers: {
+            Authorization: `Bearer ${jwtToken}`,
+          },
+        });
         if (!res.ok) {
           throw new Error("Failed to fetch invoice details");
         }

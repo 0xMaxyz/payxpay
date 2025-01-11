@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
       `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL as string}`
     )
   ) {
-    return NextResponse.json({ error: "Forbidden." }, { status: 403 });
+    return NextResponse.json({ error: "Forbidden." }, { status: 401 });
   }
   try {
     const { invoice: encodedInvoice } = await req.json();

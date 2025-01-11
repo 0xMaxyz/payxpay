@@ -1,15 +1,12 @@
 import { getInvoice } from "@/app/db";
+import { verifyJWTAndReferer } from "@/utils/verify_jwt";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
-  const referer = req.headers.get("referer");
-  if (
-    !referer ||
-    !referer.startsWith(
-      `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL as string}`
-    )
-  ) {
-    return NextResponse.json({ error: "Forbidden." }, { status: 403 });
+  // verify token
+  const jwtPayload = verifyJWTAndReferer(req);
+  if (jwtPayload instanceof NextResponse) {
+    return jwtPayload;
   }
   try {
     const url = new URL(req.url);

@@ -1,19 +1,16 @@
 import { Invoice, TgUserData } from "@/app/types";
 import verifyTelegramWebAppData from "@/utils/telegram-verifier";
 import { decodeInvoice, encodeSignedInvoice, signInvoice } from "@/utils/tools";
+import { verifyJWTAndReferer } from "@/utils/verify_jwt";
 import { NextRequest, NextResponse } from "next/server";
 
 const bot_token = process.env.BOT_TOKEN as string;
 
 export async function POST(req: NextRequest) {
-  const referer = req.headers.get("referer");
-  if (
-    !referer ||
-    !referer.startsWith(
-      `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL as string}`
-    )
-  ) {
-    return NextResponse.json({ error: "Forbidden." }, { status: 403 });
+  // verify token
+  const jwtPayload = verifyJWTAndReferer(req);
+  if (jwtPayload instanceof NextResponse) {
+    return jwtPayload;
   }
   try {
     const { searchParams } = new URL(req.url);
