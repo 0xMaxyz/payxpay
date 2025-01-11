@@ -20,6 +20,7 @@ interface TelegramContextProps {
   mainButton: MainButtonFunctions | null;
   platform: Platform;
   token: string | null;
+  isTokenExpired: boolean;
 }
 
 type Platform = "android" | "ios" | "macos" | "tdesktop" | "web" | null;
@@ -74,8 +75,9 @@ export const TelegramProvider = ({
   const [userData, setUserData] = useState<TgUserData | undefined>(undefined);
   const [isAllowed, setIsAllowed] = useState(false);
   const [loading, setLoading] = useState(true);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [token, setToken] = useState<string | null>(null);
+
+  const [isTokenExpired, setIsTokenExpired] = useState(false);
   const isProduction = useMemo(
     () => (process.env.NEXT_PUBLIC_ENV as EnvironmentType) === "production",
     []
@@ -345,6 +347,8 @@ export const TelegramProvider = ({
       return;
     }
     isInit.current = true;
+    let timeout: NodeJS.Timeout | null = null;
+
     const validateInitData = async (initData: string) => {
       try {
         const response = await fetch(
@@ -358,21 +362,16 @@ export const TelegramProvider = ({
         if (response.ok && data.isValid) {
           setToken(data.token);
           setIsAllowed(data.isValid);
-          // const user = Object.fromEntries(new URLSearchParams(initData));
-          const user = decodeInitData(initData).user;
-          // setUserData(JSON.parse(user.user));
-          setUserData(user);
+          setUserData(decodeInitData(initData).user);
           // set the html theme to telegram
           document.documentElement.setAttribute("data-theme", "telegram");
         } else {
           console.warn("Validation failed");
           setIsAllowed(false);
-          setUserData(undefined);
         }
       } catch (error) {
         console.error(`Error validating user data: ${error}`);
         setIsAllowed(false);
-        setUserData(undefined);
       } finally {
         setLoading(false);
       }
@@ -381,7 +380,6 @@ export const TelegramProvider = ({
     if (!isProduction) {
       // In development, skip validation for testing purposes
       setIsAllowed(true);
-      setUserData(undefined);
       setLoading(false);
     } else {
       if (typeof window !== "undefined" && window.Telegram?.WebApp) {
@@ -405,8 +403,6 @@ export const TelegramProvider = ({
         const initData = tgWebApp.initData;
         if (initData) {
           validateInitData(initData);
-        } else {
-          setLoading(false);
         }
         // execute the ready() function after doing the initial checks
         tgWebApp.ready();
@@ -414,10 +410,32 @@ export const TelegramProvider = ({
         // Cleanup event listener
         return () => {
           tgWebApp.offEvent("themeChanged", handleThemeChange);
+          if (timeout) {
+            clearTimeout(timeout);
+            timeout = null;
+          }
         };
       }
     }
   }, [isProduction]);
+
+  useEffect(() => {
+    if (token) {
+      const decodedJwt = JSON.parse(atob(token.split(".")[1]));
+      const expiration = decodedJwt.exp * 1000;
+      const currentTime = Date.now();
+
+      if (expiration < currentTime) {
+        setIsTokenExpired(true);
+      } else {
+        const timeout = setTimeout(
+          () => setIsTokenExpired(true),
+          expiration - currentTime
+        );
+        return () => clearTimeout(timeout);
+      }
+    }
+  }, [token]);
 
   return (
     <TelegramContext.Provider
@@ -432,6 +450,7 @@ export const TelegramProvider = ({
         mainButton,
         platform: WebApp?.platform as Platform,
         token,
+        isTokenExpired,
       }}
     >
       {children}
