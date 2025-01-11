@@ -43,22 +43,25 @@ const PayPage = () => {
   );
   const [error, setError] = useState<string | null>(null);
   const [paymentType, setPaymentType] = useState<"direct" | "escrow">("direct");
-
-  const getPrice = (s: number = 600) => {
-    if (!priceFeeds) {
-      return null;
+  const [latestPrice, setLatestPrice] = useState<undefined | LatestPrice>(
+    undefined
+  );
+  interface LatestPrice {
+    price: bigint;
+    date: string;
+  }
+  useEffect(() => {
+    if (priceFeeds) {
+      const price = priceFeeds[0].getPriceNoOlderThan(600);
+      if (price) {
+        console.log(`Found price in last ${600} seconds: `, price);
+        setLatestPrice({
+          price: BigInt(price.price) * BigInt(10 ** price.expo),
+          date: new Date(price.publishTime * 1000).toLocaleString(),
+        });
+      }
     }
-    const price = priceFeeds[0].getPriceNoOlderThan(s);
-    if (price) {
-      console.log(`Found price in last ${s} seconds: `, price);
-      return {
-        price: BigInt(price.price) * BigInt(10 ** price.expo),
-        date: new Date(price.publishTime * 1000).toLocaleString(),
-      };
-    } else {
-      return null;
-    }
-  };
+  }, [priceFeeds]);
 
   useEffect(() => {
     const onClose = () => {
@@ -455,14 +458,12 @@ const PayPage = () => {
                   />
                   <span className="ml-2">Escrow</span>
                 </label>
-                {priceFeeds && (
+                {latestPrice && (
                   <p className="tg-text">
                     {`Estimated price: ${
-                      BigInt(signedInvoice.amount) / getPrice(600)!.price
+                      BigInt(signedInvoice.amount) / latestPrice.price
                     } USDC`}{" "}
-                    <span className="italic">{`(Price feed updated at ${
-                      getPrice(600)?.date
-                    })`}</span>
+                    <span className="italic">{`(Price feed updated at ${latestPrice.date})`}</span>
                   </p>
                 )}
               </div>
