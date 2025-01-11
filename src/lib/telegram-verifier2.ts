@@ -1,8 +1,9 @@
 import crypto from "crypto";
 import { decodeInitData } from "./tools";
 import jwt from "jsonwebtoken";
+import { JWT_VALIDITY_DURATION } from "@/app/consts";
 
-const jwtValidity = 15 * 60 * 1000;
+const jwtValidity = JWT_VALIDITY_DURATION * 60 * 1000;
 const botToken = process.env.BOT_TOKEN as string;
 
 const verifyTelegramWebAppData2 = (initData: string) => {
@@ -12,14 +13,8 @@ const verifyTelegramWebAppData2 = (initData: string) => {
   const encoded = decodeURIComponent(decodeURIComponent(initData));
   const decoded = decodeInitData(encoded);
   // check if timestamp is valid
-  const timestampValidity = Date.now() - decoded.auth_date > 15 * 60 * 1000;
-  if (timestampValidity) {
-    return {
-      validHash: false,
-      token: "",
-      expired: true,
-    };
-  }
+  const timestampValidity =
+    Date.now() - decoded.auth_date > JWT_VALIDITY_DURATION * 60 * 1000;
 
   // HMAC-SHA-256 signature of the bot's token with the constant string WebAppData used as a key.
   const secret = crypto.createHmac("sha256", "WebAppData").update(botToken);

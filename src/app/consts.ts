@@ -46,3 +46,5 @@ export const CURRENCIES: Array<Currency> = [
       "0xd2db4dbf1aea74e0f666b0e8f73b9580d407f5e5cf931940b06dc633d7a95906",
   },
 ];
+
+export const JWT_VALIDITY_DURATION = 2; // minutes
