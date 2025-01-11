@@ -360,8 +360,8 @@ export const TelegramProvider = ({
         const data = await response.json();
 
         if (response.ok && data.isValid) {
-          console.log("Token is", data.token);
-          setToken(data.token);
+          console.log("Token is", data.jwt);
+          setToken(data.jwt);
           setIsAllowed(data.isValid);
           setUserData(decodeInitData(initData).user);
           // set the html theme to telegram
