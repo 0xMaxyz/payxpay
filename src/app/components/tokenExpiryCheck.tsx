@@ -5,6 +5,7 @@ const TokenExpiryCheck = () => {
   useEffect(() => {
     console.log("isTokenExpired changed:", isTokenExpired);
     if (isTokenExpired) {
+      console.log("Token Expired");
       WebApp?.showPopup(
         {
           title: "Session Expired",
@@ -26,6 +27,6 @@ const TokenExpiryCheck = () => {
     //   );
     // }
   }, [isTokenExpired, WebApp]);
-  return null;
+  return <></>;
 };
 export default TokenExpiryCheck;
