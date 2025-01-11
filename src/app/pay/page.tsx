@@ -53,10 +53,10 @@ const PayPage = () => {
   useEffect(() => {
     console.log("runing price calculator");
     if (priceFeeds) {
-      const price = priceFeeds[0].getPriceNoOlderThan(600);
+      const price = priceFeeds[0].getPriceNoOlderThan(200_000);
       console.log("price in last 600s", price);
       if (price) {
-        console.log(`Found price in last ${600} seconds: `, price);
+        console.log(`Found price in last ${200_000} seconds: `, price);
         setLatestPrice({
           price: BigInt(price.price) * BigInt(10 ** price.expo),
           date: new Date(price.publishTime * 1000).toLocaleString(),
