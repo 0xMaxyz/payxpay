@@ -77,13 +77,13 @@ const deleteInvoicesByIssuer = async (issuer_id: string) => {
 const addEscrowTxToInvoice = async (
   id: string,
   tx_hash: string,
-  out_type?: "direct"
+  out_type?: "direct" | "escrow"
 ) => {
   try {
     const result = await sql`
     UPDATE invoices
     SET create_tx = ${tx_hash}, create_tx_at = NOW() ${
-      out_type
+      out_type === "direct"
         ? `, out_type = ${out_type}, out_tx = ${tx_hash}, out_tx_at = NOW()`
         : ""
     }

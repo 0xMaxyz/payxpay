@@ -1,6 +1,7 @@
 import { CURRENCIES } from "@/app/consts";
 import { PriceServiceConnection } from "@pythnetwork/price-service-client";
-const hermes = process.env.NEXT_PUBLIC_PRICE_FEED!;
+const hermes =
+  process.env.NEXT_PUBLIC_PRICE_FEED ?? "https://hermes.pyth.network";
 // Get the Stable Hermes service URL from https://docs.pyth.network/price-feeds/api-instances-and-providers/hermes
 const connection = new PriceServiceConnection(hermes);
 

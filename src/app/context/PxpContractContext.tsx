@@ -97,6 +97,7 @@ interface PxpContractContextType {
     recipientAddress: string,
     memo?: string
   ) => Promise<DeliverTxResponse | undefined>;
+  myAddress: string;
 }
 
 const PxpContractContext = createContext<PxpContractContextType | null>(null);
@@ -258,7 +259,6 @@ export const PxpContractProvider: React.FC<{ children: React.ReactNode }> = ({
     }
     return null;
   };
-
   const queryBankBalance = async (
     address: string,
     denom: string = "uxion"
@@ -287,6 +287,7 @@ export const PxpContractProvider: React.FC<{ children: React.ReactNode }> = ({
         queryCw20Balance,
         queryBankBalance,
         bankTransfer,
+        myAddress: xionAccount.bech32Address,
       }}
     >
       {children}
