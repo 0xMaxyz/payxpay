@@ -270,7 +270,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
             <button
               className="btn btn-success w-full mt-4"
               onClick={handlePayment}
-              disabled={paymentSteps.done || paymentSteps.preparing}
+              disabled={paymentSteps.done || paymentSteps.transmitting}
             >
               Pay
             </button>
