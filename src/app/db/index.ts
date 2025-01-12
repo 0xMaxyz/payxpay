@@ -76,25 +76,29 @@ const deleteInvoicesByIssuer = async (issuer_id: string) => {
 
 const addEscrowTxToInvoice = async (
   id: string,
-  tx_hash: string,
-  out_type?: "direct" | "escrow"
+  txHash: string,
+  outType?: "direct" | "escrow"
 ) => {
   try {
+    // Base SQL query
     const result = await sql`
-    UPDATE invoices
-    SET create_tx = ${tx_hash}, create_tx_at = NOW() ${
-      out_type === "direct"
-        ? `, out_type = ${out_type}, out_tx = ${tx_hash}, out_tx_at = NOW()`
-        : ""
-    }
-    WHERE invoice_id = ${id};
+      UPDATE invoices
+      SET 
+        create_tx = ${txHash},
+        create_tx_at = NOW(),
+        out_type = ${outType},
+        out_tx = CASE WHEN ${outType} = 'direct' THEN ${txHash} ELSE out_tx END,
+        out_tx_at = CASE WHEN ${outType} = 'direct' THEN NOW() ELSE out_tx_at END
+      WHERE invoice_id = ${id};
     `;
+
     return result.rowCount;
   } catch (error) {
-    logger.error(`Db:: Can't update invoice, ${error}`);
+    logger.error(`Db:: Failed to update invoice (ID: ${id}), Error: ${error}`);
     return null;
   }
 };
+
 const addEscrowOutTxToInvoice = async (
   id: string,
   tx_hash: string,
