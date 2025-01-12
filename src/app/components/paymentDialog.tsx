@@ -259,12 +259,10 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                   .toDecimalPlaces(2)
                   .toString()} ${paymentParams.token.name.toLocaleUpperCase()}`}
                 <span className="tg-text ml-2 text-sm">
-                  (current balance:{" "}
-                  {balance
+                  {`current balance: ${balance
                     ?.mul(10 ** -6)
                     .toDecimalPlaces(2)
-                    .toString()}
-                  )
+                    .toString()} USDC`}
                 </span>
               </p>
             </div>
@@ -276,14 +274,14 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
             >
               Pay
             </button>
-            <p className="tg-text text-sm">
+            <p className="tg-text text-sx mt-2">
               <strong>Transaction Fee:</strong> 1 uxion
             </p>
-            <p className="tg-text text-sm">
+            <p className="tg-text text-sx">
               <strong>Service Fee:</strong> 0 uxion
             </p>
 
-            <div className="mt-2 shadow-2xl w-8/12">
+            <div className="m-3 p-3 shadow-2xl w-full">
               {paymentSteps.preparing && (
                 <p className="tg-text ">Preparing transaction...</p>
               )}
