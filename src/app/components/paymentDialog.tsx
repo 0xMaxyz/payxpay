@@ -244,6 +244,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
   };
 
   const finalizePayment = async () => {
+    console.log("Finalize payment is called with tx hash of: ", txHash);
     if (txHash) {
       const res = await fetch("/api/invoice/payment", {
         headers: {
@@ -254,6 +255,8 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
           invoiceId: encodeURIComponent(paymentParams.invoice.id),
           txHash: encodeURIComponent(txHash),
           paymentType: encodeURIComponent(paymentParams.paymentType),
+          payerTgId: tgData?.id,
+          payerAddress: myAddress,
         }),
         method: "POST",
       });

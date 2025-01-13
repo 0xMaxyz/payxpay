@@ -9,13 +9,20 @@ export async function POST(req: NextRequest) {
     return jwtPayload;
   }
   try {
-    const { txHash, invoiceId, paymentType } = await req.json();
+    const { txHash, invoiceId, paymentType, payerTgId, payerAddress } =
+      await req.json();
 
-    if (!txHash || !invoiceId || !paymentType) {
+    if (!txHash || !invoiceId || !paymentType || !payerAddress || !payerTgId) {
       return NextResponse.json({ error: "Missing input." }, { status: 400 });
     }
     // update the database
-    const res = await addEscrowTxToInvoice(invoiceId, txHash, paymentType);
+    const res = await addEscrowTxToInvoice(
+      invoiceId,
+      txHash,
+      paymentType,
+      payerTgId,
+      payerAddress
+    );
     if (res && res > 0) {
       // TODO: send a message to invoice issuer through the bot and inform him that the payment is done
       return NextResponse.json(
