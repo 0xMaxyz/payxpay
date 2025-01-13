@@ -1,6 +1,10 @@
 import logger from "@/utils/logger";
 import { sql } from "@vercel/postgres";
 import * as Telegram from "@/types/telegram";
+import { Redis } from "@upstash/redis";
+
+const REDIS = Redis.fromEnv();
+
 // Types
 type EscrowOut = "direct" | "approve" | "refund";
 // Functions
@@ -136,6 +140,10 @@ const saveTelegramChatInfo = async (ci: Telegram.ChatInfo) => {
       lastname = EXCLUDED.lastname
     WHERE users.chat_id <> EXCLUDED.chat_id;
     `;
+    if (res.rowCount && res.rowCount > 0) {
+      // db updated, update redis
+      await REDIS.set(`user:${ci.userId}`, JSON.stringify(ci));
+    }
     return res.rowCount;
   } catch (error) {
     logger.error(

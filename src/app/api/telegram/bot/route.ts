@@ -3,6 +3,9 @@ import { SignedInvoice } from "@/app/types";
 import * as Telegram from "@/types/telegram";
 import { escapeHtml } from "@/utils/tools";
 import { NextRequest, NextResponse } from "next/server";
+import { Redis } from "@upstash/redis";
+
+const REDIS = Redis.fromEnv();
 
 const BOT_TOKEN = process.env.BOT_TOKEN as string;
 const TELEGRAM_API = `https://api.telegram.org/bot${BOT_TOKEN}`;
@@ -199,14 +202,24 @@ export const POST = async (req: NextRequest) => {
       return NextResponse.json({ success: true }, { status: 200 });
     }
 
-    // user sent a command, save user info
-    await saveTelegramChatInfo({
+    const initChatInfo: Telegram.ChatInfo = {
       chatId: chatId,
       firstName: firstName ?? "",
       lastName: lastName ?? "",
       userName: userName ?? "",
       userId: userId,
-    });
+    };
+
+    const cachedChatInfo = await REDIS.get(`user:${userId}`);
+    if (cachedChatInfo) {
+      const chatInfo: Telegram.ChatInfo = JSON.parse(cachedChatInfo as string);
+      // compare received chat info from redis with the created one
+      const isEq = compareObjects(chatInfo, initChatInfo);
+      if (!isEq) {
+        // save the new indo to db and also update the redis (db function updates the redis too)
+        await saveTelegramChatInfo(initChatInfo);
+      }
+    }
 
     const command = match[1];
     const params = match[2];
@@ -231,6 +244,35 @@ export const POST = async (req: NextRequest) => {
     );
   }
 };
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function compareObjects(obj1: any, obj2: any): boolean {
+  if (obj1 === obj2) return true;
+
+  if (
+    typeof obj1 !== "object" ||
+    typeof obj2 !== "object" ||
+    obj1 === null ||
+    obj2 === null
+  ) {
+    return false;
+  }
+
+  const keys1 = Object.keys(obj1);
+  const keys2 = Object.keys(obj2);
+
+  if (keys1.length !== keys2.length) {
+    return false;
+  }
+
+  for (const key of keys1) {
+    if (!keys2.includes(key) || !compareObjects(obj1[key], obj2[key])) {
+      return false;
+    }
+  }
+
+  return true;
+}
 
 export const GET = async () => {
   // Simple GET handler to verify that the route is live
