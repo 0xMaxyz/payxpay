@@ -2,13 +2,14 @@
 
 import { ChangeEvent, useEffect, useState } from "react";
 import { CURRENCIES } from "./consts";
-import { Invoice, PreparedInlineMessage } from "./types";
+import { Invoice } from "./types";
 import { useAbstraxionAccount, useModal } from "@burnt-labs/abstraxion";
 import { useNotification } from "./context/NotificationContext";
 import { useTelegramContext } from "./context/TelegramContext";
 import Image from "next/image";
 import QrCode from "qrcode";
 import { getShareableLink } from "@/utils/tools";
+import * as Telegram from "@/types/telegram";
 
 const CreateInvoicePage = () => {
   const { addNotification } = useNotification();
@@ -28,7 +29,7 @@ const CreateInvoicePage = () => {
   const [isConnecting, setIsConnecting] = useState(false);
   const [invoiceId, setInvoiceId] = useState("");
   const [preppedMsg, setPreppedMsg] = useState<
-    PreparedInlineMessage | undefined
+    Telegram.PreparedInlineMessage | undefined
   >(undefined);
   const [shareableLink, setShareableLink] = useState<string | undefined>(
     undefined
@@ -96,7 +97,7 @@ const CreateInvoicePage = () => {
         console.log("Response from prepare-message", resp);
         if (resp.ok) {
           const parsed = await resp.json();
-          const prepMsg = JSON.parse(parsed) as PreparedInlineMessage;
+          const prepMsg = JSON.parse(parsed) as Telegram.PreparedInlineMessage;
           window.Telegram.WebApp.shareMessage(prepMsg.id, (state: boolean) =>
             console.log(state ? "Message shared." : "Error sharing the message")
           );

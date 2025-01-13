@@ -1,9 +1,5 @@
-import {
-  InlineQueryResultArticle,
-  PreparedInlineMessage,
-  savePreparedInlineMessage,
-  SignedInvoice,
-} from "@/app/types";
+import { SignedInvoice } from "@/app/types";
+import * as Telegram from "@/types/telegram";
 import { escapeHtml } from "./tools";
 
 export const generateMessageId = () => {
@@ -18,7 +14,7 @@ export const createTelegramShareMessage = async (
   const BOT_TOKEN = process.env.BOT_TOKEN as string;
   const TELEGRAM_API = `https://api.telegram.org/bot${BOT_TOKEN}`;
 
-  const inlineQueryResultArticle: InlineQueryResultArticle = {
+  const inlineQueryResultArticle: Telegram.InlineQueryResultArticle = {
     type: "article",
     id: generateMessageId(),
     title: "Payment link",
@@ -29,7 +25,7 @@ export const createTelegramShareMessage = async (
     },
     description: "Choose the recepient of the invoice",
   };
-  const savePreparedInlineMessage: savePreparedInlineMessage = {
+  const savePreparedInlineMessage: Telegram.savePreparedInlineMessage = {
     user_id: signedInvoice.issuerTelegramId,
     result: inlineQueryResultArticle,
     allow_user_chats: true,
@@ -43,7 +39,8 @@ export const createTelegramShareMessage = async (
     if (response.ok) {
       const respFromTg = await response.json();
       if (respFromTg.ok) {
-        const preparedMessage = respFromTg.result as PreparedInlineMessage;
+        const preparedMessage =
+          respFromTg.result as Telegram.PreparedInlineMessage;
         console.log(
           "Received response for save Prepared message is: ",
           preparedMessage
