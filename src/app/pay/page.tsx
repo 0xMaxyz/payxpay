@@ -425,7 +425,7 @@ const PayPage = () => {
                 type="text"
                 value={signedInvoice?.id || ""}
                 placeholder="Scan the QR code or paste the invoice"
-                className="input input-bordered w-full tg-input"
+                className="input input-bordered w-full tg-input pointer-events-none"
               />
               <div className="flex gap-4 mt-4">
                 {(platform === "android" || platform === "ios") && (
@@ -525,7 +525,7 @@ const PayPage = () => {
                         target="_blank"
                         className="text-blue-500 underline"
                       >
-                        Open chat with {` ${signedInvoice.issuerFirstName}`}
+                        {` Open chat with ${signedInvoice.issuerFirstName}`}
                       </Link>
                     </div>
                     <p className="mb-2">
@@ -537,11 +537,11 @@ const PayPage = () => {
                         : signedInvoice.invoiceValidity}
                     </p>
                     <div className="w-full flex flex-col">
-                      <p>
-                        <strong>Payment Type: </strong>
-                      </p>
                       <div className="flex flex-row">
-                        <label className="flex items-center cursor-pointer">
+                        <p>
+                          <strong>Payment Type: </strong>
+                        </p>
+                        <label className="flex items-center cursor-pointer ms-4">
                           <input
                             type="radio"
                             name="paymentType"
@@ -553,7 +553,7 @@ const PayPage = () => {
                           <span className="ml-2">Direct</span>
                         </label>
 
-                        <label className="flex items-center cursor-pointer">
+                        <label className="flex items-center cursor-pointer ms-4">
                           <input
                             type="radio"
                             name="paymentType"

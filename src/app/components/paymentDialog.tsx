@@ -306,9 +306,9 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                       .toDecimalPlaces(2)
                       .toString()} ${paymentParams.token.name.toLocaleUpperCase()}`}
                   </button>
-                  <p className="tg-text text-xs mt-2">
+                  {/* <p className="tg-text text-xs mt-2">
                     <strong>Transaction Fee:</strong> 1 uxion
-                  </p>
+                  </p> */}
                   <p className="tg-text text-xs">
                     <strong>Service Fee:</strong> 0 uxion
                   </p>
