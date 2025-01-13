@@ -525,7 +525,7 @@ const PayPage = () => {
                         target="_blank"
                         className="text-blue-500 underline"
                       >
-                        Chat with {signedInvoice.issuerFirstName}
+                        Open chat with {` ${signedInvoice.issuerFirstName}`}
                       </Link>
                     </div>
                     <p className="mb-2">
@@ -537,31 +537,37 @@ const PayPage = () => {
                         : signedInvoice.invoiceValidity}
                     </p>
                     <div className="w-full flex flex-col">
-                      <label className="flex items-center cursor-pointer">
-                        <input
-                          type="radio"
-                          name="paymentType"
-                          value="direct"
-                          checked={paymentType === "direct"}
-                          onChange={() => setPaymentType("direct")}
-                          className="radio radio-primary"
-                        />
-                        <span className="ml-2">Direct</span>
-                      </label>
+                      <p>
+                        <strong>Payment Type: </strong>
+                      </p>
+                      <div className="flex flex-row">
+                        <label className="flex items-center cursor-pointer">
+                          <input
+                            type="radio"
+                            name="paymentType"
+                            value="direct"
+                            checked={paymentType === "direct"}
+                            onChange={() => setPaymentType("direct")}
+                            className="radio radio-primary"
+                          />
+                          <span className="ml-2">Direct</span>
+                        </label>
 
-                      <label className="flex items-center cursor-pointer">
-                        <input
-                          type="radio"
-                          name="paymentType"
-                          value="escrow"
-                          checked={paymentType === "escrow"}
-                          onChange={() => setPaymentType("escrow")}
-                          className="radio radio-primary"
-                        />
-                        <span className="ml-2">Escrow</span>
-                      </label>
+                        <label className="flex items-center cursor-pointer">
+                          <input
+                            type="radio"
+                            name="paymentType"
+                            value="escrow"
+                            checked={paymentType === "escrow"}
+                            onChange={() => setPaymentType("escrow")}
+                            className="radio radio-primary"
+                          />
+                          <span className="ml-2">Escrow</span>
+                        </label>
+                      </div>
+
                       {latestPrice ? (
-                        <p className="tg-text mt-3">
+                        <p className="text-green-600 mt-3">
                           {`Estimated price: ${new Decimal(signedInvoice.amount)
                             .dividedBy(latestPrice.price)
                             .toDecimalPlaces(2)} USDC`}{" "}
@@ -570,7 +576,7 @@ const PayPage = () => {
                       ) : (
                         <p className="tg-text mt-3">
                           Loading the latest rates
-                          <span className="loading loading-dots loading-xs"></span>
+                          <span className="loading loading-dots loading-xs my-auto"></span>
                         </p>
                       )}
                     </div>
