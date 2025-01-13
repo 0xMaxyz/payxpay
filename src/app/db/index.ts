@@ -1,5 +1,6 @@
 import logger from "@/utils/logger";
 import { sql } from "@vercel/postgres";
+import * as Telegram from "@/types/telegram";
 // Types
 type EscrowOut = "direct" | "approve" | "refund";
 // Functions
@@ -117,8 +118,34 @@ const addEscrowOutTxToInvoice = async (
   }
 };
 
-export type { EscrowOut };
+const saveTelegramChatInfo = async (ci: Telegram.ChatInfo) => {
+  try {
+    const res = await sql`
+    INSERT INTO users (user_id, chat_id, username, firstname, lastname)
+    VALUES (
+    ${ci.userId}, 
+    ${ci.chatId}, 
+    ${ci.userName}, 
+    ${ci.firstName}, 
+    ${ci.lastName}
+    )
+    ON CONFLICT (user_id) DO UPDATE
+    SET chat_id = EXCLUDED.chat_id
+      username = EXCLUDED.username,
+      firstname = EXCLUDED.firstname,
+      lastname = EXCLUDED.lastname
+    WHERE users.chat_id <> EXCLUDED.chat_id;
+    `;
+    return res.rowCount;
+  } catch (error) {
+    logger.error(
+      `Db:: Can't update user data, chatinfo: ${ci},\n error: ${error}`
+    );
+    return null;
+  }
+};
 
+export type { EscrowOut };
 export {
   addInvoice,
   getInvoice,
@@ -127,4 +154,5 @@ export {
   deleteInvoicesByIssuer,
   addEscrowTxToInvoice,
   addEscrowOutTxToInvoice,
+  saveTelegramChatInfo,
 };
