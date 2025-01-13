@@ -35,6 +35,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
     token: jwtToken,
     userData: tgData,
     mainButton,
+    WebApp: tgWebApp,
   } = useTelegramContext();
   const { queryBankBalance, myAddress, bankTransfer, createEscrow } =
     usePxpContract();
@@ -43,9 +44,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
   const [balance, setBalance] = useState<Decimal | null>(null);
   const [isBalanceSufficient, setIsBalanceSufficient] = useState(false);
   const [paymentSteps, setPaymentSteps] = useState({
-    preparing: true,
     transmitting: false,
-    waitingTxHash: false,
     waitingConfirmation: false,
     done: false,
   });
@@ -97,6 +96,28 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
     queryBankBalance,
     myAddress,
   ]);
+
+  const showConfirmation = () => {
+    const handleConfirmationDialog = (id: string) => {
+      if (id === "1") {
+        // close confirmation dialog
+        handlePayment();
+      }
+    };
+    tgWebApp?.showPopup(
+      {
+        message: ` Do you confirm the ${paymentParams.amount
+          .toDecimalPlaces(2)
+          .toString()} ${paymentParams.token.name.toLocaleUpperCase()} payment?`,
+        title: "Confirm Payment",
+        buttons: [
+          { type: "cancel" },
+          { type: "default", id: "1", text: "Pay" },
+        ],
+      },
+      handleConfirmationDialog
+    );
+  };
 
   const handlePayment = async () => {
     try {
@@ -210,10 +231,8 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
     } catch (error) {
       setPaymentSteps({
         done: false,
-        preparing: false,
         transmitting: false,
         waitingConfirmation: false,
-        waitingTxHash: false,
       });
       addNotification({ color: "error", message: "Payment failed." });
       console.error("Payment failed.", error);
@@ -252,63 +271,77 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
           </div>
         ) : isBalanceSufficient ? (
           <div>
-            <div className="py-2">
-              <p className="tg-text">
-                <strong>Amount:</strong>{" "}
-                {`${paymentParams.amount
-                  .toDecimalPlaces(2)
-                  .toString()} ${paymentParams.token.name.toLocaleUpperCase()}`}
-                <span className="tg-text ml-2 text-sm">
-                  {`current balance: ${balance
-                    ?.mul(10 ** -6)
-                    .toDecimalPlaces(2)
-                    .toString()} USDC`}
-                </span>
-              </p>
-            </div>
+            {!paymentSteps.done &&
+              !paymentSteps.transmitting &&
+              !paymentSteps.waitingConfirmation && (
+                <>
+                  <div className="py-2">
+                    <p className="tg-text">
+                      <strong>Amount:</strong>{" "}
+                      {`${paymentParams.amount
+                        .toDecimalPlaces(2)
+                        .toString()} ${paymentParams.token.name.toLocaleUpperCase()}`}
+                      <span className="tg-text ml-2 text-sm">
+                        {`[current balance: ${balance
+                          ?.mul(10 ** -6)
+                          .toDecimalPlaces(2)
+                          .toString()} USDC]`}
+                      </span>
+                    </p>
+                  </div>
 
-            <button
-              className="btn btn-success w-full mt-4"
-              onClick={handlePayment}
-              disabled={paymentSteps.done || paymentSteps.transmitting}
-            >
-              Pay
-            </button>
-            <p className="tg-text text-sx mt-2">
-              <strong>Transaction Fee:</strong> 1 uxion
-            </p>
-            <p className="tg-text text-sx">
-              <strong>Service Fee:</strong> 0 uxion
-            </p>
+                  <button
+                    className="btn btn-success w-full mt-4"
+                    onClick={showConfirmation}
+                    // onClick={handlePayment}
+                  >
+                    Pay
+                    {` ${paymentParams.amount
+                      .toDecimalPlaces(2)
+                      .toString()} ${paymentParams.token.name.toLocaleUpperCase()}`}
+                  </button>
+                  <p className="tg-text text-xs mt-2">
+                    <strong>Transaction Fee:</strong> 1 uxion
+                  </p>
+                  <p className="tg-text text-xs">
+                    <strong>Service Fee:</strong> 0 uxion
+                  </p>
+                </>
+              )}
 
             <div className="m-3 p-3 shadow-2xl w-full">
-              {paymentSteps.preparing && (
-                <p className="tg-text ">Preparing transaction...</p>
-              )}
               {paymentSteps.transmitting && (
-                <p className="tg-text">Transmitting transaction...</p>
+                <p className="tg-text">
+                  Transmitting transaction
+                  <span className="loading loading-dots loading-xs"></span>
+                </p>
               )}
-              {paymentSteps.waitingTxHash && (
-                <p className="tg-text ">Waiting for transaction hash...</p>
-              )}
+
               {paymentSteps.waitingConfirmation && (
-                <p className="tg-text ">Waiting for confirmation...</p>
+                <p className="tg-text ">
+                  Waiting for confirmation
+                  <span className="loading loading-dots loading-xs"></span>
+                </p>
               )}
               {paymentSteps.done && (
                 <div className="mt-4 text-center">
-                  <div className="text-green-500 text-4xl">✔</div>
+                  <div className="text-green-500 text-8xl">✔</div>
                   <p className="mt-2">
                     Payment of{" "}
                     {paymentParams.amount.toDecimalPlaces(2).toString()}{" "}
                     {paymentParams.token.name.toUpperCase()} completed.
                   </p>
-                  <p>
+                  <p className="overflow-hidden whitespace-nowrap text-ellipsis">
                     Transaction Hash:{" "}
                     <span
                       className="text-blue-500 underline cursor-pointer"
-                      onClick={() =>
-                        navigator.clipboard.writeText(txHash || "")
-                      }
+                      onClick={async () => {
+                        await navigator.clipboard.writeText(txHash || "");
+                        addNotification({
+                          color: "success",
+                          message: "Tx hash copied to clipboard.",
+                        });
+                      }}
                     >
                       {txHash}
                     </span>
