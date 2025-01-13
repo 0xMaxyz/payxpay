@@ -560,12 +560,17 @@ const PayPage = () => {
                         />
                         <span className="ml-2">Escrow</span>
                       </label>
-                      {latestPrice && (
-                        <p className="tg-text">
+                      {latestPrice ? (
+                        <p className="tg-text mt-3">
                           {`Estimated price: ${new Decimal(signedInvoice.amount)
                             .dividedBy(latestPrice.price)
                             .toDecimalPlaces(2)} USDC`}{" "}
                           <span className="italic">{`(Price feed updated at ${latestPrice.date})`}</span>
+                        </p>
+                      ) : (
+                        <p className="tg-text mt-3">
+                          Loading the latest rates
+                          <span className="loading loading-dots loading-xs"></span>
                         </p>
                       )}
                     </div>

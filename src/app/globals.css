@@ -179,4 +179,9 @@ a.disabled {
     color: var(--tg-theme-link-color, #0000ee);
     fill: var(--tg-theme-link-color, #0000ee);
   }
+
+  .btn.disabled,
+  .btn[disabled] {
+    background-color: gray;
+  }
 }

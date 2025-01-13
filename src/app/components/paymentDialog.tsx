@@ -281,7 +281,13 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                       {`${paymentParams.amount
                         .toDecimalPlaces(2)
                         .toString()} ${paymentParams.token.name.toLocaleUpperCase()}`}
-                      <span className="tg-text ml-2 text-sm">
+                      <span
+                        className={` ml-2 ${
+                          balance?.lessThan(paymentParams.token.amount)
+                            ? "text-red-500"
+                            : "text-green-500"
+                        } text-sm`}
+                      >
                         {`[current balance: ${balance
                           ?.mul(10 ** -6)
                           .toDecimalPlaces(2)
@@ -293,7 +299,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                   <button
                     className="btn btn-success w-full mt-4"
                     onClick={showConfirmation}
-                    // onClick={handlePayment}
+                    disabled={balance?.lessThan(paymentParams.token.amount)}
                   >
                     Pay
                     {` ${paymentParams.amount
