@@ -39,15 +39,16 @@ const handlePayCommand = async (
   }
 
   const invoiceId = params;
-  const invoice = await getInvoice(invoiceId);
+  const data = await getInvoice(invoiceId);
 
-  if (!invoice) {
+  if (!data) {
     await sendMessage({
       chat_id: chatId,
       text: "Invoice not found.",
     });
     return;
   }
+  const invoice = data.invoice;
 
   const signedInvoice = JSON.parse(
     decodeURIComponent(invoice)

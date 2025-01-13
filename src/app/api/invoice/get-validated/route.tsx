@@ -23,10 +23,11 @@ export async function GET(req: NextRequest) {
       );
     }
     console.log("received id", id);
-    const encodedInvoice = await getInvoice(id);
-    if (!encodedInvoice) {
+    const data = await getInvoice(id);
+    if (!data) {
       throw new Error("No valid invoice found.");
     }
+    const encodedInvoice = data.invoice;
     console.log("invoice is:", encodedInvoice);
     // validate the invoice signature
     const signedInvoice = decodeInvoice<SignedInvoice>(encodedInvoice);
@@ -41,6 +42,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(
       {
         invoice: encodedInvoice,
+        create_tx: data.create_tx,
+        out_tx: data.out_tx,
       },
       { status: 200 }
     );

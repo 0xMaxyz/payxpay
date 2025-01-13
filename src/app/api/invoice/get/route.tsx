@@ -19,17 +19,12 @@ export async function GET(req: NextRequest) {
       );
     }
     console.log("received id", id);
-    const invoice = await getInvoice(id);
-    if (!invoice) {
+    const res = await getInvoice(id);
+    if (!res) {
       throw new Error("No valid invoice found.");
     }
-    console.log("invoice is:", invoice);
-    return NextResponse.json(
-      {
-        invoice,
-      },
-      { status: 200 }
-    );
+    console.log("invoice is:", res);
+    return NextResponse.json(res, { status: 200 });
   } catch (error) {
     console.error("Error processing invoice:", error);
     return NextResponse.json(

@@ -23,8 +23,9 @@ export async function POST(req: NextRequest) {
       );
     }
     // get invoice and create the prepared message and send it to tg bot api
-    const invoiceStr = await getInvoice(invoiceId);
-    if (invoiceStr) {
+    const data = await getInvoice(invoiceId);
+    if (data) {
+      const invoiceStr = data.invoice;
       const signedInvoice = JSON.parse(
         decodeURIComponent(invoiceStr)
       ) as SignedInvoice;

@@ -29,12 +29,18 @@ const addInvoice = async (id: string, issuer_id: number, invoice: string) => {
 const getInvoice = async (id: string) => {
   try {
     const result = await sql`
-    SELECT invoice FROM invoices
+    SELECT invoice,create_tx,out_tx FROM invoices
     WHERE invoice_id = ${id};
     `;
     if (result.rows.length > 0) {
     }
-    return result.rows.length > 0 ? (result.rows[0].invoice as string) : null;
+    return result.rows.length > 0
+      ? {
+          invoice: result.rows[0].invoice as string,
+          create_tx: result.rows[0].create_tx as string,
+          out_tx: result.rows[0].out_tx as string,
+        }
+      : null;
   } catch (error) {
     logger.error(`Db:: Can't get an invoice, ${error}`);
     return null;

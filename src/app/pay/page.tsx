@@ -53,6 +53,14 @@ const PayPage = () => {
   const [paymentParams, setPaymentParams] = useState<PaymentParams | undefined>(
     undefined
   );
+  const [isReceivedInvoicePaid, setIsReceivedInvoicePaid] = useState<
+    | {
+        isPaid: boolean;
+        create_tx: string;
+        out_tx: string;
+      }
+    | undefined
+  >(undefined);
   interface LatestPrice {
     price: Decimal;
     date: string;
@@ -121,7 +129,12 @@ const PayPage = () => {
     };
 
     // get/set rates
-    setRatesAndLatestPrice(signedInvoice);
+    if (
+      !isReceivedInvoicePaid ||
+      (isReceivedInvoicePaid && !isReceivedInvoicePaid.isPaid)
+    ) {
+      setRatesAndLatestPrice(signedInvoice);
+    }
 
     // scroll the payment div to view
     if (signedInvoice && paymentRef.current) {
@@ -130,7 +143,7 @@ const PayPage = () => {
         block: "center",
       });
     }
-  }, [mainButton, paymentType, signedInvoice]);
+  }, [isReceivedInvoicePaid, mainButton, paymentType, signedInvoice]);
 
   useEffect(() => {
     const getInvoice = async (id: string) => {
@@ -143,8 +156,12 @@ const PayPage = () => {
         if (!res.ok) {
           throw new Error("Failed to fetch invoice details");
         }
-        const data = await res.json();
-        return data.invoice as string;
+        const data: {
+          invoice: string;
+          create_tx: string;
+          out_tx: string;
+        } = await res.json();
+        return data;
       } catch (error) {
         setError(`Something went wrong, ${JSON.stringify(error)}`);
         return null;
@@ -174,16 +191,26 @@ const PayPage = () => {
       if (id) {
         try {
           // get the invoice from db
-          const invoice = await getInvoice(id);
-          console.log("Received invoice is: ", invoice);
-          if (invoice) {
+          const dataFromDb = await getInvoice(id);
+          console.log("Received invoice is: ", dataFromDb);
+          if (dataFromDb) {
             // validate the invoice signature
-            const isValid = await validateInvoiceSignature(invoice);
+            const isValid = await validateInvoiceSignature(dataFromDb.invoice);
             if (isValid) {
               // set the invoice details
-              const decodedInvoice = decodeInvoice<SignedInvoice>(invoice);
+              const decodedInvoice = decodeInvoice<SignedInvoice>(
+                dataFromDb.invoice
+              );
               console.log("Decoded invoice is: ", decodedInvoice);
               setSignedInvoice(decodedInvoice);
+              // set payment status of received invoice
+              if (dataFromDb.create_tx || dataFromDb.out_tx) {
+                setIsReceivedInvoicePaid({
+                  isPaid: true,
+                  create_tx: dataFromDb.create_tx,
+                  out_tx: dataFromDb.create_tx,
+                });
+              }
             } else {
               setError("Invalid invoice signature");
             }
@@ -237,10 +264,21 @@ const PayPage = () => {
           if (!res.ok) {
             throw new Error("Failed to fetch invoice details");
           }
-          const data = await res.json();
+          const data: {
+            invoice: string;
+            create_tx: string;
+            out_tx: string;
+          } = await res.json();
           const decodedInvoice = decodeInvoice<SignedInvoice>(
             data.invoice as string
           );
+          if (data.create_tx || data.out_tx) {
+            setIsReceivedInvoicePaid({
+              isPaid: true,
+              create_tx: data.create_tx,
+              out_tx: data.create_tx,
+            });
+          }
           setSignedInvoice(decodedInvoice);
         }
       } else {
@@ -289,10 +327,21 @@ const PayPage = () => {
         if (!res.ok) {
           throw new Error("Failed to fetch invoice details");
         }
-        const data = await res.json();
+        const data: {
+          invoice: string;
+          create_tx: string;
+          out_tx: string;
+        } = await res.json();
         const decodedInvoice = decodeInvoice<SignedInvoice>(
           data.invoice as string
         );
+        if (data.create_tx || data.out_tx) {
+          setIsReceivedInvoicePaid({
+            isPaid: true,
+            create_tx: data.create_tx,
+            out_tx: data.create_tx,
+          });
+        }
         setSignedInvoice(decodedInvoice);
       }
     } catch (error) {
@@ -429,69 +478,99 @@ const PayPage = () => {
             </div>
             {signedInvoice && (
               <div ref={paymentRef} className="border-t pt-6 mt-6">
-                <h2 className="text-xl font-bold mb-4">Invoice Details</h2>
-                <p className="mb-2">
-                  <strong>Description:</strong> {signedInvoice.description}
-                </p>
-                <p className="mb-2">
-                  <strong>Created At:</strong>{" "}
-                  {new Date(signedInvoice.issueDate * 1000).toLocaleString()}
-                </p>
-                <p className="mb-2">
-                  <strong>Price:</strong>{" "}
-                  {`${signedInvoice.amount} ${signedInvoice.unit}`}
-                </p>
-                <div className="flex flex-row">
-                  <p className="mb-2">
-                    <strong>Issuer:</strong> {signedInvoice.issuerFirstName}
-                  </p>
-                  <Link
-                    href={`https://t.me/${signedInvoice.issuerTelegramHandle}`}
-                    target="_blank"
-                    className="text-blue-500 underline"
-                  >
-                    Chat with {signedInvoice.issuerFirstName}
-                  </Link>
-                </div>
-                <p className="mb-2">
-                  <strong>Validity:</strong>{" "}
-                  {typeof signedInvoice.invoiceValidity === "number"
-                    ? new Date(signedInvoice.invoiceValidity).toLocaleString()
-                    : signedInvoice.invoiceValidity}
-                </p>
-                <div className="w-full flex flex-col">
-                  <label className="flex items-center cursor-pointer">
-                    <input
-                      type="radio"
-                      name="paymentType"
-                      value="direct"
-                      checked={paymentType === "direct"}
-                      onChange={() => setPaymentType("direct")}
-                      className="radio radio-primary"
-                    />
-                    <span className="ml-2">Direct</span>
-                  </label>
-
-                  <label className="flex items-center cursor-pointer">
-                    <input
-                      type="radio"
-                      name="paymentType"
-                      value="escrow"
-                      checked={paymentType === "escrow"}
-                      onChange={() => setPaymentType("escrow")}
-                      className="radio radio-primary"
-                    />
-                    <span className="ml-2">Escrow</span>
-                  </label>
-                  {latestPrice && (
-                    <p className="tg-text">
-                      {`Estimated price: ${new Decimal(signedInvoice.amount)
-                        .dividedBy(latestPrice.price)
-                        .toDecimalPlaces(2)} USDC`}{" "}
-                      <span className="italic">{`(Price feed updated at ${latestPrice.date})`}</span>
+                {isReceivedInvoicePaid ? (
+                  <div className="mt-4 text-center">
+                    <div className="text-green-500 text-8xl">✔</div>
+                    <p className="mt-2">Payment is Done.</p>
+                    <p className="overflow-hidden whitespace-nowrap text-ellipsis">
+                      Transaction Hash:{" "}
+                      <span
+                        className="text-blue-500 underline cursor-pointer"
+                        onClick={async () => {
+                          await navigator.clipboard.writeText(
+                            isReceivedInvoicePaid.create_tx || ""
+                          );
+                          addNotification({
+                            color: "success",
+                            message: "Tx hash copied to clipboard.",
+                          });
+                        }}
+                      >
+                        {isReceivedInvoicePaid.create_tx}
+                      </span>
                     </p>
-                  )}
-                </div>
+                  </div>
+                ) : (
+                  <>
+                    <h2 className="text-xl font-bold mb-4">Invoice Details</h2>
+                    <p className="mb-2">
+                      <strong>Description:</strong> {signedInvoice.description}
+                    </p>
+                    <p className="mb-2">
+                      <strong>Created At:</strong>{" "}
+                      {new Date(
+                        signedInvoice.issueDate * 1000
+                      ).toLocaleString()}
+                    </p>
+                    <p className="mb-2">
+                      <strong>Price:</strong>{" "}
+                      {`${signedInvoice.amount} ${signedInvoice.unit}`}
+                    </p>
+                    <div className="flex flex-row">
+                      <p className="mb-2">
+                        <strong>Issuer:</strong> {signedInvoice.issuerFirstName}
+                      </p>
+                      <Link
+                        href={`https://t.me/${signedInvoice.issuerTelegramHandle}`}
+                        target="_blank"
+                        className="text-blue-500 underline"
+                      >
+                        Chat with {signedInvoice.issuerFirstName}
+                      </Link>
+                    </div>
+                    <p className="mb-2">
+                      <strong>Validity:</strong>{" "}
+                      {typeof signedInvoice.invoiceValidity === "number"
+                        ? new Date(
+                            signedInvoice.invoiceValidity
+                          ).toLocaleString()
+                        : signedInvoice.invoiceValidity}
+                    </p>
+                    <div className="w-full flex flex-col">
+                      <label className="flex items-center cursor-pointer">
+                        <input
+                          type="radio"
+                          name="paymentType"
+                          value="direct"
+                          checked={paymentType === "direct"}
+                          onChange={() => setPaymentType("direct")}
+                          className="radio radio-primary"
+                        />
+                        <span className="ml-2">Direct</span>
+                      </label>
+
+                      <label className="flex items-center cursor-pointer">
+                        <input
+                          type="radio"
+                          name="paymentType"
+                          value="escrow"
+                          checked={paymentType === "escrow"}
+                          onChange={() => setPaymentType("escrow")}
+                          className="radio radio-primary"
+                        />
+                        <span className="ml-2">Escrow</span>
+                      </label>
+                      {latestPrice && (
+                        <p className="tg-text">
+                          {`Estimated price: ${new Decimal(signedInvoice.amount)
+                            .dividedBy(latestPrice.price)
+                            .toDecimalPlaces(2)} USDC`}{" "}
+                          <span className="italic">{`(Price feed updated at ${latestPrice.date})`}</span>
+                        </p>
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
             )}
           </>
