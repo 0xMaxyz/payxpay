@@ -153,6 +153,31 @@ const saveTelegramChatInfo = async (ci: Telegram.ChatInfo) => {
   }
 };
 
+export const queryIsPaid = async (invoice_id: string) => {
+  try {
+    const res = await sql`
+  SELECT create_tx,out_tx FROM invoices
+  WHERE
+  invoice_id = ${invoice_id};
+  `;
+    if (res.rowCount && res.rowCount > 0) {
+      // then either this is paid or finalized
+      if (res.rows[0].create_tx && res.rows[0].out_tx) {
+        return "finalized";
+      }
+      if (res.rows[0].create_tx) {
+        return "paid";
+      }
+      return null; // not paid or no inquiry
+    } else {
+      return "not-paid";
+    }
+  } catch (error) {
+    logger.error(`Db:: Can't query payment status,\n error: ${error}`);
+    throw new Error("Can't query db at the moment.");
+  }
+};
+
 export type { EscrowOut };
 export {
   addInvoice,
