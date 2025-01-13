@@ -291,11 +291,16 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
         onClose={handleDialogClose}
       >
         <div className="modal-box tg-bg-secondary">
-          <form method="dialog">
-            <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
-              ✕
-            </button>
-          </form>
+          {paymentSteps.done ||
+            (!paymentSteps.transmitting &&
+              !paymentSteps.waitingConfirmation && (
+                <form method="dialog">
+                  <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+                    ✕
+                  </button>
+                </form>
+              ))}
+
           <h1 className="text-2xl font-bold text-center tg-text">Payment</h1>
           {loading ? (
             <div className="flex justify-center items-center py-4">
