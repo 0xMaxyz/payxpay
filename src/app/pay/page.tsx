@@ -518,7 +518,7 @@ const PayPage = () => {
                     </p>
                     <div className="flex flex-row">
                       <p className="mb-2">
-                        <strong>Issuer:</strong> {signedInvoice.issuerFirstName}
+                        <strong>Issuer:</strong> {signedInvoice.issuerFirstName}{" "}
                       </p>
                       <Link
                         href={`https://t.me/${signedInvoice.issuerTelegramHandle}`}

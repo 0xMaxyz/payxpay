@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNotification } from "../context/NotificationContext";
 import {
   Balance,
@@ -49,6 +49,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
     done: false,
   });
   const [txHash, setTxHash] = useState<string | null>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
   // disable main button, as soon as the dialog is shown, we don't want to show the proceed to payment button
   useEffect(() => {
     mainButton?.disableMainButton();
@@ -260,10 +261,33 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
       throw new Error("No txHash found.");
     }
   };
+  const handleDialogClose = async (event: React.FormEvent) => {
+    if (paymentSteps.transmitting || paymentSteps.waitingConfirmation) {
+      event.preventDefault(); // Prevent the dialog from closing
+      const confirmClose = window.confirm(
+        "Payment is in process. By closing the the payment dialog, you may loose the paid balance. Do you want to proceed?"
+      );
+      if (confirmClose) {
+        onClose?.(); // invoke the provided onClose (if any)
+        dialogRef.current?.close();
+      }
+    }
+  };
 
   return (
-    <dialog id="payment-modal" className="modal w-full max-w-md mx-auto" open>
+    <dialog
+      ref={dialogRef}
+      id="payment-modal"
+      className="modal w-full max-w-md mx-auto"
+      onCancel={handleDialogClose}
+      onClose={handleDialogClose}
+    >
       <div className="modal-box tg-bg-secondary">
+        <form method="dialog">
+          <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+            ✕
+          </button>
+        </form>
         <h1 className="text-2xl font-bold text-center tg-text">Payment</h1>
         {loading ? (
           <div className="flex justify-center items-center py-4">
@@ -361,11 +385,11 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
             Insufficient balance for payment.
           </p>
         )}
-        <div className="modal-action">
+        {/* <div className="modal-action">
           <button className="btn btn-secondary" onClick={onClose}>
             Close
           </button>
-        </div>
+        </div> */}
       </div>
     </dialog>
   );
