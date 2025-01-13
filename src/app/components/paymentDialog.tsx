@@ -148,6 +148,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
             color: "success",
             message: "Payment completed successfully",
           });
+          console.log("Received result is: ", res);
           // set tx hash
           setTxHash(res.transactionHash);
           // change payment step
@@ -197,7 +198,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
           ],
         };
         const res = await createEscrow(createMsg, balance);
-
+        console.log("Received result is: ", res);
         //
         if (
           res &&
