@@ -611,7 +611,10 @@ const PayPage = () => {
         {error && <p className="text-red-500 text-center">{error}</p>}
       </div>
       {isPaymentDialogVisible && paymentParams && (
-        <PaymentDialog paymentParams={paymentParams} />
+        <PaymentDialog
+          paymentParams={paymentParams}
+          onClose={() => setIsPaymentDialogVisible(false)}
+        />
       )}
     </>
   );
