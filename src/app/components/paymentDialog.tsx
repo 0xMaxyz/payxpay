@@ -124,6 +124,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
   };
 
   const handlePayment = async () => {
+    let tHash = "";
     try {
       if (paymentParams.paymentType === "direct") {
         // change payment step
@@ -149,8 +150,14 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
             message: "Payment completed successfully",
           });
           console.log("Received result is: ", res);
+          console.log("Transaction hash is:", res.transactionHash);
           // set tx hash
           setTxHash(res.transactionHash);
+          tHash = res.transactionHash;
+          console.log(
+            "Tx hash after setting the state from state variable: ",
+            txHash
+          );
           // change payment step
           setPaymentSteps((prev) => ({
             ...prev,
@@ -212,6 +219,8 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
           });
           // set tx hash
           setTxHash(res.transactionHash);
+          tHash = res.transactionHash;
+
           // change payment step
           setPaymentSteps((prev) => ({
             ...prev,
@@ -225,8 +234,8 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
 
       // at this point the transfer is done, either we paid directly or with escrow
       // Call the API endpoint to finalize the payment
-
-      await finalizePayment();
+      console.log("Calling finalize payment");
+      await finalizePayment(tHash);
       // set payment step as done
       setPaymentSteps((prev) => ({
         ...prev,
@@ -244,9 +253,9 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
     }
   };
 
-  const finalizePayment = async () => {
-    console.log("Finalize payment is called with tx hash of: ", txHash);
-    if (txHash) {
+  const finalizePayment = async (hash: string) => {
+    console.log("Finalize payment is called with tx hash of: ", hash);
+    if (hash) {
       const res = await fetch("/api/invoice/payment", {
         headers: {
           "Content-Type": "application/json",
@@ -254,7 +263,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
         },
         body: JSON.stringify({
           invoiceId: encodeURIComponent(paymentParams.invoice.id),
-          txHash: encodeURIComponent(txHash),
+          txHash: encodeURIComponent(hash),
           paymentType: encodeURIComponent(paymentParams.paymentType),
           payerTgId: tgData?.id,
           payerAddress: myAddress,
