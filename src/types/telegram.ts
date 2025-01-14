@@ -1,8 +1,93 @@
+import { Message } from "postcss";
+
 /** This object represents an incoming update.
 At most one of the optional parameters can be present in any given update. */
 export interface Update {
+  /**
+   * The update's unique identifier. Update identifiers start from a certain positive number and increase sequentially.
+   * This identifier becomes especially handy if you're using webhooks, since it allows you to ignore repeated updates
+   * or to restore the correct update sequence, should they get out of order. If there are no new updates for at least
+   * a week, then the identifier of the next update will be chosen randomly instead of sequentially.
+   */
   update_id: number;
-  message: TelegramMessage;
+  /**
+   * Optional. New incoming message of any kind - text, photo, sticker, etc.
+   */
+  message?: TelegramMessage;
+  /** Optional. New incoming callback query */
+  callback_query?: CallbackQuery;
+}
+
+/** This object describes a message that can be inaccessible to the bot. It can be one of
+ * - Message
+ * - InaccessibleMessage
+ */
+export type MaybeInaccessibleMessage = Message | InaccessibleMessage;
+
+/**
+ * This object describes a message that was deleted or is otherwise inaccessible to the bot.
+ */
+export interface InaccessibleMessage {
+  /**
+   * Chat the message belonged to.
+   */
+  chat: Chat;
+
+  /**
+   * Unique message identifier inside the chat.
+   */
+  message_id: number;
+
+  /**
+   * Always 0. The field can be used to differentiate regular and inaccessible messages.
+   */
+  date: number;
+}
+
+/**
+ * This object represents an incoming callback query from a callback button in an inline keyboard.
+ * If the button that originated the query was attached to a message sent by the bot, the field `message` will be present.
+ * If the button was attached to a message sent via the bot (in inline mode), the field `inline_message_id` will be present.
+ * Exactly one of the fields `data` or `game_short_name` will be present.
+ * - NOTE: After the user presses a callback button, Telegram clients will display a progress bar until you call answerCallbackQuery. It is, therefore, necessary to react by calling answerCallbackQuery even if no notification to the user is needed (e.g., without specifying any of the optional parameters).
+ */
+export interface CallbackQuery {
+  /**
+   * Unique identifier for this query.
+   */
+  id: string;
+
+  /**
+   * Sender of the callback query.
+   */
+  from: User;
+
+  /**
+   * Optional. Message sent by the bot with the callback button that originated the query.
+   */
+  message?: MaybeInaccessibleMessage;
+
+  /**
+   * Optional. Identifier of the message sent via the bot in inline mode, that originated the query.
+   */
+  inline_message_id?: string;
+
+  /**
+   * Global identifier, uniquely corresponding to the chat to which the message with the callback button was sent.
+   * Useful for high scores in games.
+   */
+  chat_instance: string;
+
+  /**
+   * Optional. Data associated with the callback button.
+   * Be aware that the message that originated the query can contain no callback buttons with this data.
+   */
+  data?: string;
+
+  /**
+   * Optional. Short name of a Game to be returned, serves as the unique identifier for the game.
+   */
+  game_short_name?: string;
 }
 
 export interface Entity {

@@ -10,19 +10,14 @@ import { useNotification } from "../context/NotificationContext";
 import { useTelegramContext } from "../context/TelegramContext";
 import Link from "next/link";
 import { useAbstraxionAccount, useModal } from "@burnt-labs/abstraxion";
-import {
-  Balance,
-  CreateMsg,
-  EscrowType,
-  usePxpContract,
-} from "../context/PxpContractContext";
+import { usePxpContract } from "../context/PxpContractContext";
 import { getRates } from "@/utils/get-rates";
 import { PriceFeed } from "@pythnetwork/price-service-client";
 import PaymentDialog, { PaymentParams } from "../components/paymentDialog";
 
 const PayPage = () => {
   // use PxpContract
-  const { createEscrow } = usePxpContract();
+  const { getTransactionDetails } = usePxpContract();
   //
   const { data: xionAccount } = useAbstraxionAccount();
   const [isModalOpen, setModalOpen] = useModal();
@@ -354,50 +349,21 @@ const PayPage = () => {
       setLoading(false);
     }
   };
-  const escrowType: EscrowType = {
-    invoice: { amount: { amount: "1", currency: "TRY" } },
-  };
 
   const handleQueryBalance = async () => {
     try {
-      setLoading(true);
-      // const res = await bankTransfer(
-      //   [{ amount: "10", denom: "uxion" }],
-      //   "xion1vr7ylck35y956tw45ndmcwpkdsz75y2fez8ggx",
-      //   "hello"
-      // );
-      const createMsg: CreateMsg = {
-        id: crypto.randomUUID(),
-        escrow_type: escrowType,
-        recipient: "xion1vr7ylck35y956tw45ndmcwpkdsz75y2fez8ggx",
-        recepient_email: "",
-        recepient_telegram_id: "",
-        source_telegram_id: "7312975997",
-        title: "escrow title",
-        description: "description",
-      };
-      const balance: Balance = {
-        cw20_balance: [
-          {
-            address:
-              "xion1jfzcfyvznelca47utxwqt5nmc8c8yr9jcng3v8fz0jpert9kmtsqq23aml",
-            amount: "1",
-          },
-        ],
-        native_balance: [
-          // {
-          //   amount: "10",
-          //   denom:
-          //     "ibc/57097251ED81A232CE3C9D899E7C8096D6D87EF84BA203E12E424AA4C9B57A64",
-          // },
-          // {
-          //   amount: "10",
-          //   denom: "uxion",
-          // },
-        ],
-      };
-      const res = await createEscrow(createMsg, balance);
-      console.log(res);
+      const res = await getTransactionDetails(
+        "80F82303E66C985FB6B41843359B0813E546CE2996531E0022A16C8E705487B6"
+      );
+      if (res) {
+        console.log(res);
+        console.log("_____________________\n\n\n\n");
+        console.log(
+          JSON.stringify(res, (key, value) =>
+            typeof value === "bigint" ? value.toString() : value
+          )
+        );
+      }
     } catch (error) {
       console.error(error);
       addNotification({ color: "error", message: error as string });

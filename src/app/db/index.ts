@@ -29,7 +29,7 @@ const addInvoice = async (id: string, issuer_id: number, invoice: string) => {
 const getInvoice = async (id: string) => {
   try {
     const result = await sql`
-    SELECT invoice,create_tx,out_tx FROM invoices
+    SELECT invoice,create_tx,out_tx,payment_confirmed FROM invoices
     WHERE invoice_id = ${id};
     `;
     if (result.rows.length > 0) {
@@ -39,6 +39,7 @@ const getInvoice = async (id: string) => {
           invoice: result.rows[0].invoice as string,
           create_tx: result.rows[0].create_tx as string,
           out_tx: result.rows[0].out_tx as string,
+          is_confirmed: result.rows[0].out_tx ?? false,
         }
       : null;
   } catch (error) {
@@ -163,6 +164,21 @@ const saveTelegramChatInfo = async (ci: Telegram.ChatInfo) => {
   }
 };
 
+export const getChatId = async (user_id: number) => {
+  try {
+    const res = await sql`
+    SELECT chat_id FROM users
+    WHERE user_id = ${user_id};
+    `;
+    if (res.rowCount && res.rowCount > 0) {
+      return res.rows[0].chat_id;
+    }
+  } catch (error) {
+    logger.error(`Db:: Can't get chatId,\n error: ${error}`);
+    return null;
+  }
+};
+
 export const queryIsPaid = async (invoice_id: string) => {
   try {
     const res = await sql`
@@ -188,6 +204,23 @@ export const queryIsPaid = async (invoice_id: string) => {
   }
 };
 
+const confirmTheInvoicePayment = async (invoice_id: string) => {
+  try {
+    const res = await sql`
+    UPDATE invoices
+    SET payment_confirmed = true
+    WHERE invoice_id = ${invoice_id};
+    `;
+    if (res.rowCount && res.rowCount > 0) {
+      return true;
+    }
+    return false;
+  } catch (error) {
+    logger.error(`Db:: Can't confirm the payment,\n error: ${error}`);
+    throw new Error("Can't confirm the payment.");
+  }
+};
+
 export type { EscrowOut };
 export {
   addInvoice,
@@ -198,4 +231,5 @@ export {
   addEscrowTxToInvoice,
   addEscrowOutTxToInvoice,
   saveTelegramChatInfo,
+  confirmTheInvoicePayment,
 };

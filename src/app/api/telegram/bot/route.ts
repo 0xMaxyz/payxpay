@@ -1,4 +1,8 @@
-import { getInvoice, saveTelegramChatInfo } from "@/app/db";
+import {
+  confirmTheInvoicePayment,
+  getInvoice,
+  saveTelegramChatInfo,
+} from "@/app/db";
 import { SignedInvoice } from "@/app/types";
 import * as Telegram from "@/types/telegram";
 import { escapeHtml } from "@/utils/tools";
@@ -26,10 +30,7 @@ const sendMessage = async (msg: Telegram.SendMessage) => {
   return response;
 };
 
-const handlePayCommand = async (
-  chatId: string | number,
-  params: string | undefined
-) => {
+const handlePayCommand = async (chatId: string | number, params?: string[]) => {
   if (!params) {
     await sendMessage({
       chat_id: chatId,
@@ -38,7 +39,7 @@ const handlePayCommand = async (
     return;
   }
 
-  const invoiceId = params;
+  const invoiceId = params[0];
   const data = await getInvoice(invoiceId);
 
   if (!data) {
@@ -83,14 +84,82 @@ const handlePayCommand = async (
   await sendMessage(msg);
 };
 
-const handleStartCommand = async (chatId: string | number, params?: string) => {
+const handleConfirmCommand = async (
+  chatId: string | number,
+  params?: string[]
+) => {
+  if (!params) {
+    await sendMessage({
+      chat_id: chatId,
+      text: "Invalid command. Missing parameters.",
+    });
+    return;
+  }
+
+  const invoiceId = params[0];
+  const userId = Number.parseInt(params[1]);
+  const data = await getInvoice(invoiceId);
+
+  if (!data) {
+    await sendMessage({
+      chat_id: chatId,
+      text: "Invoice not found.",
+    });
+    return;
+  }
+
+  const invoice = data.invoice;
+
+  const signedInvoice = JSON.parse(
+    decodeURIComponent(invoice)
+  ) as SignedInvoice;
+
+  if (signedInvoice.issuerTelegramId !== userId) {
+    await sendMessage({
+      chat_id: chatId,
+      text: "You didn't create this invoice",
+    });
+    return;
+  }
+
+  if (!data.create_tx) {
+    await sendMessage({
+      chat_id: chatId,
+      text: "Invoice is not paid yet.",
+    });
+    return;
+  }
+  if (data.is_confirmed) {
+    await sendMessage({
+      chat_id: chatId,
+      text: "Invoice already confirmed.",
+    });
+    return;
+  }
+  // confirm the payment
+  await confirmTheInvoicePayment(invoiceId);
+  // prepare the msg
+  const msg: Telegram.SendMessage = {
+    chat_id: chatId,
+    parse_mode: "HTML",
+    // prettier-ignore
+    text: `✅ <b>Payment confirmed</b>`,
+  };
+
+  await sendMessage(msg);
+};
+
+const handleStartCommand = async (
+  chatId: string | number,
+  params?: string[]
+) => {
   if (params) {
     // some params are sent with bot start, check if we received invoiceId with start command
     const regex = /invoice=([^&]+)/;
-    const match = params.match(regex);
+    const match = params[0].match(regex);
     if (match) {
       // then an invoice is sent with the bot, handle the invoice using payHandler
-      await handlePayCommand(chatId, match[1]);
+      await handlePayCommand(chatId, [match[1], params[1]]);
     } else {
       // show welcome message
       await sendMessage({
@@ -108,25 +177,17 @@ const handleStartCommand = async (chatId: string | number, params?: string) => {
   }
 };
 
-const handleHelpCommand = async (
-  chatId: string | number,
-  params: string | undefined
-) => {
-  if (params) {
-    // there may be other params sent with /start
-  } else {
-    // handle /start
-    let htmlTxt = "";
+const handleHelpCommand = async (chatId: string | number) => {
+  let htmlTxt = "";
 
-    for (const [command, details] of Object.entries(COMMANDS)) {
-      htmlTxt += `<b>/${command}</b>: ${details.description}\n`;
-    }
-    await sendMessage({
-      chat_id: chatId,
-      text: htmlTxt,
-      parse_mode: "HTML",
-    });
+  for (const [command, details] of Object.entries(COMMANDS)) {
+    htmlTxt += `<b>/${command}</b>: ${details.description}\n`;
   }
+  await sendMessage({
+    chat_id: chatId,
+    text: htmlTxt,
+    parse_mode: "HTML",
+  });
 };
 
 // list of available commands
@@ -135,7 +196,7 @@ const COMMANDS: {
   [key: string]: {
     handler: (
       chatId: string | number,
-      params?: string | undefined
+      params?: string[] | undefined
     ) => Promise<void>;
     description: string;
   };
@@ -151,6 +212,11 @@ const COMMANDS: {
   start: {
     handler: handleStartCommand,
     description: "Shows a welcome message.",
+  },
+  confirm: {
+    handler: handleConfirmCommand,
+    description:
+      "invoice issuers can confirm the paid invoices with this command.",
   },
 };
 
@@ -170,29 +236,45 @@ export const POST = async (req: NextRequest) => {
     }
 
     const update = body as Telegram.Update;
-    const chatId = update.message?.chat.id;
     const userName = update.message?.chat.username;
     const firstName = update.message?.chat.first_name;
     const lastName = update.message?.chat.last_name;
-    const userId = update.message.from?.id;
     const text = update.message?.text;
 
     console.log(
-      `Chat ID: ${chatId}, Username: ${userName}, Firsname: ${firstName}, Lastname: ${lastName}`
+      `Username: ${userName}, Firsname: ${firstName}, Lastname: ${lastName}`
     );
 
-    if (!chatId || !userId || !text) {
+    if (!update.callback_query && !text) {
       console.error("Missing input", update);
       return NextResponse.json(
         { error: "Invalid request: Missing info" },
         { status: 400 }
       );
     }
+    // use a variable to hold the command, either from text or callBack data
+    let comm = "";
+    let chatId = update.message?.chat.id;
+    let userId = update?.message?.from?.id;
+
+    // check if body contains callback_query
+    if (update.callback_query) {
+      // then we should handle this callback_query
+      comm = update.callback_query.data!;
+      chatId = body.callback_query.message.chat.id;
+      userId = update.callback_query.from.id;
+    } else {
+      comm = text!;
+    }
+
+    if (!chatId) {
+      throw new Error("No chat id found");
+    }
 
     // Handle commands
     const startCommandRegex = /^\/([a-zA-Z]+)(?:\s(.+))?/;
     // if match found, first element is the input, second element is the command and third element is the params
-    const match = text.match(startCommandRegex);
+    const match = comm.match(startCommandRegex);
 
     // no match found
     if (!match) {
@@ -208,7 +290,7 @@ export const POST = async (req: NextRequest) => {
       firstName: firstName ?? "",
       lastName: lastName ?? "",
       userName: userName ?? "",
-      userId: userId,
+      userId: userId!,
     };
 
     const cachedChatInfo = await REDIS.get(`user:${userId}`);
@@ -227,7 +309,7 @@ export const POST = async (req: NextRequest) => {
     // check if command is registered
     const foundCommand = COMMANDS[command];
     if (foundCommand) {
-      await foundCommand.handler(chatId, params);
+      await foundCommand.handler(chatId, [params, userId!.toString()]); // send the user id as index 1 of params
     } else {
       await sendMessage({
         chat_id: chatId,
@@ -235,8 +317,16 @@ export const POST = async (req: NextRequest) => {
         parse_mode: "HTML",
       });
     }
-
-    return NextResponse.json({ success: true }, { status: 200 });
+    // if command received from inline keyboard then call /answerCallbackQuery otherwise send a success response
+    if (update.callback_query) {
+      await fetch(`${TELEGRAM_API}/answerCallbackQuery`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ callback_query_id: update.callback_query.id }),
+      });
+    } else {
+      return NextResponse.json({ success: true }, { status: 200 });
+    }
   } catch (error) {
     console.error("Error handling Telegram bot command:", error);
     return NextResponse.json(

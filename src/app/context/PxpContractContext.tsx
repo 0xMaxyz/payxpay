@@ -3,11 +3,12 @@ import {
   useAbstraxionSigningClient,
   useAbstraxionAccount,
 } from "@burnt-labs/abstraxion";
-import { Coin, DeliverTxResponse } from "@cosmjs/stargate";
+import { Block, Coin, DeliverTxResponse, IndexedTx } from "@cosmjs/stargate";
 import { CosmWasmClient, ExecuteResult } from "@cosmjs/cosmwasm-stargate";
 import React, { createContext, useContext } from "react";
 import { env } from "process";
 import { queryIbcDenom } from "@/utils/tools";
+import { timeStamp } from "console";
 
 type ExecuteCreateMsg = {
   create: CreateMsg;
@@ -98,6 +99,16 @@ interface PxpContractContextType {
     memo?: string
   ) => Promise<DeliverTxResponse | undefined>;
   myAddress: string;
+  getTransaction: (txHash: string) => Promise<IndexedTx | null>;
+  getBlockTimestamp: (block: number) => Promise<{
+    block: Block;
+    timestamp: number;
+  } | null>;
+  getTransactionDetails: (txHash: string) => Promise<{
+    tx: IndexedTx;
+    block: Block;
+    timestamp: number;
+  } | null>;
 }
 
 const PxpContractContext = createContext<PxpContractContextType | null>(null);
@@ -109,6 +120,34 @@ export const PxpContractProvider: React.FC<{ children: React.ReactNode }> = ({
   const TREASURY = process.env.NEXT_PUBLIC_TREASURY!;
 
   const pxpContract = process.env.NEXT_PUBLIC_CONTRACT!;
+  const getTransaction = async (txHash: string) => {
+    return (await client?.getTx(txHash)) ?? null;
+  };
+  const getTransactionDetails = async (txHash: string) => {
+    const tx = await getTransaction(txHash);
+    if (tx) {
+      const b = await getBlockTimestamp(tx.height);
+      if (b) {
+        return {
+          tx: tx,
+          block: b.block,
+          timestamp: b.timestamp,
+        };
+      } else {
+        return null;
+      }
+    } else {
+      return null;
+    }
+  };
+  const getBlockTimestamp = async (block: number) => {
+    const b = await client?.getBlock(block);
+    if (b) {
+      return { block: b, timestamp: new Date(b.header.time).getTime() };
+    } else {
+      return null;
+    }
+  };
   const createEscrow = async (
     msg: CreateMsg,
     balance: Balance
@@ -288,6 +327,9 @@ export const PxpContractProvider: React.FC<{ children: React.ReactNode }> = ({
         queryBankBalance,
         bankTransfer,
         myAddress: xionAccount.bech32Address,
+        getTransaction,
+        getBlockTimestamp,
+        getTransactionDetails,
       }}
     >
       {children}
