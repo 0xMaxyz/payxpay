@@ -237,11 +237,11 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
       console.log("Calling finalize payment");
       await finalizePayment(tHash);
       // set payment step as done
-      setPaymentSteps((prev) => ({
-        ...prev,
+      setPaymentSteps({
+        transmitting: false,
         waitingConfirmation: false,
         done: true,
-      }));
+      });
     } catch (error) {
       setPaymentSteps({
         done: false,
