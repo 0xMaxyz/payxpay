@@ -228,7 +228,7 @@ export const POST = async (req: NextRequest) => {
   try {
     const body = await req.json();
 
-    if (!body || !body.message) {
+    if (!body) {
       return NextResponse.json(
         { error: "Invalid request: Missing message payload" },
         { status: 400 }
@@ -236,14 +236,7 @@ export const POST = async (req: NextRequest) => {
     }
 
     const update = body as Telegram.Update;
-    const userName = update.message?.chat.username;
-    const firstName = update.message?.chat.first_name;
-    const lastName = update.message?.chat.last_name;
     const text = update.message?.text;
-
-    console.log(
-      `Username: ${userName}, Firsname: ${firstName}, Lastname: ${lastName}`
-    );
 
     if (!update.callback_query && !text) {
       console.error("Missing input", update);
@@ -253,23 +246,32 @@ export const POST = async (req: NextRequest) => {
       );
     }
     // use a variable to hold the command, either from text or callBack data
-    let comm = "";
+    let comm = text;
     let chatId = update.message?.chat.id;
     let userId = update?.message?.from?.id;
+    let userName = update.message?.chat.username;
+    let firstName = update.message?.chat.first_name;
+    let lastName = update.message?.chat.last_name;
 
     // check if body contains callback_query
     if (update.callback_query) {
+      console.log("Update received, callback_query.", update);
       // then we should handle this callback_query
       comm = update.callback_query.data!;
-      chatId = body.callback_query.message.chat.id;
+      chatId = update.callback_query.message?.chat.id;
       userId = update.callback_query.from.id;
-    } else {
-      comm = text!;
+      userName = update.callback_query.message?.chat.username;
+      firstName = update.callback_query.message?.chat.first_name;
+      lastName = update.callback_query.message?.chat.last_name;
     }
 
-    if (!chatId) {
-      throw new Error("No chat id found");
+    console.log(comm, chatId, userId, userName, firstName, lastName);
+
+    if (!chatId || !comm) {
+      throw new Error("Invalid input");
     }
+
+    console.log("Command is", comm);
 
     // Handle commands
     const startCommandRegex = /^\/([a-zA-Z]+)(?:\s(.+))?/;
