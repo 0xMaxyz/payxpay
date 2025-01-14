@@ -355,7 +355,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                     {/* <p className="tg-text text-xs mt-2">
                     <strong>Transaction Fee:</strong> 1 uxion
                   </p> */}
-                    <p className="tg-text text-xs">
+                    <p className="tg-text text-xs mt-1">
                       <strong>Service Fee:</strong> 0 uxion
                     </p>
                   </>
@@ -363,16 +363,16 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
 
               <div className="m-3 p-3 shadow-2xl w-full">
                 {paymentSteps.transmitting && (
-                  <p className="tg-text">
+                  <p className="tg-text my-auto">
                     Transmitting transaction
-                    <span className="loading loading-dots loading-xs"></span>
+                    <span className="loading loading-dots loading-xs my-auto"></span>
                   </p>
                 )}
 
                 {paymentSteps.waitingConfirmation && (
-                  <p className="tg-text ">
+                  <p className="tg-text my-auto">
                     Waiting for confirmation
-                    <span className="loading loading-dots loading-xs"></span>
+                    <span className="loading loading-dots loading-xs my-auto"></span>
                   </p>
                 )}
                 {!paymentSteps.done && txHash && (

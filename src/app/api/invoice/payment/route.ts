@@ -19,9 +19,9 @@ export async function POST(req: NextRequest) {
     const res = await addEscrowTxToInvoice(
       invoiceId,
       txHash,
-      paymentType,
       payerTgId,
-      payerAddress
+      payerAddress,
+      paymentType
     );
     if (res && res > 0) {
       // TODO: send a message to invoice issuer through the bot and inform him that the payment is done
