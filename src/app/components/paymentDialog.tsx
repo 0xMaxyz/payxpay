@@ -375,6 +375,25 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                     <span className="loading loading-dots loading-xs"></span>
                   </p>
                 )}
+                {!paymentSteps.done && txHash && (
+                  <div className="mt-4 text-center">
+                    <p className="overflow-hidden whitespace-nowrap text-ellipsis">
+                      Transaction Hash:{" "}
+                      <span
+                        className="text-blue-500 underline cursor-pointer"
+                        onClick={async () => {
+                          await navigator.clipboard.writeText(txHash || "");
+                          addNotification({
+                            color: "success",
+                            message: "Tx hash copied to clipboard.",
+                          });
+                        }}
+                      >
+                        {txHash}
+                      </span>
+                    </p>
+                  </div>
+                )}
                 {paymentSteps.done && (
                   <div className="mt-4 text-center">
                     <div className="text-green-500 text-8xl">✔</div>
