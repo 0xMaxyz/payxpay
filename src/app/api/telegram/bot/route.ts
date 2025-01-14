@@ -153,7 +153,7 @@ const handleStartCommand = async (
   chatId: string | number,
   params?: string[]
 ) => {
-  if (params) {
+  if (params && params[0]) {
     // some params are sent with bot start, check if we received invoiceId with start command
     const regex = /invoice=([^&]+)/;
     const match = params[0].match(regex);
@@ -296,12 +296,14 @@ export const POST = async (req: NextRequest) => {
     };
 
     const cachedChatInfo = await REDIS.get(`user:${userId}`);
+    console.log("Redis, cachedChatInfo", cachedChatInfo);
     if (cachedChatInfo) {
       const chatInfo: Telegram.ChatInfo = JSON.parse(cachedChatInfo as string);
       // compare received chat info from redis with the created one
       const isEq = compareObjects(chatInfo, initChatInfo);
       if (!isEq) {
         // save the new indo to db and also update the redis (db function updates the redis too)
+        console.log("Should save tg data");
         await saveTelegramChatInfo(initChatInfo);
       }
     }
@@ -315,7 +317,7 @@ export const POST = async (req: NextRequest) => {
     } else {
       await sendMessage({
         chat_id: chatId,
-        text: `<b>Unknown command</b>: <code>/${command}<code>\nUse /help to receive a list of available commands.`,
+        text: `<b>Unknown command</b>: <code>/${command}</code>\nUse /help to receive a list of available commands.`,
         parse_mode: "HTML",
       });
     }
