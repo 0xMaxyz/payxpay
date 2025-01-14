@@ -311,7 +311,7 @@ export const POST = async (req: NextRequest) => {
     // check if command is registered
     const foundCommand = COMMANDS[command];
     if (foundCommand) {
-      await foundCommand.handler(chatId, [params, userId!.toString()]); // send the user id as index 1 of params
+      await foundCommand.handler(chatId, [params ?? "", userId!.toString()]); // send the user id as index 1 of params
     } else {
       await sendMessage({
         chat_id: chatId,
