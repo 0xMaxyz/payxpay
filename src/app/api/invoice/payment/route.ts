@@ -40,9 +40,9 @@ const prepareTgConfirmationMessage = async (
     payment_type === "direct"
       ? `You received ${received_amount} USDC in your xion meta account address, please confirm that the payment is made to your account and send the invoice item(s) to payer.`
       : `The payer escrowed ${received_amount} USDC in our smart contract, please send the invoice itrem to payer and confirm it, after payer's final confirmation, you will receive ${received_amount} USDC in your xion meta account address.`;
-  const rate_text = `The latest conversion rate between USD and ${invoiceUnit} is ${rate.toDecimalPlaces(
+  const rate_text = `The latest conversion rate is:  1 USD = ${rate.toDecimalPlaces(
     2
-  )}`;
+  )} ${invoiceUnit}`;
   const msg: Telegram.SendMessage = {
     chat_id: user_id,
     // prettier-ignore
