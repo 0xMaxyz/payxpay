@@ -306,6 +306,8 @@ export const POST = async (req: NextRequest) => {
         console.log("Should save tg data");
         await saveTelegramChatInfo(initChatInfo);
       }
+    } else {
+      await saveTelegramChatInfo(initChatInfo);
     }
 
     const command = match[1];
