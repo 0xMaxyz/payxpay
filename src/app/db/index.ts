@@ -35,7 +35,7 @@ const getInvoice = async (id: string) => {
           invoice: result.rows[0].invoice as string,
           create_tx: result.rows[0].create_tx as string,
           out_tx: result.rows[0].out_tx as string,
-          is_confirmed: result.rows[0].out_tx ?? false,
+          is_confirmed: result.rows[0].payment_confirmed ?? false,
         }
       : null;
   } catch (error) {

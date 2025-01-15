@@ -46,7 +46,7 @@ const prepareTgConfirmationMessage = async (
   const msg: Telegram.SendMessage = {
     chat_id: user_id,
     // prettier-ignore
-    text:`<b>Payment Received</b>\n\nA payment is made to an invoice created by you (<a href="tg://user?id=${payer_id}">(chat with payer)</a>).\n<b>Invoice details:</b>\n<code><b>Amount:</b>${invoice.amount} $${invoiceUnit }\n<b>Description:</b> ${escapeHtml( invoice.description )}</code>\n${escapeHtml(paymentMode)}\n${escapeHtml(rate_text)}\nPlease <b>deliver</b> the invoice item and click the <code>Confirm</code> button to confirm the payment`,
+    text:`<b>Payment Received</b>\n\nA payment is made to an invoice created by you (<a href="tg://user?id=${payer_id}">chat with payer</a>).\n<b>Invoice details:</b>\n<code><b>Amount:</b>${invoice.amount} $${invoiceUnit }\n<b>Description:</b> ${escapeHtml( invoice.description )}</code>\n${paymentMode}\n${escapeHtml(rate_text)}\nPlease <b>deliver</b> the invoice item and click the <code>Confirm</code> button to confirm the payment`,
     parse_mode: "HTML",
     reply_markup: {
       inline_keyboard: [
@@ -58,6 +58,10 @@ const prepareTgConfirmationMessage = async (
           {
             text: `Chat with Payer 💬`,
             url: `tg://user?id=${payer_id}`,
+          },
+          {
+            text: "Open Explorer",
+            url: `https://testnet.xion.explorers.guru/contract/${invoice.address}`,
           },
         ],
       ],
