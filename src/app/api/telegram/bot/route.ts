@@ -300,9 +300,8 @@ export const POST = async (req: NextRequest) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ callback_query_id: update.callback_query.id }),
       });
-    } else {
-      return NextResponse.json({ success: true }, { status: 200 });
     }
+    return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
     console.error("Error handling Telegram bot command:", error);
     return NextResponse.json(
