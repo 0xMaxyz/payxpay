@@ -18,6 +18,72 @@ export interface Update {
   callback_query?: CallbackQuery;
 }
 
+/**
+ * Represents the parameters for the `editMessageText` method.
+ * This method is used to edit text and game messages in Telegram.
+ * On success, if the edited message is not an inline message, the edited Message is returned; otherwise, True is returned.
+ */
+export interface EditMessageText {
+  /**
+   * Unique identifier of the business connection on behalf of which the message to be edited was sent.
+   * Optional.
+   */
+  business_connection_id?: string;
+
+  /**
+   * Unique identifier for the target chat or username of the target channel (in the format @channelusername).
+   * Required if `inline_message_id` is not specified.
+   * Optional.
+   */
+  chat_id?: number | string;
+
+  /**
+   * Identifier of the message to edit.
+   * Required if `inline_message_id` is not specified.
+   * Optional.
+   */
+  message_id?: number;
+
+  /**
+   * Identifier of the inline message.
+   * Required if `chat_id` and `message_id` are not specified.
+   * Optional.
+   */
+  inline_message_id?: string;
+
+  /**
+   * New text of the message, 1-4096 characters after entities parsing.
+   * Required.
+   */
+  text: string;
+
+  /**
+   * Mode for parsing entities in the message text.
+   * Supported modes: `MarkdownV2`, `HTML`.
+   * Optional.
+   */
+  parse_mode?: string;
+
+  /**
+   * A JSON-serialized list of special entities that appear in the message text.
+   * This can be specified instead of `parse_mode`.
+   * Optional.
+   */
+  entities?: MessageEntity[];
+
+  /**
+   * Link preview generation options for the message.
+   * Optional.
+   */
+  link_preview_options?: LinkPreviewOptions;
+
+  /**
+   * A JSON-serialized object for an inline keyboard.
+   * Optional.
+   */
+  reply_markup?: InlineKeyboardMarkup;
+}
+
 /** This object describes a message that can be inaccessible to the bot. It can be one of
  * - Message
  * - InaccessibleMessage
@@ -652,6 +718,25 @@ export interface KeyboardButton {
    * able to send a “web_app_data” service message. Available in private chats only.
    */
   web_app?: WebAppInfo;
+}
+
+/**
+ * Represents the parameters for the `deleteMessage` method.
+ * This method is used to delete a message, including service messages, with certain limitations.
+ * Returns `true` on success.
+ */
+export interface DeleteMessage {
+  /**
+   * Unique identifier for the target chat or username of the target channel (in the format @channelusername).
+   * Required.
+   */
+  chat_id: number | string;
+
+  /**
+   * Identifier of the message to delete.
+   * Required.
+   */
+  message_id: number;
 }
 
 /** A placeholder, currently holds no information. Use BotFather to set up your game. */

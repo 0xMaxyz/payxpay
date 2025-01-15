@@ -163,3 +163,28 @@ export const getTransaction = async (txHash: string) => {
 
   return (await client.getTx(txHash)) ?? null;
 };
+
+export const approveEscrow = async (id: string) => {
+  const wallet = await getWallet();
+  const client = await getSigner(wallet);
+  const accounts = await wallet.getAccounts();
+  const pxpContract = process.env.NEXT_PUBLIC_CONTRACT!;
+
+  const approveMsg = {
+    approve: { id },
+  };
+  const res = await client.execute(
+    accounts[0].address,
+    pxpContract,
+    approveMsg,
+    {
+      amount: [{ amount: "1", denom: "uxion" }],
+      gas: "500000",
+      payer: accounts[0].address,
+    },
+    "",
+    []
+  );
+  // if everything goes well, the tx should work, return tx
+  return res;
+};

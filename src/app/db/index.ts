@@ -25,7 +25,7 @@ const addInvoice = async (id: string, issuer_id: number, invoice: string) => {
 const getInvoice = async (id: string) => {
   try {
     const result = await sql`
-    SELECT invoice,create_tx,out_tx,payment_confirmed FROM invoices
+    SELECT invoice,create_tx,out_tx,payment_confirmed,out_type,payer_tg_id FROM invoices
     WHERE invoice_id = ${id};
     `;
     if (result.rows.length > 0) {
@@ -36,6 +36,8 @@ const getInvoice = async (id: string) => {
           create_tx: result.rows[0].create_tx as string,
           out_tx: result.rows[0].out_tx as string,
           is_confirmed: result.rows[0].payment_confirmed ?? false,
+          payment_type: result.rows[0].out_type as "direct" | "escrow",
+          payer_tg_id: result.rows[0].payer_tg_id,
         }
       : null;
   } catch (error) {

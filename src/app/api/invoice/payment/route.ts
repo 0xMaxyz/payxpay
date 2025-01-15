@@ -42,29 +42,29 @@ const prepareTgConfirmationMessage = async (
   const invoiceUnit = invoice.unit.replaceAll(" ", "").split("-")[1];
   const paymentMode =
     payment_type === "direct"
-      ? `You received ${received_amount} USDC in your <a href="https://testnet.xion.explorers.guru/contract/${invoice.address}">xion meta account</a> address, please confirm that the payment is made to your account and send the invoice item(s) to payer.`
-      : `The payer escrowed ${received_amount} USDC in our smart contract, please send the invoice itrem to payer and confirm it, after payer's final confirmation, you will receive ${received_amount} USDC in your xion meta account address.`;
-  const rate_text = `The latest conversion rate is:  1 $USD = ${rate.toDecimalPlaces(
+      ? `You received ${received_amount} USDC in your <a href="https://testnet.xion.explorers.guru/contract/${invoice.address}">xion meta account</a> address, Please confirm that the payment has been made to your account and send the invoice item(s) to the payer.`
+      : `The payer has escrowed <b>${received_amount} USDC</b> 🤝 in our smart contract. Please send the invoice item(s) to the payer and confirm it. After the payer's final confirmation, you will receive <b>${received_amount} USDC</b> in your Xion meta account.`;
+  const rate_text = `The latest conversion rate is:  📈 1 $USD = ${rate.toDecimalPlaces(
     2
   )} $${invoiceUnit}`;
   const msg: Telegram.SendMessage = {
     chat_id: user_id,
     // prettier-ignore
-    text:`<b>Payment Received</b>\n\nA payment is made to an invoice created by you (<a href="tg://user?id=${payer_id}">chat with payer</a>).\n<b>Invoice details:</b>\n<code><b>Amount:</b>${invoice.amount} $${invoiceUnit }\n<b>Description:</b> ${escapeHtml( invoice.description )}</code>\n${paymentMode}\n${escapeHtml(rate_text)}\nPlease <b>deliver</b> the invoice item and click the <code>Confirm</code> button to confirm the payment`,
+    text:`<b>💰 Payment Received</b>\n\nA payment is made to an invoice created by you.\n<b>🧾 Invoice details:</b>\n<code><b>💵 Amount:</b>${invoice.amount} $${invoiceUnit }\n<b>📝 Description:</b> ${escapeHtml( invoice.description )}</code>\n${paymentMode}\n${rate_text}\nPlease 📦 <b>deliver</b> the invoice item(s) and click the <code>Confirm</code> button to confirm the payment.`,
     parse_mode: "HTML",
     reply_markup: {
       inline_keyboard: [
         [
           {
             text: `Confirm ✅`,
-            callback_data: `/confirm ${invoice.id}`,
+            callback_data: `/msgBox /confirm&${invoice.id}`,
           },
           {
             text: `Chat with Payer 💬`,
             url: `tg://user?id=${payer_id}`,
           },
           {
-            text: "Open Explorer",
+            text: "Open Explorer 🌐",
             url: `https://testnet.xion.explorers.guru/contract/${invoice.address}`,
           },
         ],
