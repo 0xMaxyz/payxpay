@@ -104,6 +104,31 @@ export function didUserReceiveToken(
   return { found: false, amount: null };
 }
 
+export const checkWasmEvent = (tx: IndexedTx, invoiceId: string) => {
+  for (const event of tx.events) {
+    if (event.type === "wasm") {
+      let contractAddress = "";
+      let id = "";
+      let validAction = false;
+      for (const attr of event.attributes) {
+        if (attr.key === "_contract_address") {
+          contractAddress = attr.value;
+        } else if (attr.key === "action" && attr.value === "create") {
+          validAction = true;
+        } else if (attr.key === "id") {
+          id = attr.value;
+        }
+      }
+      return (
+        validAction &&
+        id === invoiceId &&
+        contractAddress === process.env.NEXT_PUBLIC_CONTRACT
+      );
+    }
+  }
+  return false;
+};
+
 export const getTransactionDetails = async (txHash: string) => {
   const tx = await getTransaction(txHash);
   if (tx) {

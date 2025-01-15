@@ -1,6 +1,10 @@
 import { addEscrowTxToInvoice, getInvoice } from "@/app/db";
 import { SignedInvoice } from "@/app/types";
-import { didUserReceiveToken, getTransactionDetails } from "@/app/xion/lib";
+import {
+  checkWasmEvent,
+  didUserReceiveToken,
+  getTransactionDetails,
+} from "@/app/xion/lib";
 import { getRates } from "@/utils/get-rates";
 import { decodeInvoice, escapeHtml } from "@/utils/tools";
 import { verifyJWTAndReferer } from "@/utils/verify_jwt";
@@ -148,6 +152,7 @@ export async function POST(req: NextRequest) {
       const amountInTxToDecimal = new Decimal(didUserReceivedAmount.amount);
       // calculating if the received amount and calculated amount have at max 1% difference
       // TODO: if the received amount is greater that the calculated amount, we don't need to check the 1% condition
+      // TODO: check if the rate is non zero
       const validAmount = calculatedUsdc
         .minus(amountInTxToDecimal)
         .dividedBy(calculatedUsdc)
@@ -161,6 +166,63 @@ export async function POST(req: NextRequest) {
       }
     } else if (paymentType === "escrow") {
       // TODO: add escrow checks
+      // 1. check payment time
+      const createdTime = decodedInvoice.issueDate;
+      const paymentTime = tx?.timestamp;
+
+      validPayment = validPayment && paymentTime > createdTime;
+
+      // 2. check if receiver of the tx is our smart contract
+      const didUserReceivedAmount = didUserReceiveToken(
+        tx.tx,
+        process.env.NEXT_PUBLIC_CONTRACT!
+      );
+      validPayment = validPayment && didUserReceivedAmount.found;
+      // set amount in usdc
+      receivedAmountInUSDC = new Decimal(
+        didUserReceivedAmount.amount!
+      ).dividedBy(10 ** 6);
+
+      // 2.a. check wasm event
+      const wasm = checkWasmEvent(tx.tx, decodedInvoice.id);
+      if (!wasm) {
+        throw new Error("Wrong payment, wasm event don't match");
+      }
+
+      // 3. check amount
+      // convert the amount to USDC
+      const rates = await getRates([decodedInvoice.unit]);
+      if (!rates) {
+        throw new Error("Can't get the latest rates.");
+      }
+      const latestRatePrice = rates[0].getPriceNoOlderThan(200_000);
+      if (!latestRatePrice) {
+        throw new Error("Can't get the latest rates.");
+      }
+      latestRateDecimal = new Decimal(latestRatePrice?.price).mul(
+        10 ** latestRatePrice.expo
+      );
+      const calculatedUsdc = new Decimal(decodedInvoice.amount)
+        .dividedBy(latestRateDecimal)
+        .mul(10 ** 6); // convert to uusdc
+      if (!didUserReceivedAmount.amount) {
+        throw new Error("Invalid amount in tx.");
+      }
+      const amountInTxToDecimal = new Decimal(didUserReceivedAmount.amount);
+      // calculating if the received amount and calculated amount have at max 1% difference
+      // TODO: if the received amount is greater that the calculated amount, we don't need to check the 1% condition
+      // TODO: check if the rate is non zero
+      const validAmount = calculatedUsdc
+        .minus(amountInTxToDecimal)
+        .dividedBy(calculatedUsdc)
+        .mul(100)
+        .abs()
+        .lessThanOrEqualTo(1);
+      validPayment = validPayment && validAmount;
+
+      if (!validPayment) {
+        throw new Error("The payment does not pass the confitions");
+      }
     } else {
       return NextResponse.json({ error: "Invalid payment." }, { status: 400 });
     }

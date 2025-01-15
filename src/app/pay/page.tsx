@@ -353,7 +353,7 @@ const PayPage = () => {
   const handleQueryBalance = async () => {
     try {
       const res = await getTransactionDetails(
-        "80F82303E66C985FB6B41843359B0813E546CE2996531E0022A16C8E705487B6"
+        "B974D8144D67A60916DD028E9A5BE7DB20B56DD2552C79AEA581EB16D2C717A0"
       );
       if (res) {
         console.log(res);
