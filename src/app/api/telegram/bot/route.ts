@@ -93,6 +93,8 @@ const handleConfirmCommand = async (
   const userId = Number.parseInt(params[1]);
   const data = await getInvoice(invoiceId);
 
+  console.log("Handle Confirm", data);
+
   if (!data) {
     await sendMessage({
       chat_id: chatId,
@@ -129,17 +131,32 @@ const handleConfirmCommand = async (
     });
     return;
   }
+  console.log("Confirming ...");
   // confirm the payment
-  await confirmTheInvoicePayment(invoiceId);
-  // prepare the msg
-  const msg: Telegram.SendMessage = {
-    chat_id: chatId,
-    parse_mode: "HTML",
-    // prettier-ignore
-    text: `✅ <b>Payment confirmed</b>`,
-  };
+  const res = await confirmTheInvoicePayment(invoiceId);
+  if (res) {
+    console.log("Should be confirmed by now");
+    // prepare the msg
+    const msg: Telegram.SendMessage = {
+      chat_id: chatId,
+      parse_mode: "HTML",
+      // prettier-ignore
+      text: `✅ <b>Payment confirmed</b>`,
+    };
 
-  await sendMessage(msg);
+    await sendMessage(msg);
+  } else {
+    console.log("didn't work!");
+    // prepare the msg
+    const msg: Telegram.SendMessage = {
+      chat_id: chatId,
+      parse_mode: "HTML",
+      // prettier-ignore
+      text: `❌ <b>Can't confirm right now, server error.</b>`,
+    };
+
+    await sendMessage(msg);
+  }
 };
 
 const handleStartCommand = async (
