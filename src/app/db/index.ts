@@ -1,9 +1,5 @@
 import logger from "@/utils/logger";
 import { sql } from "@vercel/postgres";
-import * as Telegram from "@/types/telegram";
-import { Redis } from "@upstash/redis";
-
-const REDIS = Redis.fromEnv();
 
 // Types
 type EscrowOut = "direct" | "approve" | "refund";
@@ -133,69 +129,6 @@ const addEscrowOutTxToInvoice = async (
   }
 };
 
-const saveTelegramChatInfo = async (ci: Telegram.ChatInfo) => {
-  try {
-    console.log(
-      "query",
-      `INSERT INTO users (user_id, chat_id, username, firstname, lastname)
-    VALUES (
-    ${ci.userId}, 
-    ${ci.chatId}, 
-    ${ci.userName}, 
-    ${ci.firstName}, 
-    ${ci.lastName}
-    )
-    ON CONFLICT (user_id) DO UPDATE
-    SET chat_id = EXCLUDED.chat_id
-      username = EXCLUDED.username,
-      firstname = EXCLUDED.firstname,
-      lastname = EXCLUDED.lastname
-    WHERE users.chat_id <> EXCLUDED.chat_id;`
-    );
-    const res = await sql`
-    INSERT INTO users (user_id, chat_id, username, firstname, lastname)
-    VALUES (
-    ${ci.userId}, 
-    ${ci.chatId}, 
-    ${ci.userName}, 
-    ${ci.firstName}, 
-    ${ci.lastName}
-    )
-    ON CONFLICT (user_id) DO UPDATE
-    SET chat_id = EXCLUDED.chat_id
-      username = EXCLUDED.username,
-      firstname = EXCLUDED.firstname,
-      lastname = EXCLUDED.lastname
-    WHERE users.chat_id <> EXCLUDED.chat_id;
-    `;
-    if (res.rowCount && res.rowCount > 0) {
-      // db updated, update redis
-      await REDIS.set(`user:${ci.userId}`, JSON.stringify(ci));
-    }
-    return res.rowCount;
-  } catch (error) {
-    logger.error(
-      `Db:: Can't update user data, chatinfo: ${ci},\n error: ${error}`
-    );
-    return null;
-  }
-};
-
-export const getChatId = async (user_id: number) => {
-  try {
-    const res = await sql`
-    SELECT chat_id FROM users
-    WHERE user_id = ${user_id};
-    `;
-    if (res.rowCount && res.rowCount > 0) {
-      return res.rows[0].chat_id;
-    }
-  } catch (error) {
-    logger.error(`Db:: Can't get chatId,\n error: ${error}`);
-    return null;
-  }
-};
-
 export const queryIsPaid = async (invoice_id: string) => {
   try {
     const res = await sql`
@@ -247,6 +180,5 @@ export {
   deleteInvoicesByIssuer,
   addEscrowTxToInvoice,
   addEscrowOutTxToInvoice,
-  saveTelegramChatInfo,
   confirmTheInvoicePayment,
 };

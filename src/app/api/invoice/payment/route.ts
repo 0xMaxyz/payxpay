@@ -1,4 +1,4 @@
-import { addEscrowTxToInvoice, getChatId, getInvoice } from "@/app/db";
+import { addEscrowTxToInvoice, getInvoice } from "@/app/db";
 import { SignedInvoice } from "@/app/types";
 import { didUserReceiveToken, getTransactionDetails } from "@/app/xion/lib";
 import { getRates } from "@/utils/get-rates";
@@ -35,7 +35,6 @@ const prepareTgConfirmationMessage = async (
   invoice: SignedInvoice,
   rate: Decimal
 ) => {
-  const chat_id = await getChatId(user_id);
   const invoiceUnit = invoice.unit.replaceAll(" ", "").split("-")[1];
   const paymentMode =
     payment_type === "direct"
@@ -45,7 +44,7 @@ const prepareTgConfirmationMessage = async (
     2
   )}`;
   const msg: Telegram.SendMessage = {
-    chat_id,
+    chat_id: user_id,
     // prettier-ignore
     text:`<b>Payment Received</b>\n\nA payment is made to an invoice created by you (<a href="tg://user?id=${payer_id}">(chat with payer)</a>).\n<b>Invoice details:</b>\n<code><b>Amount:</b>${invoice.amount} $${invoiceUnit }\n<b>Description:</b> ${escapeHtml( invoice.description )}</code>\n${escapeHtml(paymentMode)}\n${escapeHtml(rate_text)}\nPlease <b>deliver</b> the invoice item and click the <code>Confirm</code> button to confirm the payment`,
     parse_mode: "HTML",
