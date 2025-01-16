@@ -318,7 +318,7 @@ const handleMsgBoxCommand = async (
   params?: string[]
 ) => {
   console.log("HandleMsgbox, params= ", params);
-  if (!params || params[2]) {
+  if (!params) {
     await sendMessage({
       chat_id: chatId,
       text: "Invalid command. Missing parameters.",
@@ -326,6 +326,13 @@ const handleMsgBoxCommand = async (
     return;
   }
   const message_id = Number.parseInt(params[2]);
+  if (isNaN(message_id)) {
+    await sendMessage({
+      chat_id: chatId,
+      text: "Invalid command. Message ID must be a number.",
+    });
+    return;
+  }
   const paramsWithCommand = params[0];
   // check if the paramsWithCommand is actually a command with params
   const regexForValidCommand = /^\/([a-zA-Z]+)&(.+)?$/;
@@ -333,7 +340,7 @@ const handleMsgBoxCommand = async (
     await editMessage({
       chat_id: chatId,
       message_id,
-      text: "Invalid command. Missing parameters.",
+      text: "Invalid command format.",
     });
   }
   // so a valid command is sent with msgbox
