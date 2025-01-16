@@ -15,6 +15,15 @@ const redis = Redis.fromEnv();
 const BOT_TOKEN = process.env.BOT_TOKEN as string;
 const TELEGRAM_API = `https://api.telegram.org/bot${BOT_TOKEN}`;
 
+//  types
+interface HandlerParams {
+  params: string;
+  userId: number | undefined;
+  messageId: number | undefined;
+  text?: string;
+  inlineKeyboardMarkup?: Telegram.InlineKeyboardMarkup | undefined;
+}
+
 // Functions and command handlers
 
 const sendMessage = async (msg: Telegram.SendMessage) => {
@@ -59,7 +68,10 @@ const deleteMessage = async (msg: Telegram.DeleteMessage) => {
   return response;
 };
 
-const handlePayCommand = async (chatId: string | number, params?: string[]) => {
+const handlePayCommand = async (
+  chatId: string | number,
+  params?: HandlerParams
+) => {
   // set chat action
   await sendChatAction(chatId, "typing");
 
@@ -71,7 +83,7 @@ const handlePayCommand = async (chatId: string | number, params?: string[]) => {
     return;
   }
 
-  const invoiceId = params[0];
+  const invoiceId = params.params;
   const data = await getInvoice(invoiceId);
 
   if (!data) {
@@ -118,12 +130,12 @@ const handlePayCommand = async (chatId: string | number, params?: string[]) => {
 
 const handleConfirmCommand = async (
   chatId: string | number,
-  params?: string[]
+  params?: HandlerParams
 ) => {
   // set chat action
   await sendChatAction(chatId, "typing");
 
-  if (!params) {
+  if (!params || !params.messageId) {
     await sendMessage({
       chat_id: chatId,
       text: "Invalid command. Missing parameters.",
@@ -131,8 +143,8 @@ const handleConfirmCommand = async (
     return;
   }
 
-  const invoiceId = params[0];
-  const userId = Number.parseInt(params[1]);
+  const invoiceId = params.params;
+  const userId = params.userId;
   const data = await getInvoice(invoiceId);
 
   console.log("Handle Confirm", data);
@@ -181,7 +193,7 @@ const handleConfirmCommand = async (
     // prepare the msg
     const msg: Telegram.EditMessageText = {
       chat_id: chatId,
-      message_id: Number.parseInt(params[2]),
+      message_id: params.messageId,
       parse_mode: "HTML",
       // prettier-ignore
       text: `✅ <b>Payment confirmed</b>`,
@@ -233,12 +245,12 @@ const handleConfirmCommand = async (
 
 const handleRejectCommand = async (
   chatId: string | number,
-  params?: string[]
+  params?: HandlerParams
 ) => {
   // set chat action
   await sendChatAction(chatId, "typing");
 
-  if (!params || params.length < 2) {
+  if (!params || !params.messageId) {
     await sendMessage({
       chat_id: chatId,
       text: "Invalid command. Missing invoice ID or other parameters.",
@@ -246,8 +258,8 @@ const handleRejectCommand = async (
     return;
   }
 
-  const invoiceId = params[0];
-  const messageId = params[2];
+  const invoiceId = params.params;
+  const messageId = params.messageId;
 
   // Save context in Redis
   await redis.set(`rejection:${chatId}`, JSON.stringify({ invoiceId }), {
@@ -256,7 +268,7 @@ const handleRejectCommand = async (
 
   await editMessage({
     chat_id: chatId,
-    message_id: Number.parseInt(messageId),
+    message_id: messageId,
     text: `🚫 <b>Reject Escrow</b>\nPlease provide a detailed reason for rejecting escrow #${invoiceId}.`,
     parse_mode: "HTML",
     reply_markup: {
@@ -276,18 +288,18 @@ const handleRejectCommand = async (
 
 const handleStartCommand = async (
   chatId: string | number,
-  params?: string[]
+  params?: HandlerParams
 ) => {
   // set chat action
   await sendChatAction(chatId, "typing");
 
-  if (params && params[0]) {
+  if (params && params.params) {
     // some params are sent with bot start, check if we received invoiceId with start command
     const regex = /invoice=([^&]+)/;
-    const match = params[0].match(regex);
+    const match = params.params.match(regex);
     if (match) {
       // then an invoice is sent with the bot, handle the invoice using payHandler
-      await handlePayCommand(chatId, [match[1], params[1]]);
+      await handlePayCommand(chatId, { ...params, params: match[1] });
     } else {
       // show welcome message
       await sendMessage({
@@ -331,28 +343,22 @@ const handleHelpCommand = async (chatId: string | number) => {
  */
 const handleMsgBoxCommand = async (
   chatId: string | number,
-  params?: string[]
+  params?: HandlerParams
 ) => {
   // set chat action
   await sendChatAction(chatId, "typing");
 
   console.log("HandleMsgbox, params= ", params);
-  if (!params) {
+  if (!params || !params.messageId) {
     await sendMessage({
       chat_id: chatId,
       text: "Invalid command. Missing parameters.",
     });
     return;
   }
-  const message_id = Number.parseInt(params[2]);
-  if (isNaN(message_id)) {
-    await sendMessage({
-      chat_id: chatId,
-      text: "Invalid command. Message ID must be a number.",
-    });
-    return;
-  }
-  const paramsWithCommand = params[0];
+  const message_id = params.messageId;
+
+  const paramsWithCommand = params.params;
   // check if the paramsWithCommand is actually a command with params
   const regexForValidCommand = /^\/([a-zA-Z]+)&(.+)?$/;
   if (!paramsWithCommand.match(regexForValidCommand)) {
@@ -365,9 +371,24 @@ const handleMsgBoxCommand = async (
   // so a valid command is sent with msgbox
   const command = paramsWithCommand.replace("&", " ").trim(); // we'll trim the output to clear the empty space at end for commands without params
   console.log("Command received with msgbox", command);
+  // add chat text and keyboard markup to redis, 10 minutes
+  const contextId = crypto.randomUUID();
+  await redis.set(
+    contextId,
+    JSON.stringify({
+      text: params.text,
+      keyboard: params.inlineKeyboardMarkup,
+    }),
+    {
+      ex: 600,
+    }
+  );
   const msg: Telegram.EditMessageText = {
-    text: "Do you confirm this action?",
+    text: `Do you confirm this action?${
+      params.text ? `\n\n<blockquote>${params.text}</blockquote>` : ""
+    }`,
     message_id: message_id,
+    parse_mode: "HTML",
     chat_id: chatId,
     reply_markup: {
       inline_keyboard: [
@@ -378,7 +399,7 @@ const handleMsgBoxCommand = async (
           },
           {
             text: `No ❌`,
-            callback_data: `/clear Action Canceled.`,
+            callback_data: `/clear ${contextId}`,
           },
         ],
       ],
@@ -389,24 +410,43 @@ const handleMsgBoxCommand = async (
 
 const handleClearCommand = async (
   chatId: string | number,
-  params?: string[]
+  params?: HandlerParams
 ) => {
   // set chat action
   await sendChatAction(chatId, "typing");
 
-  if (!params) {
+  if (!params || !params.messageId) {
     await sendMessage({
       chat_id: chatId,
       text: "Invalid command. Missing parameters.",
     });
     return;
   }
-  if (params[0]) {
+  if (params.params) {
+    const fromRedis = await redis.get(params.params);
+    console.log("Key received from redis", fromRedis);
+    if (fromRedis) {
+      // then we get the text and keyboard
+      // delete this key
+      await redis.del(params.params);
+      const data: { text: string; keyboard: Telegram.InlineKeyboardMarkup } =
+        JSON.parse(fromRedis as string);
+      // edit the message with received text and keyboar
+      const msg: Telegram.EditMessageText = {
+        text: data.text,
+        chat_id: chatId,
+        message_id: params.messageId,
+        reply_markup: data.keyboard,
+      };
+      console.log("edited mesage in /clear handler", msg);
+      await editMessage(msg);
+      return;
+    }
     // then a clear message is sent, edit the message with this text
     const msg: Telegram.EditMessageText = {
-      text: params[0],
+      text: params.params,
       chat_id: chatId,
-      message_id: Number.parseInt(params[2]),
+      message_id: params.messageId,
     };
 
     await editMessage(msg);
@@ -414,19 +454,19 @@ const handleClearCommand = async (
     // delete the message
     await deleteMessage({
       chat_id: chatId,
-      message_id: Number.parseInt(params[2]),
+      message_id: params.messageId,
     });
   }
 };
 
 const handleApproveCommand = async (
   chatId: string | number,
-  params?: string[]
+  params?: HandlerParams
 ) => {
   // set chat action
   await sendChatAction(chatId, "typing");
 
-  if (!params) {
+  if (!params || !params.userId || !params.messageId) {
     await sendMessage({
       chat_id: chatId,
       text: "❌ <b>An error occured</b>\nMissing parameters.",
@@ -434,8 +474,8 @@ const handleApproveCommand = async (
     });
     return;
   }
-  const invoiceId = params[0];
-  const userId = params[1];
+  const invoiceId = params.params;
+  const userId = params.userId;
 
   const data = await getInvoice(invoiceId);
   if (!data) {
@@ -624,10 +664,7 @@ const processRejection = async (
 
 const COMMANDS: {
   [key: string]: {
-    handler: (
-      chatId: string | number,
-      params?: string[] | undefined
-    ) => Promise<void>;
+    handler: (chatId: string | number, params?: HandlerParams) => Promise<void>;
     description: string;
     showInHelp: boolean;
   };
@@ -702,7 +739,7 @@ export const POST = async (req: NextRequest) => {
     }
 
     const update = body as Telegram.Update;
-    const text = update.message?.text;
+    let text = update.message?.text;
 
     if (!update.callback_query && !text) {
       console.error("Missing input", update);
@@ -719,6 +756,7 @@ export const POST = async (req: NextRequest) => {
     let firstName = update.message?.chat.first_name;
     let lastName = update.message?.chat.last_name;
     let messageId = update.message?.message_id;
+    let keyboards = update.message?.reply_markup;
 
     // check if body contains callback_query
     if (update.callback_query) {
@@ -731,6 +769,15 @@ export const POST = async (req: NextRequest) => {
       firstName = update.callback_query.message?.chat.first_name;
       lastName = update.callback_query.message?.chat.last_name;
       messageId = update.callback_query.message?.message_id;
+      text =
+        update.callback_query.message && "text" in update.callback_query.message
+          ? update.callback_query.message.text
+          : "";
+      keyboards =
+        update.callback_query.message &&
+        "reply_markup" in update.callback_query.message
+          ? update.callback_query.message?.reply_markup
+          : undefined;
     }
 
     console.log(
@@ -793,11 +840,13 @@ export const POST = async (req: NextRequest) => {
     // check if command is registered
     const foundCommand = COMMANDS[command];
     if (foundCommand) {
-      await foundCommand.handler(chatId, [
-        params ?? "",
-        userId!.toString(),
-        messageId?.toString() ?? "",
-      ]); // send the user id as index 1 of params, and the messageId as index 2
+      await foundCommand.handler(chatId, {
+        params: params ?? "",
+        userId: userId,
+        messageId: messageId,
+        text: text,
+        inlineKeyboardMarkup: keyboards,
+      });
     } else {
       await sendMessage({
         chat_id: chatId,

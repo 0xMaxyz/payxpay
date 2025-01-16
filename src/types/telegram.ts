@@ -1,5 +1,3 @@
-import { Message } from "postcss";
-
 /** This object represents an incoming update.
 At most one of the optional parameters can be present in any given update. */
 export interface Update {
@@ -13,7 +11,7 @@ export interface Update {
   /**
    * Optional. New incoming message of any kind - text, photo, sticker, etc.
    */
-  message?: TelegramMessage;
+  message?: Message;
   /** Optional. New incoming callback query */
   callback_query?: CallbackQuery;
 }
@@ -362,7 +360,7 @@ export interface LinkPreviewOptions {
   show_above_text?: boolean;
 }
 
-export interface TelegramMessage {
+export interface Message {
   /**
    * Unique message identifier inside this chat. In specific instances (e.g., message containing a video sent to a
    * big chat), the server might automatically schedule a message instead of sending it immediately. In such cases,
@@ -415,7 +413,10 @@ export interface TelegramMessage {
    */
   link_preview_options?: LinkPreviewOptions;
 
-  // Additional fields can be added as needed
+  /**
+   * Optional. Inline keyboard attached to the message. login_url buttons are represented as ordinary url buttons.
+   */
+  reply_markup?: InlineKeyboardMarkup;
 }
 
 export interface Chat {
