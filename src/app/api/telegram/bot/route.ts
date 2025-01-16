@@ -2,6 +2,7 @@ import {
   addEscrowOutTxToInvoice,
   confirmTheInvoicePayment,
   getInvoice,
+  rejectEscrow,
 } from "@/app/db";
 import { SignedInvoice } from "@/app/types";
 import * as Telegram from "@/types/telegram";
@@ -342,25 +343,6 @@ const handleRejectCommand = async (
       return;
     }
   }
-  // check if payment confirmed
-  if (!data.is_confirmed) {
-    if (params.editable && params.messageId) {
-      await editMessage({
-        chat_id: chatId,
-        message_id: params.messageId,
-        text: "❌ <b>An error occured</b>\nThe payment is not confirmed yet (if any)",
-        parse_mode: "HTML",
-      });
-      return;
-    } else {
-      await sendMessage({
-        chat_id: chatId,
-        text: "❌ <b>An error occured</b>\nThe payment is not confirmed yet (if any)",
-        parse_mode: "HTML",
-      });
-      return;
-    }
-  }
   // check if you're the payer
   if (data.payer_tg_id.toString() !== params.userId.toString()) {
     console.log("data.payer_tg_id is", data.payer_tg_id);
@@ -382,6 +364,26 @@ const handleRejectCommand = async (
       return;
     }
   }
+  // check if payment confirmed
+  if (!data.is_confirmed) {
+    if (params.editable && params.messageId) {
+      await editMessage({
+        chat_id: chatId,
+        message_id: params.messageId,
+        text: "❌ <b>An error occured</b>\nThe payment is not confirmed yet (if any)",
+        parse_mode: "HTML",
+      });
+      return;
+    } else {
+      await sendMessage({
+        chat_id: chatId,
+        text: "❌ <b>An error occured</b>\nThe payment is not confirmed yet (if any)",
+        parse_mode: "HTML",
+      });
+      return;
+    }
+  }
+
   // at this point we know that there is an invoice which is escrowed by us and confirmed by issuer
   // Save context in Redis (Expire in ~5 minutes)
   await redis.set(`rejection:${chatId}`, JSON.stringify({ invoiceId }), {
@@ -682,15 +684,6 @@ const handleApproveCommand = async (
     });
     return;
   }
-  // check if payment confirmed
-  if (!data.is_confirmed) {
-    await sendMessage({
-      chat_id: chatId,
-      text: "❌ <b>An error occured</b>\nThe payment is not confirmed yet (if any)",
-      parse_mode: "HTML",
-    });
-    return;
-  }
   // check if you're the payer
   if (data.payer_tg_id.toString() !== userId.toString()) {
     console.log("data.payer_tg_id is", data.payer_tg_id);
@@ -702,6 +695,16 @@ const handleApproveCommand = async (
     });
     return;
   }
+  // check if payment confirmed
+  if (!data.is_confirmed) {
+    await sendMessage({
+      chat_id: chatId,
+      text: "❌ <b>An error occured</b>\nThe payment is not confirmed yet (if any)",
+      parse_mode: "HTML",
+    });
+    return;
+  }
+
   // at this point we know that there is an invoice which is escrowed by us and confirmed by issuer
   // we can approve the escrow and pay the amount
   const tx = await approveEscrow(invoiceId);
@@ -808,47 +811,55 @@ const processRejection = async (
   reason: string,
   chatId: number
 ) => {
-  // Save the rejection to the database or notify the issuer
-  console.log(`Processing rejection for invoice ${invoiceId}: ${reason}`);
+  // Save the rejection in db
+  const isRejected = await rejectEscrow(invoiceId, reason);
+  if (isRejected) {
+    console.log(`Processing rejection for invoice ${invoiceId}: ${reason}`);
 
-  const data = await getInvoice(invoiceId);
-  if (!data) {
-    await sendMessage({
-      chat_id: chatId,
-      text: "❌ <b>An error occured</b>\nCan't find this invoice.",
-      parse_mode: "HTML",
-    });
-    return;
-  }
-  const signedInvoice = decodeInvoice<SignedInvoice>(data.invoice);
-  // prettier-ignore
-  const invoiceDetails = `<b>💵 Amount:</b> <code>${signedInvoice.amount}</code> $${signedInvoice.unit.replaceAll(' ','').split('-')[1] }\n<b>📝 Description:</b> <code>${escapeHtml( signedInvoice.description )}</code>`;
-  // Notify the issuer
-  const issuerChatId = signedInvoice.issuerTelegramId;
-  await sendMessage({
-    chat_id: issuerChatId,
+    const data = await getInvoice(invoiceId);
+    if (!data) {
+      await sendMessage({
+        chat_id: chatId,
+        text: "❌ <b>An error occured</b>\nCan't find this invoice.",
+        parse_mode: "HTML",
+      });
+      return;
+    }
+    const signedInvoice = decodeInvoice<SignedInvoice>(data.invoice);
     // prettier-ignore
-    text: `🚨<b>Escrow Rejected by Payer</b>\n\nThe payer has rejected the escrow payment for your invoice with the following reason:\n<blockquote>${reason}</blockquote>\n\n<b>Invoice Details</b>\n<blockquote>${invoiceDetails}</blockquote>\n\n⚠️<b>Important Information</b>\nSince the payment was made through an escrow, the funds are still securely held in our smart contract and have not been refunded to the payer.\nYou can either:\n1️⃣Request the payer to return the invoice item(s).\n2️⃣Approve the escrow manually.\nYou can find this rejected escrow in the History tab of the app.\n\n🙏 Thank you for your cooperation.`,
-    parse_mode: "HTML",
-    reply_markup: {
-      inline_keyboard: [
-        [
-          {
-            text: `Chat with payer 💬`,
-            url: `tg://user?id=${data.payer_tg_id}`,
-          },
-          {
-            text: `Open History`,
-            web_app: {
-              url: `https://${
-                process.env.VERCEL_PROJECT_PRODUCTION_URL as string
-              }/history?invoice=${invoiceId}`,
+    const invoiceDetails = `<b>💵 Amount:</b> <code>${signedInvoice.amount}</code> $${signedInvoice.unit.replaceAll(' ','').split('-')[1] }\n<b>📝 Description:</b> <code>${escapeHtml( signedInvoice.description )}</code>`;
+    // Notify the issuer
+    const issuerChatId = signedInvoice.issuerTelegramId;
+    await sendMessage({
+      chat_id: issuerChatId,
+      // prettier-ignore
+      text: `🚨<b>Escrow Rejected by Payer</b>\n\nThe payer has rejected the escrow payment for your invoice with the following reason:\n<blockquote>${reason}</blockquote>\n\n<b>Invoice Details</b>\n<blockquote>${invoiceDetails}</blockquote>\n\n⚠️<b>Important Information</b>\nSince the payment was made through an escrow, the funds are still securely held in our smart contract and have not been refunded to the payer.\nYou can either:\n1️⃣Request the payer to return the invoice item(s).\n2️⃣Approve the escrow manually.\nYou can find this rejected escrow in the History tab of the app.\n\n🙏 Thank you for your cooperation.`,
+      parse_mode: "HTML",
+      reply_markup: {
+        inline_keyboard: [
+          [
+            {
+              text: `Chat with payer 💬`,
+              url: `tg://user?id=${data.payer_tg_id}`,
             },
-          },
+            {
+              text: `Open History`,
+              web_app: {
+                url: `https://${
+                  process.env.VERCEL_PROJECT_PRODUCTION_URL as string
+                }/history?invoice=${invoiceId}`,
+              },
+            },
+          ],
         ],
-      ],
-    },
-  });
+      },
+    });
+  } else {
+    await sendMessage({
+      text: "Can't process rejection now",
+      chat_id: chatId,
+    });
+  }
 };
 
 const handleCancelRejectCommand = async (

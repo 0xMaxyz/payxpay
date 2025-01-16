@@ -177,6 +177,23 @@ const confirmTheInvoicePayment = async (invoice_id: string) => {
   }
 };
 
+const rejectEscrow = async (invoice_id: string, reason: string) => {
+  try {
+    const res = await sql`
+    UPDATE invoices
+    SET rejection_reason = ${reason}
+    WHERE invoice_id = ${invoice_id};
+    `;
+    if (res.rowCount && res.rowCount > 0) {
+      return true;
+    }
+    return false;
+  } catch (error) {
+    logger.error(`Db:: Can't reject the escrow,\n error: ${error}`);
+    throw new Error("Can't reject the escrow");
+  }
+};
+
 export type { EscrowOut };
 export {
   addInvoice,
@@ -187,4 +204,5 @@ export {
   addEscrowTxToInvoice,
   addEscrowOutTxToInvoice,
   confirmTheInvoicePayment,
+  rejectEscrow,
 };
