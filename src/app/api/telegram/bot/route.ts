@@ -326,7 +326,7 @@ const handleMsgBoxCommand = async (
     return;
   }
   const message_id = Number.parseInt(params[2]);
-  const paramsWithCommand = params[1];
+  const paramsWithCommand = params[0];
   // check if the paramsWithCommand is actually a command with params
   const regexForValidCommand = /^\/([a-zA-Z]+)&(.+)?$/;
   if (!paramsWithCommand.match(regexForValidCommand)) {
