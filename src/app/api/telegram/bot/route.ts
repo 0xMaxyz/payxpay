@@ -60,6 +60,9 @@ const deleteMessage = async (msg: Telegram.DeleteMessage) => {
 };
 
 const handlePayCommand = async (chatId: string | number, params?: string[]) => {
+  // set chat action
+  await sendChatAction(chatId, "typing");
+
   if (!params) {
     await sendMessage({
       chat_id: chatId,
@@ -117,6 +120,9 @@ const handleConfirmCommand = async (
   chatId: string | number,
   params?: string[]
 ) => {
+  // set chat action
+  await sendChatAction(chatId, "typing");
+
   if (!params) {
     await sendMessage({
       chat_id: chatId,
@@ -228,6 +234,9 @@ const handleRejectCommand = async (
   chatId: string | number,
   params?: string[]
 ) => {
+  // set chat action
+  await sendChatAction(chatId, "typing");
+
   if (!params || params.length < 2) {
     await sendMessage({
       chat_id: chatId,
@@ -268,6 +277,9 @@ const handleStartCommand = async (
   chatId: string | number,
   params?: string[]
 ) => {
+  // set chat action
+  await sendChatAction(chatId, "typing");
+
   if (params && params[0]) {
     // some params are sent with bot start, check if we received invoiceId with start command
     const regex = /invoice=([^&]+)/;
@@ -293,6 +305,9 @@ const handleStartCommand = async (
 };
 
 const handleHelpCommand = async (chatId: string | number) => {
+  // set chat action
+  await sendChatAction(chatId, "typing");
+
   let htmlTxt = "";
 
   for (const [command, details] of Object.entries(COMMANDS)) {
@@ -317,6 +332,9 @@ const handleMsgBoxCommand = async (
   chatId: string | number,
   params?: string[]
 ) => {
+  // set chat action
+  await sendChatAction(chatId, "typing");
+
   console.log("HandleMsgbox, params= ", params);
   if (!params) {
     await sendMessage({
@@ -372,6 +390,9 @@ const handleClearCommand = async (
   chatId: string | number,
   params?: string[]
 ) => {
+  // set chat action
+  await sendChatAction(chatId, "typing");
+
   if (!params) {
     await sendMessage({
       chat_id: chatId,
@@ -401,6 +422,9 @@ const handleApproveCommand = async (
   chatId: string | number,
   params?: string[]
 ) => {
+  // set chat action
+  await sendChatAction(chatId, "typing");
+
   if (!params) {
     await sendMessage({
       chat_id: chatId,
@@ -535,6 +559,35 @@ const handleApproveCommand = async (
       parse_mode: "HTML",
     });
     return;
+  }
+};
+
+const sendChatAction = async (
+  chatId: string | number,
+  action:
+    | "typing"
+    | "upload_photo"
+    | "record_video"
+    | "upload_video"
+    | "record_voice"
+    | "upload_voice"
+    | "upload_document"
+    | "find_location"
+    | "record_video_note"
+    | "upload_video_note"
+) => {
+  const response = await fetch(`${TELEGRAM_API}/sendChatAction`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      chat_id: chatId,
+      action: action,
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    console.error("Failed to send chat action:", error);
   }
 };
 
