@@ -270,7 +270,7 @@ const handleRejectCommand = async (
     await editMessage({
       chat_id: chatId,
       message_id: messageId,
-      text: `🚫 <b>Reject Escrow</b>\nPlease provide a detailed reason for rejecting escrow <code>${invoiceId}</code>.`,
+      text: `🚫 <b>Reject Escrow</b>\nPlease provide a detailed reason for rejecting the escrow.`,
       parse_mode: "HTML",
       reply_markup: {
         inline_keyboard: [
@@ -700,13 +700,33 @@ const processRejection = async (
     return;
   }
   const signedInvoice = decodeInvoice<SignedInvoice>(data.invoice);
-
+  // prettier-ignore
+  const invoiceDetails = `<b>💵 Amount:</b> <code>${signedInvoice.amount}</code> $${signedInvoice.unit.replaceAll(' ','').split('-')[1] }\n<b>📝 Description:</b> <code>${escapeHtml( signedInvoice.description )}</code>`;
   // Notify the issuer
   const issuerChatId = signedInvoice.issuerTelegramId;
   await sendMessage({
     chat_id: issuerChatId,
-    text: `🚨 The payer has rejected escrow #${invoiceId} with the following reason:\n\n"${reason}"`,
+    // prettier-ignore
+    text: `🚨<b>Escrow Rejected by Payer</b>\n\nThe payer has rejected the escrow payment for your invoice with the following reason:\n<blockquote>${reason}</blockquote>\n\n<b>Invoice Details</b>\n<blockquote>${invoiceDetails}</blockquote>\n\n⚠️<b>Important Information</b>\nSince the payment was made through an escrow, the funds are still securely held in our smart contract and have not been refunded to the payer.\nYou can either:\n1️⃣Request the payer to return the invoice item(s).\n2️⃣Approve the escrow manually.\nYou can find this rejected escrow in the History tab of the app.\n\n🙏 Thank you for your cooperation.`,
     parse_mode: "HTML",
+    reply_markup: {
+      inline_keyboard: [
+        [
+          {
+            text: `Chat with payer 💬`,
+            url: `tg://user?id=${data.payer_tg_id}`,
+          },
+          {
+            text: `Open History`,
+            web_app: {
+              url: `https://${
+                process.env.VERCEL_PROJECT_PRODUCTION_URL as string
+              }/history?invoice=${invoiceId}`,
+            },
+          },
+        ],
+      ],
+    },
   });
 };
 
@@ -910,7 +930,7 @@ export const POST = async (req: NextRequest) => {
         // Confirm receipt of the reason
         await sendMessage({
           chat_id: chatId,
-          text: `✅ Thank you! Your reason for rejecting escrow #${invoiceId} has been recorded.`,
+          text: `✅ Thank you! Your reason for rejecting the escrow has been recorded.`,
           parse_mode: "HTML",
         });
         // Process the rejection (e.g., update database or notify issuer)
