@@ -341,7 +341,8 @@ const handleMsgBoxCommand = async (
   console.log("Command received with msgbox", command);
   const msg: Telegram.EditMessageText = {
     text: "Do you confirm this action?",
-    message_id,
+    message_id: message_id,
+    chat_id: chatId,
     reply_markup: {
       inline_keyboard: [
         [
@@ -375,6 +376,7 @@ const handleClearCommand = async (
     // then a clear message is sent, edit the message with this text
     const msg: Telegram.EditMessageText = {
       text: params[0],
+      chat_id: chatId,
       message_id: Number.parseInt(params[2]),
     };
 
