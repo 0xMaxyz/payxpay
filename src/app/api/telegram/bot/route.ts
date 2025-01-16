@@ -251,7 +251,7 @@ const handleRejectCommand = async (
   // set chat action
   await sendChatAction(chatId, "typing");
 
-  if (!params || !params.messageId) {
+  if (!params || !params.messageId || !params.userId) {
     await sendMessage({
       chat_id: chatId,
       text: "Invalid command. Missing invoice ID or other parameters.",
@@ -261,10 +261,131 @@ const handleRejectCommand = async (
 
   const invoiceId = params.params;
   const messageId = params.messageId;
+  // check if invoice can be rejected
+  const data = await getInvoice(invoiceId);
+  if (!data) {
+    if (params.editable && params.messageId) {
+      await editMessage({
+        chat_id: chatId,
+        message_id: params.messageId,
+        text: "❌ <b>An error occured</b>\nCan't find this invoice.",
+        parse_mode: "HTML",
+      });
+      return;
+    } else {
+      await sendMessage({
+        chat_id: chatId,
+        text: "❌ <b>An error occured</b>\nCan't find this invoice.",
+        parse_mode: "HTML",
+      });
+      return;
+    }
+  }
 
-  // Save context in Redis
+  // check if invoice can be rejected
+  if (data.payment_type === "approve") {
+    if (params.editable && params.messageId) {
+      await editMessage({
+        chat_id: chatId,
+        parse_mode: "HTML",
+        message_id: params.messageId,
+        text: "⚠️ <b>Warning</b>\nThis invoice is approved and can be rejected.",
+      });
+      return;
+    } else {
+      await sendMessage({
+        chat_id: chatId,
+        parse_mode: "HTML",
+        text: "⚠️ <b>Warning</b>\nThis invoice is approved and can be rejected.",
+      });
+      return;
+    }
+  }
+
+  // check if invoice refunded
+  if (data.payment_type === "refund") {
+    if (params.editable && params.messageId) {
+      await editMessage({
+        chat_id: chatId,
+        parse_mode: "HTML",
+        message_id: params.messageId,
+        text: "⚠️ <b>Warning</b>\nThis invoice is refunded and can't be rejected.",
+      });
+      return;
+    } else {
+      await sendMessage({
+        chat_id: chatId,
+        parse_mode: "HTML",
+
+        text: "⚠️ <b>Warning</b>\nThis invoice is refunded and can't be rejected.",
+      });
+      return;
+    }
+  }
+
+  // check if invoice is paid with an escrow
+  if (data.payment_type === "direct") {
+    if (params.editable && params.messageId) {
+      await editMessage({
+        chat_id: chatId,
+        parse_mode: "HTML",
+        message_id: params.messageId,
+        text: "❌ <b>Error</b>\nThis invoice is paid directly and the invoice issuer received the amount.\nYou can't reject it.",
+      });
+      return;
+    } else {
+      await sendMessage({
+        chat_id: chatId,
+        parse_mode: "HTML",
+        text: "❌ <b>Error</b>\nThis invoice is paid directly and the invoice issuer received the amount.\nYou can't reject it.",
+      });
+      return;
+    }
+  }
+  // check if payment confirmed
+  if (!data.is_confirmed) {
+    if (params.editable && params.messageId) {
+      await editMessage({
+        chat_id: chatId,
+        message_id: params.messageId,
+        text: "❌ <b>An error occured</b>\nThe payment is not confirmed yet (if any)",
+        parse_mode: "HTML",
+      });
+      return;
+    } else {
+      await sendMessage({
+        chat_id: chatId,
+        text: "❌ <b>An error occured</b>\nThe payment is not confirmed yet (if any)",
+        parse_mode: "HTML",
+      });
+      return;
+    }
+  }
+  // check if you're the payer
+  if (data.payer_tg_id.toString() !== params.userId.toString()) {
+    console.log("data.payer_tg_id is", data.payer_tg_id);
+    console.log("userId is", params.userId);
+    if (params.editable && params.messageId) {
+      await editMessage({
+        chat_id: chatId,
+        message_id: params.messageId,
+        text: "❌ <b>An error occured</b>\nYou didn't create this escrow.",
+        parse_mode: "HTML",
+      });
+      return;
+    } else {
+      await sendMessage({
+        chat_id: chatId,
+        text: "❌ <b>An error occured</b>\nYou didn't create this escrow.",
+        parse_mode: "HTML",
+      });
+      return;
+    }
+  }
+  // at this point we know that there is an invoice which is escrowed by us and confirmed by issuer
+  // Save context in Redis (Expire in ~5 minutes)
   await redis.set(`rejection:${chatId}`, JSON.stringify({ invoiceId }), {
-    ex: 320, // Expire in ~5 minutes
+    ex: 320,
   });
   if (params.editable) {
     await editMessage({
