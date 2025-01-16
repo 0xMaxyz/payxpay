@@ -431,6 +431,27 @@ const handleStartCommand = async (
 ) => {
   // set chat action
   await sendChatAction(chatId, "typing");
+  // prettier-ignore
+  const welcomeMsg = `🎉 Welcome to <b>PayxPay</b>! 💳\nNeed assistance? 🛠️ Use /help to get a list of all available commands. 📜\nOr, skip the wait and open the app directly: 👇`;
+  const msg: Telegram.SendMessage = {
+    chat_id: chatId,
+    text: welcomeMsg,
+    parse_mode: "HTML",
+    reply_markup: {
+      inline_keyboard: [
+        [
+          {
+            web_app: {
+              url: `https://${
+                process.env.VERCEL_PROJECT_PRODUCTION_URL as string
+              }/`,
+            },
+            text: "Open App",
+          },
+        ],
+      ],
+    },
+  };
 
   if (params && params.params) {
     // some params are sent with bot start, check if we received invoiceId with start command
@@ -441,18 +462,10 @@ const handleStartCommand = async (
       await handlePayCommand(chatId, { ...params, params: match[1] });
     } else {
       // show welcome message
-      await sendMessage({
-        chat_id: chatId,
-        text: "Welcome to <b>PayxPay</b>!\n Use <code>/help</code> to get a list of available commands.",
-        parse_mode: "HTML",
-      });
+      await sendMessage(msg);
     }
   } else {
-    await sendMessage({
-      chat_id: chatId,
-      text: "Welcome to <b>PayxPay</b>!\n Use <code>/help</code> to get a list of available commands.",
-      parse_mode: "HTML",
-    });
+    await sendMessage(msg);
   }
 };
 
