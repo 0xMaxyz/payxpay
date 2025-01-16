@@ -286,7 +286,7 @@ const handleRejectCommand = async (
   } else {
     await sendMessage({
       chat_id: chatId,
-      text: `🚫 <b>Reject Escrow</b>\nPlease provide a detailed reason for rejecting escrow #${invoiceId}.\nYou have <b>5 minutes</b> to send the reason\n⚠️ <ins>only text messages supported now</ins>`,
+      text: `🚫 <b>Reject Escrow</b>\nPlease provide a detailed reason for rejecting escrow <code>${invoiceId}</code>.\nYou have <b>5 minutes</b> to send the reason\n⚠️ <ins>only text messages supported now</ins>`,
       parse_mode: "HTML",
       reply_markup: {
         inline_keyboard: [
@@ -373,11 +373,18 @@ const handleMsgBoxCommand = async (
   // check if the paramsWithCommand is actually a command with params
   const regexForValidCommand = /^\/([a-zA-Z]+)&(.+)?$/;
   if (!paramsWithCommand.match(regexForValidCommand)) {
-    await editMessage({
-      chat_id: chatId,
-      message_id,
-      text: "Invalid command format.",
-    });
+    if (params.editable) {
+      await editMessage({
+        chat_id: chatId,
+        message_id,
+        text: "Invalid command format.",
+      });
+    } else {
+      await sendMessage({
+        chat_id: chatId,
+        text: "Invalid command format.",
+      });
+    }
   }
   // so a valid command is sent with msgbox
   const command = paramsWithCommand.replace("&", " ").trim(); // we'll trim the output to clear the empty space at end for commands without params
@@ -394,29 +401,54 @@ const handleMsgBoxCommand = async (
       ex: 600,
     }
   );
-  const msg: Telegram.EditMessageText = {
-    text: `Do you confirm this action?${
-      params.text ? `\n\n<blockquote>${params.text}</blockquote>` : ""
-    }`,
-    message_id: message_id,
-    parse_mode: "HTML",
-    chat_id: chatId,
-    reply_markup: {
-      inline_keyboard: [
-        [
-          {
-            text: `Yes ✅`,
-            callback_data: command,
-          },
-          {
-            text: `No ❌`,
-            callback_data: `/clear ${contextId}`,
-          },
+  if (params.editable) {
+    const msg: Telegram.EditMessageText = {
+      text: `Do you confirm this action?${
+        params.text ? `\n\n<blockquote>${params.text}</blockquote>` : ""
+      }`,
+      message_id: message_id,
+      parse_mode: "HTML",
+      chat_id: chatId,
+      reply_markup: {
+        inline_keyboard: [
+          [
+            {
+              text: `Yes ✅`,
+              callback_data: command,
+            },
+            {
+              text: `No ❌`,
+              callback_data: `/clear ${contextId}`,
+            },
+          ],
         ],
-      ],
-    },
-  };
-  await editMessage(msg);
+      },
+    };
+    await editMessage(msg);
+  } else {
+    const msg: Telegram.SendMessage = {
+      text: `Do you confirm this action?${
+        params.text ? `\n\n<blockquote>${params.text}</blockquote>` : ""
+      }`,
+      parse_mode: "HTML",
+      chat_id: chatId,
+      reply_markup: {
+        inline_keyboard: [
+          [
+            {
+              text: `Yes ✅`,
+              callback_data: command,
+            },
+            {
+              text: `No ❌`,
+              callback_data: `/clear ${contextId}`,
+            },
+          ],
+        ],
+      },
+    };
+    await sendMessage(msg);
+  }
 };
 
 const handleClearCommand = async (
