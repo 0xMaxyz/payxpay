@@ -57,7 +57,7 @@ const prepareTgConfirmationMessage = async (
         [
           {
             text: `Confirm ✅`,
-            callback_data: `/msgBox /confirm&${invoice.id}`,
+            callback_data: `/msgbox /confirm&${invoice.id}`,
           },
           {
             text: `Chat with Payer 💬`,

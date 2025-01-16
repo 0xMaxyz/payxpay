@@ -194,11 +194,11 @@ const handleConfirmCommand = async (
             [
               {
                 text: `Approve ✅`,
-                callback_data: `/msgBox /approve&${signedInvoice.id}`,
+                callback_data: `/msgbox /approve&${signedInvoice.id}`,
               },
               {
                 text: `Reject ❌`,
-                callback_data: `/msgBox /reject&${signedInvoice.id}`,
+                callback_data: `/msgbox /reject&${signedInvoice.id}`,
               },
               {
                 text: `Chat with Issuer 💬`,
@@ -317,7 +317,8 @@ const handleMsgBoxCommand = async (
   chatId: string | number,
   params?: string[]
 ) => {
-  if (!params) {
+  console.log("HandleMsgbox, params= ", params);
+  if (!params || params[2]) {
     await sendMessage({
       chat_id: chatId,
       text: "Invalid command. Missing parameters.",
@@ -337,6 +338,7 @@ const handleMsgBoxCommand = async (
   }
   // so a valid command is sent with msgbox
   const command = paramsWithCommand.replace("&", " ").trim(); // we'll trim the output to clear the empty space at end for commands without params
+  console.log("Command received with msgbox", command);
   const msg: Telegram.EditMessageText = {
     text: "Do you confirm this action?",
     message_id,
@@ -573,10 +575,10 @@ const COMMANDS: {
   },
   /**
    * the format to send commands with this command is
-   * - /msgBox commandWithParams
+   * - /msgbox commandWithParams
    *
    * the commandWithParams is the command (and the params) that are going to be invoked in case the user chooses yes
-   * - e.g. /msgBox /confirm&invoiceId
+   * - e.g. /msgbox /confirm&invoiceId
    *
    * Use & between the command and params of the commandWithParams
    */
@@ -651,7 +653,16 @@ export const POST = async (req: NextRequest) => {
       messageId = update.callback_query.message?.message_id;
     }
 
-    console.log(comm, chatId, userId, userName, firstName, lastName);
+    console.log(
+      "comm, chatId, userId, userName, firstName, lastName,messageId\n",
+      comm,
+      chatId,
+      userId,
+      userName,
+      firstName,
+      lastName,
+      messageId
+    );
 
     if (!chatId || !comm) {
       throw new Error("Invalid input");
