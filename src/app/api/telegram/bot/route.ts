@@ -22,6 +22,7 @@ interface HandlerParams {
   messageId: number | undefined;
   text?: string;
   inlineKeyboardMarkup?: Telegram.InlineKeyboardMarkup | undefined;
+  editable: boolean;
 }
 
 // Functions and command handlers
@@ -263,27 +264,42 @@ const handleRejectCommand = async (
 
   // Save context in Redis
   await redis.set(`rejection:${chatId}`, JSON.stringify({ invoiceId }), {
-    ex: 300, // Expire in 5 minutes
+    ex: 320, // Expire in ~5 minutes
   });
-
-  await editMessage({
-    chat_id: chatId,
-    message_id: messageId,
-    text: `🚫 <b>Reject Escrow</b>\nPlease provide a detailed reason for rejecting escrow #${invoiceId}.`,
-    parse_mode: "HTML",
-    reply_markup: {
-      inline_keyboard: [
-        [
-          {
-            text: "Cancel ❌",
-            callback_data: `/clear Action Canceled.`,
-          },
+  if (params.editable) {
+    await editMessage({
+      chat_id: chatId,
+      message_id: messageId,
+      text: `🚫 <b>Reject Escrow</b>\nPlease provide a detailed reason for rejecting escrow #${invoiceId}.`,
+      parse_mode: "HTML",
+      reply_markup: {
+        inline_keyboard: [
+          [
+            {
+              text: "Cancel ❌",
+              callback_data: `/clear Action Canceled.`,
+            },
+          ],
         ],
-      ],
-    },
-  });
-
-  // Here, you might set up another step (e.g., a form input or callback) to collect the user's reason.
+      },
+    });
+  } else {
+    await sendMessage({
+      chat_id: chatId,
+      text: `🚫 <b>Reject Escrow</b>\nPlease provide a detailed reason for rejecting escrow #${invoiceId}.\nYou have <b>5 minutes</b> to send the reason\n⚠️ <ins>only text messages supported now</ins>`,
+      parse_mode: "HTML",
+      reply_markup: {
+        inline_keyboard: [
+          [
+            {
+              text: "Cancel ❌",
+              callback_data: `/cancel-reject`,
+            },
+          ],
+        ],
+      },
+    });
+  }
 };
 
 const handleStartCommand = async (
@@ -336,11 +352,6 @@ const handleHelpCommand = async (chatId: string | number) => {
   });
 };
 
-/**
- * Handles showing xonfirmation box for messages with inline keyboard
- * @param chatId the chat_id to sent the reply to
- * @param params index 0 is params sent with the command, index 1 is user_id, index 2 is original message id that should be edited
- */
 const handleMsgBoxCommand = async (
   chatId: string | number,
   params?: HandlerParams
@@ -444,7 +455,7 @@ const handleClearCommand = async (
     }
     // then a clear message is sent, edit the message with this text
     const msg: Telegram.EditMessageText = {
-      text: params.params,
+      text: "Action Canceled.",
       chat_id: chatId,
       message_id: params.messageId,
     };
@@ -491,6 +502,7 @@ const handleApproveCommand = async (
   if (data.payment_type === "approve") {
     await sendMessage({
       chat_id: chatId,
+      parse_mode: "HTML",
       text: "⚠️ <b>Warning</b>\nThis invoice is already approved.",
     });
     return;
@@ -500,6 +512,8 @@ const handleApproveCommand = async (
   if (data.payment_type === "refund") {
     await sendMessage({
       chat_id: chatId,
+      parse_mode: "HTML",
+
       text: "⚠️ <b>Warning</b>\nThis invoice is refunded and can't be approved anymore.",
     });
     return;
@@ -509,6 +523,8 @@ const handleApproveCommand = async (
   if (data.payment_type === "direct") {
     await sendMessage({
       chat_id: chatId,
+      parse_mode: "HTML",
+
       text: "❌ <b>Error</b>\nThis invoice is paid directly and the invoice issuer received the amount.\nNo Approve is required.",
     });
     return;
@@ -662,6 +678,30 @@ const processRejection = async (
   });
 };
 
+const handleCancelRejectCommand = async (
+  chatId: string | number,
+  params?: HandlerParams
+) => {
+  // check if an active reject request is being processed
+  const context = await redis.get(`rejection:${chatId}`);
+  if (context && params) {
+    // Remove the context from Redis
+    await redis.del(`rejection:${chatId}`);
+    if (params.editable && params.messageId !== undefined) {
+      await editMessage({
+        chat_id: chatId,
+        message_id: params.messageId,
+        text: "Action canceled. No changes were made.",
+      });
+    } else {
+      await sendMessage({
+        chat_id: chatId,
+        text: "Action canceled. No changes were made.",
+      });
+    }
+  }
+};
+
 // list of available commands
 
 const COMMANDS: {
@@ -721,6 +761,11 @@ const COMMANDS: {
   reject: {
     handler: handleRejectCommand,
     description: "Rejects the escrowed amount with a reason.",
+    showInHelp: false,
+  },
+  "cancel-reject": {
+    handler: handleCancelRejectCommand,
+    description: "Cancels an active reject action.",
     showInHelp: false,
   },
 };
@@ -848,6 +893,7 @@ export const POST = async (req: NextRequest) => {
         messageId: messageId,
         text: text,
         inlineKeyboardMarkup: keyboards,
+        editable: update.callback_query !== undefined,
       });
     } else {
       await sendMessage({
