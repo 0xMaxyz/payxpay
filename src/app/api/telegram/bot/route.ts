@@ -290,14 +290,14 @@ const handleRejectCommand = async (
         chat_id: chatId,
         parse_mode: "HTML",
         message_id: params.messageId,
-        text: "⚠️ <b>Warning</b>\nThis invoice is approved and can be rejected.",
+        text: "⚠️ <b>Warning</b>\nCan't reject an approved escrow.",
       });
       return;
     } else {
       await sendMessage({
         chat_id: chatId,
         parse_mode: "HTML",
-        text: "⚠️ <b>Warning</b>\nThis invoice is approved and can be rejected.",
+        text: "⚠️ <b>Warning</b>\nCan't reject an approved escrow.",
       });
       return;
     }
@@ -595,14 +595,17 @@ const handleClearCommand = async (
       // then we get the text and keyboard
       // delete this key
       await redis.del(params.params);
-      const data: { text: string; keyboard: Telegram.InlineKeyboardMarkup } =
-        JSON.parse(fromRedis as string);
+      const { keyboard, text } = fromRedis as {
+        text: string;
+        keyboard: Telegram.InlineKeyboardMarkup;
+      };
+
       // edit the message with received text and keyboar
       const msg: Telegram.EditMessageText = {
-        text: data.text,
+        text: text,
         chat_id: chatId,
         message_id: params.messageId,
-        reply_markup: data.keyboard,
+        reply_markup: keyboard,
       };
       console.log("edited mesage in /clear handler", msg);
       await editMessage(msg);
@@ -981,6 +984,8 @@ export const POST = async (req: NextRequest) => {
         { status: 400 }
       );
     }
+
+    console.log("Body\n", JSON.stringify(body));
 
     const update = body as Telegram.Update;
     let text = update.message?.text;
