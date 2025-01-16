@@ -35,14 +35,14 @@ export interface EditMessageText {
    * Required if `inline_message_id` is not specified.
    * Optional.
    */
-  chat_id?: number | string;
+  chat_id: number | string;
 
   /**
    * Identifier of the message to edit.
    * Required if `inline_message_id` is not specified.
    * Optional.
    */
-  message_id?: number;
+  message_id: number;
 
   /**
    * Identifier of the inline message.

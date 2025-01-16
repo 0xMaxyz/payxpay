@@ -50,7 +50,7 @@ const prepareTgConfirmationMessage = async (
   const msg: Telegram.SendMessage = {
     chat_id: user_id,
     // prettier-ignore
-    text:`<b>💰 Payment Received</b>\n\nA payment is made to an invoice created by you.\n<b>🧾 Invoice details:</b>\n<code><b>💵 Amount:</b>${invoice.amount} $${invoiceUnit }\n<b>📝 Description:</b> ${escapeHtml( invoice.description )}</code>\n${paymentMode}\n${rate_text}\nPlease 📦 <b>deliver</b> the invoice item(s) and click the <code>Confirm</code> button to confirm the payment.`,
+    text:`🎉 <b>Payment Received!</b> 🎉\n\nA payment is made to an invoice created by you.\n<b>🧾 Invoice details:</b>\n<code><b>💵 Amount:</b>${invoice.amount} $${invoiceUnit }\n<b>📝 Description:</b> ${escapeHtml( invoice.description )}</code>\n${paymentMode}\n${rate_text}\nPlease 📦 <b>deliver</b> the invoice item(s) and click the <code>Confirm</code> button to confirm the payment.`,
     parse_mode: "HTML",
     reply_markup: {
       inline_keyboard: [

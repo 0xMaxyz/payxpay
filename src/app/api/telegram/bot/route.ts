@@ -179,14 +179,15 @@ const handleConfirmCommand = async (
   if (res) {
     console.log("Should be confirmed by now");
     // prepare the msg
-    const msg: Telegram.SendMessage = {
+    const msg: Telegram.EditMessageText = {
       chat_id: chatId,
+      message_id: Number.parseInt(params[2]),
       parse_mode: "HTML",
       // prettier-ignore
       text: `✅ <b>Payment confirmed</b>`,
     };
 
-    await sendMessage(msg);
+    await editMessage(msg);
     // if the payment is escrowed, we have to inform the payer that the issuer paid for this invoice
     // TODO
     if (data.payment_type === "escrow" && data.payer_tg_id) {
