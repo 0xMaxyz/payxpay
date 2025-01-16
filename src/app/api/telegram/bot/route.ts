@@ -699,6 +699,19 @@ const handleCancelRejectCommand = async (
         text: "Action canceled. No changes were made.",
       });
     }
+  } else {
+    if (params && params.editable && params.messageId) {
+      await editMessage({
+        chat_id: chatId,
+        message_id: params.messageId,
+        text: "No active reject request.",
+      });
+    } else {
+      await sendMessage({
+        chat_id: chatId,
+        text: "No active reject request.",
+      });
+    }
   }
 };
 
