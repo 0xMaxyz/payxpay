@@ -187,7 +187,7 @@ const handleConfirmCommand = async (
       const msg2: Telegram.SendMessage = {
         chat_id: data.payer_tg_id,
         // prettier-ignore
-        text: "<b>✅ Payment Confirmed by Issuer</b>\nThe issuer has confirmed the escrowed amount and sent the invoice item. If you have received the item, please <b>approve the escrow</b> the escrow.\n\n<b>⚠️ Important:</b>\n    🔴  <b>Only approve</b> the escrow if you have received the item as described.\n    🔴  <b>If you have not received</b> the item or there is an issue, reject the escrow.\n\n📝 For rejected escrows, you must provide a detailed reason. Our system will review your case, and we will contact the issuer to resolve the issue.\n\n🙏 Thank you for your cooperation!",
+        text: "<b>✅ Payment Confirmed by Issuer</b>\nThe issuer has confirmed the escrowed amount and sent the invoice item. If you have received the item, please <b>approve the escrow.</b>\n\n<b>⚠️ Important:</b>\n    🔴  <b>Only approve</b> the escrow if you have received the item as described.\n    🔴  <b>If you have not received</b> the item or there is an issue, reject the escrow.\n\n📝 For rejected escrows, you must provide a detailed reason. Our system will review your case, and we will contact the issuer to resolve the issue.\n\n🙏 Thank you for your cooperation!",
         parse_mode: "HTML",
         reply_markup: {
           inline_keyboard: [
@@ -422,12 +422,29 @@ const handleApproveCommand = async (
     return;
   }
   const signedInvoice = decodeInvoice<SignedInvoice>(data.invoice);
+  // check if invoice approved
+  if (data.payment_type === "approve") {
+    await sendMessage({
+      chat_id: chatId,
+      text: "⚠️ <b>Warning</b>\nThis invoice is already approved.",
+    });
+    return;
+  }
+
+  // check if invoice approved
+  if (data.payment_type === "refund") {
+    await sendMessage({
+      chat_id: chatId,
+      text: "⚠️ <b>Warning</b>\nThis invoice is refunded and can't be approved anymore.",
+    });
+    return;
+  }
 
   // check if invoice is paid with an escrow
   if (data.payment_type === "direct") {
     await sendMessage({
       chat_id: chatId,
-      text: "⚠️ <b>Warning</b>\nThis invoice is paid directly and the invoice issuer received the amount.\nNo Approve is required.",
+      text: "❌ <b>Error</b>\nThis invoice is paid directly and the invoice issuer received the amount.\nNo Approve is required.",
     });
     return;
   }
