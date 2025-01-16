@@ -898,8 +898,10 @@ export const POST = async (req: NextRequest) => {
     if (!match) {
       // check if there is a rekection context for this user, otherwise send unknown command
       const context = await redis.get(`rejection:${chatId}`);
+      console.log("received context is", context);
       if (context) {
-        const { invoiceId } = JSON.parse(context as string);
+        // const { invoiceId } = JSON.parse(context as string);
+        const { invoiceId } = context as { invoiceId: string };
         console.log(
           `Rejection reason for invoice #${invoiceId}: ${update.message}`
         );
