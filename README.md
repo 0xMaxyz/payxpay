@@ -1,3 +1,6 @@
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+![CosmWasm](https://img.shields.io/badge/CosmWasm-green)
+![Xion](https://img.shields.io/badge/Xion-black)
 # PayxPay
 
 ## Table of Contents
