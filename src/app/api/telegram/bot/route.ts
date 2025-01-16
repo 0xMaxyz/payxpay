@@ -270,7 +270,7 @@ const handleRejectCommand = async (
     await editMessage({
       chat_id: chatId,
       message_id: messageId,
-      text: `🚫 <b>Reject Escrow</b>\nPlease provide a detailed reason for rejecting escrow #${invoiceId}.`,
+      text: `🚫 <b>Reject Escrow</b>\nPlease provide a detailed reason for rejecting escrow <code>${invoiceId}</code>.`,
       parse_mode: "HTML",
       reply_markup: {
         inline_keyboard: [
@@ -293,7 +293,7 @@ const handleRejectCommand = async (
           [
             {
               text: "Cancel ❌",
-              callback_data: `/cancel-reject`,
+              callback_data: `/cancelreject`,
             },
           ],
         ],
@@ -763,7 +763,7 @@ const COMMANDS: {
     description: "Rejects the escrowed amount with a reason.",
     showInHelp: false,
   },
-  "cancel-reject": {
+  cancelreject: {
     handler: handleCancelRejectCommand,
     description: "Cancels an active reject action.",
     showInHelp: false,
