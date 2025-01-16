@@ -523,7 +523,9 @@ const handleApproveCommand = async (
     return;
   }
   // check if you're the payer
-  if (data.payer_tg_id.toString() !== userId) {
+  if (data.payer_tg_id.toString() !== userId.toString()) {
+    console.log("data.payer_tg_id is", data.payer_tg_id);
+    console.log("userId is", userId);
     await sendMessage({
       chat_id: chatId,
       text: "❌ <b>An error occured</b>\nYou didn't create this escrow.",
