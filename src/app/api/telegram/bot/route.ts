@@ -432,7 +432,7 @@ const handleStartCommand = async (
   // set chat action
   await sendChatAction(chatId, "typing");
   // prettier-ignore
-  const welcomeMsg = `🎉 Welcome to <b>PayxPay</b>! 💳\nNeed assistance? 🛠️ Use /help to get a list of all available commands. 📜\nOr, skip the wait and open the app directly: 👇`;
+  const welcomeMsg = `🎉 Welcome to <b>PayxPay</b>! 🎉\n\nNeed assistance? 🛠️ Use /help to get a list of all available commands. 📜\nOr, skip the wait and open the app directly: 👇`;
   const msg: Telegram.SendMessage = {
     chat_id: chatId,
     text: welcomeMsg,
