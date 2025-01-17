@@ -134,3 +134,30 @@ export const decodeInitData = (init: string) => {
     user: user ?? undefined,
   };
 };
+
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+export const fetchWithRetries = async (
+  url: string,
+  options: RequestInit,
+  retries: number
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): Promise<any> => {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const response = await fetch(url, options);
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      if (attempt < retries) {
+        console.warn(`Attempt ${attempt} failed. Retrying in a second...`);
+        await delay(1000);
+      } else {
+        console.error(`All ${retries} attempts failed.`);
+        throw error;
+      }
+    }
+  }
+};
