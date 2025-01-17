@@ -10,15 +10,11 @@ import { useNotification } from "../context/NotificationContext";
 import { useTelegramContext } from "../context/TelegramContext";
 import Link from "next/link";
 import { useAbstraxionAccount, useModal } from "@burnt-labs/abstraxion";
-import { usePxpContract } from "../context/PxpContractContext";
 import { getRates } from "@/utils/get-rates";
 import { PriceFeed } from "@pythnetwork/price-service-client";
 import PaymentDialog, { PaymentParams } from "../components/paymentDialog";
 
 const PayPage = () => {
-  // use PxpContract
-  const { getTransactionDetails } = usePxpContract();
-  //
   const { data: xionAccount } = useAbstraxionAccount();
   const [isModalOpen, setModalOpen] = useModal();
   const changeModalState = () => setModalOpen(!isModalOpen);
@@ -350,36 +346,9 @@ const PayPage = () => {
     }
   };
 
-  const handleQueryBalance = async () => {
-    try {
-      const res = await getTransactionDetails(
-        "B974D8144D67A60916DD028E9A5BE7DB20B56DD2552C79AEA581EB16D2C717A0"
-      );
-      if (res) {
-        console.log(res);
-        console.log("_____________________\n\n\n\n");
-        console.log(
-          JSON.stringify(res, (key, value) =>
-            typeof value === "bigint" ? value.toString() : value
-          )
-        );
-      }
-    } catch (error) {
-      console.error(error);
-      addNotification({ color: "error", message: error as string });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <>
       <div className="p-4">
-        <div>
-          <button className="btn btn-sm" onClick={handleQueryBalance}>
-            QueryBalance
-          </button>
-        </div>
         <h1 className="text-xl font-bold mb-4">Pay</h1>
         {xionAccount?.bech32Address ? (
           <>
