@@ -1,4 +1,4 @@
-import { Invoice, TgUserData } from "@/app/types";
+import { Invoice, TgUserData } from "@/types";
 import verifyTelegramWebAppData from "@/utils/telegram-verifier";
 import { decodeInvoice, encodeSignedInvoice, signInvoice } from "@/utils/tools";
 import { verifyJWTAndReferer } from "@/utils/verify_jwt";

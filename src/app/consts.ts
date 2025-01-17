@@ -1,4 +1,4 @@
-import { Currency } from "./types";
+import { Currency } from "@/types";
 
 export const pxpContract: string = process.env.NEXT_PUBLIC_CONTRACT!;
 export const pxpTreasury: string = process.env.NEXT_PUBLIC_TREASURY!;

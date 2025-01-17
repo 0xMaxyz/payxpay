@@ -1,5 +1,5 @@
 import { getInvoice } from "@/app/db";
-import { SignedInvoice } from "@/app/types";
+import { SignedInvoice } from "@/types";
 import { decodeInvoice, signInvoice } from "@/utils/tools";
 import { verifyJWTAndReferer } from "@/utils/verify_jwt";
 import { NextRequest, NextResponse } from "next/server";

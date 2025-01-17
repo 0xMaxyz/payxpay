@@ -6,7 +6,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { EnvironmentType, TgUserData } from "../types";
+import { EnvironmentType, TgUserData } from "@/types";
 import { decodeInitData } from "@/utils/tools";
 
 interface TelegramContextProps {

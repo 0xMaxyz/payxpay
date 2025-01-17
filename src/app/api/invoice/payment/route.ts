@@ -1,5 +1,5 @@
 import { addEscrowTxToInvoice, getInvoice } from "@/app/db";
-import { SignedInvoice } from "@/app/types";
+import { SignedInvoice } from "@/types";
 import {
   checkWasmEvent,
   didUserReceiveToken,

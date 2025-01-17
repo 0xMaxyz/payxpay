@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { SignedInvoice } from "../types";
+import { SignedInvoice } from "@/types";
 import { decodeInvoice } from "@/utils/tools";
 
 export interface DbInvoiceItem {

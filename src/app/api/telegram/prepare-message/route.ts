@@ -1,6 +1,6 @@
 import { HEADERS } from "@/app/consts";
 import { getInvoice } from "@/app/db";
-import { SignedInvoice } from "@/app/types";
+import { SignedInvoice } from "@/types";
 import { createTelegramShareMessage } from "@/utils/telegram-tools";
 import { NextRequest, NextResponse } from "next/server";
 

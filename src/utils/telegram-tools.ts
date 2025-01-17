@@ -1,4 +1,4 @@
-import { SignedInvoice } from "@/app/types";
+import { SignedInvoice } from "@/types";
 import * as Telegram from "@/types/telegram";
 import { escapeHtml } from "./tools";
 

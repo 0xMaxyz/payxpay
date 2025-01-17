@@ -1,3 +1,19 @@
+.copy-icon {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  position: absolute;
+  top: 0;
+  left: 0;
+  font-size: 16px !important;
+}
+.icon-hidden {
+  opacity: 0;
+  transform: scale(0.8);
+}
+
+.icon-visible {
+  opacity: 1;
+  transform: scale(1);
+}
 .b-logo:hover {
   border: 3px solid;
   border-color: var(--tg-theme-button-color, #000);
@@ -79,14 +95,7 @@
 [data-theme="telegram"] .sec-bg {
   background-color: var(--tg-theme-secondary-bg-color);
 }
-[data-theme="telegram"][style*="--tg-color-scheme: dark;"] .bottom-nav-text {
-  color: var(--tg-theme-text-color) !important;
-  background-color: var(--tg-theme-text-color) !important;
-}
-[data-theme="telegram"] .bottom-nav-fill {
-  fill: var(--tg-theme-text-color) !important;
-  stroke: var(--tg-theme-text-color) !important;
-}
+
 [data-theme="telegram"] .svg-fill {
   fill: var(--tg-theme-button-text-color) !important;
   stroke: var(--tg-theme-button-text-color) !important;
@@ -159,20 +168,20 @@ a.disabled {
   .tg-bg-primary {
     background-color: var(
       --tg-theme-bg-color,
-      var(--fallback-bc, oklch(var(--bc) / 0.2))
+      var(--fallback-bc, oklch(var(--b1) / 1))
     );
   }
   .tg-bg-secondary {
     background-color: var(
       --tg-theme-secondary-bg-color,
-      var(--fallback-bc, oklch(var(--bc) / 0.2))
+      var(--fallback-bc, oklch(var(--b2) / 1))
     );
   }
   .tg-text {
-    color: var(
-      --tg-theme-text-color,
-      var(--fallback-bc, oklch(var(--bc) / 0.2))
-    );
+    color: var(--tg-theme-text-color, var(--fallback-bc, oklch(var(--bc) / 1)));
+  }
+  .nav-icons {
+    color: var(--tg-theme-text-color, var(--fallback-bc, oklch(var(--bc) / 1)));
   }
 
   .tg-link {

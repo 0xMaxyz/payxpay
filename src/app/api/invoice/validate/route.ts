@@ -1,4 +1,4 @@
-import { SignedInvoice } from "@/app/types";
+import { SignedInvoice } from "@/types";
 import { decodeInvoice, signInvoice } from "@/utils/tools";
 import { NextRequest, NextResponse } from "next/server";
 

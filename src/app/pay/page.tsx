@@ -3,7 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import Decimal from "decimal.js";
 import { useEffect, useRef, useState } from "react";
-import { SignedInvoice } from "../types";
+import { SignedInvoice } from "@/types";
 import { copyFromClipboard, decodeInvoice } from "@/utils/tools";
 import { HEADERS } from "../consts";
 import { useNotification } from "../context/NotificationContext";

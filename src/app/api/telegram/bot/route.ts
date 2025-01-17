@@ -4,7 +4,7 @@ import {
   getInvoice,
   rejectEscrow,
 } from "@/app/db";
-import { SignedInvoice } from "@/app/types";
+import { SignedInvoice } from "@/types";
 import * as Telegram from "@/types/telegram";
 import { decodeInvoice, escapeHtml } from "@/utils/tools";
 import { NextRequest, NextResponse } from "next/server";

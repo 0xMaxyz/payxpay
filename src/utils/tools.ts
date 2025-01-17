@@ -1,4 +1,4 @@
-import { Invoice, TgUserData } from "@/app/types";
+import { Invoice, TgUserData } from "@/types";
 import crypto from "crypto";
 export const blockExplorerUrl = (txHash: string) => {
   return `https://testnet.xion.explorers.guru/transaction/${txHash}`;
@@ -9,7 +9,7 @@ export const getTimestampInSeconds = (date: Date | null) => {
   return Math.floor(d.getTime() / 1000);
 };
 export const shortenAddress = (bech32Address: string) => {
-  return `${bech32Address.slice(0, 8)}...${bech32Address.slice(-4)}`;
+  return `${bech32Address.slice(0, 11)}...${bech32Address.slice(-6)}`;
 };
 
 export const signInvoice = (invoice: Invoice, bot_token: string): string => {

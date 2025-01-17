@@ -1,3 +1,5 @@
+/* eslint-disable @next/next/google-font-display */
+/* eslint-disable @next/next/no-page-custom-font */
 "use client";
 import Script from "next/script";
 import { AbstraxionProvider } from "@burnt-labs/abstraxion";
@@ -22,6 +24,10 @@ export default function RootLayout({
           strategy="beforeInteractive"
           src="https://telegram.org/js/telegram-web-app.js"
         ></Script>
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+        />
       </head>
       <body className="flex flex-col h-screen app-container">
         <noscript>You need to enable JavaScript to run this app.</noscript>

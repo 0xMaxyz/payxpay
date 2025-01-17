@@ -9,7 +9,7 @@ import {
 import { useTelegramContext } from "../context/TelegramContext";
 import { Coin } from "@cosmjs/stargate";
 import Decimal from "decimal.js";
-import { SignedInvoice } from "../types";
+import { SignedInvoice } from "@/types";
 
 export interface NamedCoin extends Coin {
   name: string;

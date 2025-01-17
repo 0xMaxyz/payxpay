@@ -6,9 +6,7 @@ import {
 import { Block, Coin, DeliverTxResponse, IndexedTx } from "@cosmjs/stargate";
 import { CosmWasmClient, ExecuteResult } from "@cosmjs/cosmwasm-stargate";
 import React, { createContext, useContext } from "react";
-import { env } from "process";
 import { queryIbcDenom } from "@/utils/tools";
-import { timeStamp } from "console";
 
 type ExecuteCreateMsg = {
   create: CreateMsg;
@@ -109,6 +107,7 @@ interface PxpContractContextType {
     block: Block;
     timestamp: number;
   } | null>;
+  getMyBalances: () => Promise<(Coin | null)[]>;
 }
 
 const PxpContractContext = createContext<PxpContractContextType | null>(null);
@@ -298,6 +297,15 @@ export const PxpContractProvider: React.FC<{ children: React.ReactNode }> = ({
     }
     return null;
   };
+  const getMyBalances = async () => {
+    const denoms: string[] = [
+      "uxion",
+      "ibc/57097251ED81A232CE3C9D899E7C8096D6D87EF84BA203E12E424AA4C9B57A64",
+    ];
+    return await Promise.all(
+      denoms.map((denom) => queryBankBalance(xionAccount.bech32Address, denom))
+    );
+  };
   const queryBankBalance = async (
     address: string,
     denom: string = "uxion"
@@ -330,6 +338,7 @@ export const PxpContractProvider: React.FC<{ children: React.ReactNode }> = ({
         getTransaction,
         getBlockTimestamp,
         getTransactionDetails,
+        getMyBalances,
       }}
     >
       {children}
