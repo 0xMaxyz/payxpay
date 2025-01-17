@@ -201,11 +201,11 @@ const WalletPage = () => {
             {!tokens && (
               <div className="space-y-4">
                 <div
-                  className="skeleton w-full p-4 rounded-lg shadow"
+                  className="skeleton w-full p-4 rounded-lg shadow tg-bg-secondary"
                   style={{ height: "84px" }}
                 ></div>
                 <div
-                  className="skeleton w-full p-4 rounded-lg shadow"
+                  className="skeleton w-full p-4 rounded-lg shadow tg-bg-secondary"
                   style={{ height: "84px" }}
                 ></div>
               </div>
