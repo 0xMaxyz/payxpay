@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { SignedInvoice } from "../types";
+import { decodeInvoice } from "@/utils/tools";
 
 export interface DbInvoiceItem {
   id: number;
@@ -32,7 +34,11 @@ export default function InvoiceList({
       <h2 className="tg-text text-lg font-bold">{title}</h2>
       <div className="space-y-2">
         {items.map((item) => (
-          <InvoiceItem key={item.id} item={item} />
+          <InvoiceItem
+            key={item.id}
+            item={item}
+            invoice={decodeInvoice<SignedInvoice>(item.invoice)}
+          />
         ))}
       </div>
       <button className="btn btn-primary mt-4" onClick={onLoadMore}>
@@ -44,19 +50,20 @@ export default function InvoiceList({
 
 interface InvoiceItemProps {
   item: DbInvoiceItem;
+  invoice: SignedInvoice;
 }
 
-function InvoiceItem({ item }: InvoiceItemProps) {
+function InvoiceItem({ item, invoice }: InvoiceItemProps) {
   const [expanded, setExpanded] = useState(false);
 
   return (
     <div
       className={`p-4 border rounded-lg ${
         item.out_type === "approved"
-          ? "bg-green-100"
+          ? "bg-green-500"
           : item.out_type === "refunded"
-          ? "bg-red-100"
-          : "bg-gray-100"
+          ? "bg-red-500"
+          : "tg-bg-primary"
       }`}
     >
       <div onClick={() => setExpanded(!expanded)} className="cursor-pointer">
@@ -72,10 +79,12 @@ function InvoiceItem({ item }: InvoiceItemProps) {
       {expanded && (
         <div className="mt-2">
           <p className="tg-text ">
-            <strong>Amount:</strong> {item.invoice}
+            <strong>Amount:</strong>{" "}
+            {`${invoice.amount} ${invoice.unit.split("-")[1].trim()}`}
           </p>
           <p className="tg-text ">
-            <strong>Created At:</strong> {item.created_at}
+            <strong>Created At:</strong>{" "}
+            {new Date(1000 * item.created_at).toLocaleDateString()}
           </p>
           <p className="tg-text ">
             <strong>Status:</strong>{" "}
