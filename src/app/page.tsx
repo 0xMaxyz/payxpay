@@ -412,7 +412,7 @@ const CreateInvoicePage = () => {
         className="modal w-full"
         onClose={clearPage}
       >
-        <div className="modal-box tg-bg-secondary w-9/12 max-w-5xl">
+        <div className="modal-box tg-bg-secondary w-11/12 max-w-5xl">
           <form method="dialog">
             <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
               ✕
@@ -431,7 +431,7 @@ const CreateInvoicePage = () => {
               Invoice has been created successfully. You can share it.
             </h3>
             <Image
-              className="mt-4 w-64 h-64"
+              className="mt-4 w-64 h-64 object-cover aspect-square"
               src={
                 createdQrCode === ""
                   ? "/assets/img/qr-placeholder.png"
@@ -442,9 +442,9 @@ const CreateInvoicePage = () => {
               height={200}
             ></Image>
           </div>
-          <div className="flex flex-row justify-between items-center pt-3 ps-8 pe-8">
+          <div className="flex flex-row justify-between items-center p-3">
             <button
-              className="btn btn-primary me-2"
+              className="btn btn-primary btn-sm"
               onClick={handleCopyToClipboard}
             >
               <svg
@@ -466,7 +466,7 @@ const CreateInvoicePage = () => {
               Copy
             </button>
             {navigator.share !== undefined && (
-              <button className="btn btn-primary me-2" onClick={handleShare}>
+              <button className="btn btn-primary btn-sm" onClick={handleShare}>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-6 w-6"
@@ -478,7 +478,7 @@ const CreateInvoicePage = () => {
                 Share
               </button>
             )}
-            <button className="btn btn-primary" onClick={handleTgShare}>
+            <button className="btn btn-primary btn-sm" onClick={handleTgShare}>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-6 w-6"
@@ -487,7 +487,7 @@ const CreateInvoicePage = () => {
               >
                 <path d="M120-160v-640l760 320-760 320Zm80-120 474-200-474-200v140l240 60-240 60v140Zm0 0v-400 400Z" />
               </svg>
-              Send to Telegram
+              Telegram
             </button>
           </div>
         </div>

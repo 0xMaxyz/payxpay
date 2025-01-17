@@ -36,8 +36,8 @@ export default function HistoryPage() {
       ]);
       console.log("created", created);
       console.log("paid", paid);
-      setCreatedInvoices(created);
-      setPaidInvoices(paid);
+      setCreatedInvoices(created.invoices);
+      setPaidInvoices(paid.invoices);
       setLoading(false);
     }
     fetchData();
