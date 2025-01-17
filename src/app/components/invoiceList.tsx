@@ -1,9 +1,24 @@
 import { useState } from "react";
 
+export interface DbInvoiceItem {
+  id: number;
+  invoice: string;
+  invoice_id: string;
+  issuer_tg_id: number;
+  create_tx: string;
+  out_tx: string;
+  out_type: string;
+  create_tx_at: number;
+  out_tx_at: number;
+  payer_tg_id: number;
+  payer_address: string;
+  payment_confirmed: boolean;
+  rejection_reason: string;
+  created_at: number;
+}
 interface InvoiceListProps {
   title: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  items: any[];
+  items: DbInvoiceItem[];
   onLoadMore: () => void;
 }
 
@@ -28,8 +43,7 @@ export default function InvoiceList({
 }
 
 interface InvoiceItemProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  item: any;
+  item: DbInvoiceItem;
 }
 
 function InvoiceItem({ item }: InvoiceItemProps) {

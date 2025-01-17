@@ -1,13 +1,13 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useTelegramContext } from "../context/TelegramContext";
-import InvoiceList from "../components/invoiceList";
+import InvoiceList, { DbInvoiceItem } from "../components/invoiceList";
 import Link from "next/link";
 
 export default function HistoryPage() {
   const { userData, token } = useTelegramContext();
-  const [createdInvoices, setCreatedInvoices] = useState([]);
-  const [paidInvoices, setPaidInvoices] = useState([]);
+  const [createdInvoices, setCreatedInvoices] = useState<DbInvoiceItem[]>([]);
+  const [paidInvoices, setPaidInvoices] = useState<DbInvoiceItem[]>([]);
   const [createdPage, setCreatedPage] = useState(1);
   const [paidPage, setPaidPage] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -34,6 +34,8 @@ export default function HistoryPage() {
         createdResponse.json(),
         paidResponse.json(),
       ]);
+      console.log("created", created);
+      console.log("paid", paid);
       setCreatedInvoices(created);
       setPaidInvoices(paid);
       setLoading(false);
