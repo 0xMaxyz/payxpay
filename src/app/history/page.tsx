@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useTelegramContext } from "../context/TelegramContext";
 import InvoiceList from "../components/invoiceList";
+import Link from "next/link";
 
 export default function HistoryPage() {
   const { userData, token } = useTelegramContext();
@@ -38,7 +39,7 @@ export default function HistoryPage() {
       setLoading(false);
     }
     fetchData();
-  }, [userData, createdPage, paidPage]);
+  }, [userData, createdPage, paidPage, token]);
 
   return (
     <div className="p-4">
@@ -46,16 +47,30 @@ export default function HistoryPage() {
         <span className="loading-spinner loading loading-lg" />
       ) : (
         <div className="grid grid-cols-1 gap-4">
-          <InvoiceList
-            title="Invoices Created by Me"
-            items={createdInvoices}
-            onLoadMore={() => setCreatedPage((prev) => prev + 1)}
-          />
-          <InvoiceList
-            title="Payments Made by Me"
-            items={paidInvoices}
-            onLoadMore={() => setPaidPage((prev) => prev + 1)}
-          />
+          {createdInvoices ? (
+            <InvoiceList
+              title="Invoices Created by Me"
+              items={createdInvoices}
+              onLoadMore={() => setCreatedPage((prev) => prev + 1)}
+            />
+          ) : (
+            <div className="flex flex-row">
+              <p>
+                {`You don't have any invoice yet, try to create one in `}
+                <Link href="/">invoice page.</Link>
+              </p>
+            </div>
+          )}
+
+          {paidInvoices ? (
+            <InvoiceList
+              title="Payments Made by Me"
+              items={paidInvoices}
+              onLoadMore={() => setPaidPage((prev) => prev + 1)}
+            />
+          ) : (
+            <div></div>
+          )}
         </div>
       )}
     </div>
