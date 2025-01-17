@@ -4,6 +4,7 @@ import { usePxpContract } from "./context/PxpContractContext";
 import { useEffect, useState } from "react";
 import { Coin } from "@cosmjs/stargate";
 import Decimal from "decimal.js";
+import { useModal } from "@burnt-labs/abstraxion";
 
 const WalletPage = () => {
   const { myAddress, getMyBalances } = usePxpContract();
@@ -115,6 +116,8 @@ const WalletPage = () => {
       });
     }
   }, [xionBalance, usdcBalance, xionUsdRate]);
+  const [isModalOpen, setModalOpen] = useModal();
+  const changeModalState = () => setModalOpen(!isModalOpen);
 
   const totalUsdValue = tokens?.balances.reduce(
     (sum, t) => t.usdValue.plus(sum),
@@ -201,11 +204,11 @@ const WalletPage = () => {
             {!tokens && (
               <div className="space-y-4">
                 <div
-                  className="skeleton w-full p-4 rounded-lg shadow tg-bg-secondary"
+                  className="skeleton w-full p-4 rounded-lg shadow tg-bg-secondary bg-opacity-25"
                   style={{ height: "84px" }}
                 ></div>
                 <div
-                  className="skeleton w-full p-4 rounded-lg shadow tg-bg-secondary"
+                  className="skeleton w-full p-4 rounded-lg shadow tg-bg-secondary bg-opacity-25"
                   style={{ height: "84px" }}
                 ></div>
               </div>
@@ -213,7 +216,44 @@ const WalletPage = () => {
           </div>
         </div>
       ) : (
-        <></>
+        <div
+          style={{
+            marginTop: "48px",
+            alignItems: "center",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+          }}
+        >
+          <p className="tg-text mt-4 text-3xl">
+            🔥 Connect Your Xion Meta Account! 🚀
+          </p>
+          <p className="tg-text mt-4">
+            To access all features, please connect with your Xion Meta account.
+          </p>
+          <p className="tg-text mt-2">
+            Stay in control of your transactions and payments securely. 🛡️
+          </p>
+          <button
+            className="btn btn-primary btn-md mt-10"
+            onClick={changeModalState}
+          >
+            <div className="flex flex-row">
+              <>
+                <svg width="25" height="45">
+                  <path
+                    fill="white"
+                    transform=" scale(0.6)"
+                    d="M7.42 39.1c-3.83-4.47-5.46-8.45-5.46-12.39 0-2.33.25-3.79.57-5.13C.65 25.56.01 28.53.01 31.34c0 14.85 13.62 16.77 13.62 27.28 0 2.54-1.35 5.99-5.89 12.45 13.7-18.28 17.18-24.86 17.18-29.42 0-12.77-13.56-14.91-13.56-29.27 0-3.28 1.88-7.22 5.38-12.37 0 0-3.33 4.69-5.13 7.19-6.41 8.92-8.89 20.5-4.18 31.91l-.01-.01Z"
+                  />
+                </svg>
+              </>
+              <span className="text-xl pb-2" style={{ alignContent: "center" }}>
+                Connect Now
+              </span>
+            </div>
+          </button>
+        </div>
       )}
     </>
   );
