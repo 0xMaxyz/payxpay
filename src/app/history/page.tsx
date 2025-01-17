@@ -4,7 +4,7 @@ import { useTelegramContext } from "../context/TelegramContext";
 import InvoiceList from "../components/invoiceList";
 
 export default function HistoryPage() {
-  const { userData } = useTelegramContext();
+  const { userData, token } = useTelegramContext();
   const [createdInvoices, setCreatedInvoices] = useState([]);
   const [paidInvoices, setPaidInvoices] = useState([]);
   const [createdPage, setCreatedPage] = useState(1);
@@ -16,9 +16,18 @@ export default function HistoryPage() {
       setLoading(true);
       const [createdResponse, paidResponse] = await Promise.all([
         fetch(
-          `/api/invoice/query-created?tgId=${userData?.id}&page=${createdPage}`
+          `/api/invoice/query-created?tgId=${userData?.id}&page=${createdPage}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
         ),
-        fetch(`/api/invoice/query-paid?tgId=${userData?.id}&page=${paidPage}`),
+        fetch(`/api/invoice/query-paid?tgId=${userData?.id}&page=${paidPage}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }),
       ]);
       const [created, paid] = await Promise.all([
         createdResponse.json(),
