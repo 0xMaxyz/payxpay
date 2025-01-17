@@ -67,7 +67,6 @@ const WalletPage = () => {
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [expandedTx, setExpandedTx] = useState(null);
 
   useEffect(() => {
     if (myAddress) {
@@ -268,11 +267,6 @@ const WalletPage = () => {
       }
     };
   }, [loading, hasMore]);
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const toggleExpand = (index: any) => {
-    setExpandedTx((prev) => (prev === index ? null : index));
-  };
 
   const handleAmountInput = (event: ChangeEvent<HTMLInputElement>): void => {
     const value = event.target.value;
@@ -704,32 +698,49 @@ const WalletPage = () => {
             <p className="tg-text text-xl font-bold mb-4">Transactions</p>
             <div className="space-y-4">
               {transactions.map((tx, index) => (
-                <div
+                <details
                   key={tx.hash || index}
-                  className="tg-bg-secondary border p-4 rounded-lg shadow cursor-pointer"
-                  onClick={() => toggleExpand(index)}
+                  className="tg-bg-secondary border border-gray-300 p-4 rounded-lg shadow-md cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-gray-400"
                 >
-                  {/* Minimal Data */}
-                  <p className="text-sm font-bold">
-                    Tx Hash:{" "}
-                    {tx.hash ? `${tx.hash.slice(0, 10)}...` : "Unknown"}
-                  </p>
-                  <p className="text-sm">Height: {tx.height}</p>
-
-                  {/* Expanded Details */}
-                  {expandedTx === index && (
-                    <div className="mt-2 text-sm">
-                      <p>Gas Used: {tx.tx_result.gas_used || "N/A"}</p>
-                      <p>Gas Wanted: {tx.tx_result.gas_wanted || "N/A"}</p>
-                      <p>
-                        Events:{" "}
-                        <pre className="bg-gray-100 p-2 rounded">
-                          {JSON.stringify(tx.tx_result?.events, null, 2)}
-                        </pre>
+                  <summary className="flex items-center justify-between">
+                    <div>
+                      {/* Minimal Data */}
+                      <p className="text-sm font-semibold text-gray-800">
+                        <span className="font-bold text-gray-600">
+                          Tx Hash:
+                        </span>{" "}
+                        {tx.hash ? `${tx.hash.slice(0, 10)}...` : "Unknown"}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        <span className="font-bold">Height:</span> {tx.height}
                       </p>
                     </div>
-                  )}
-                </div>
+                    <span className="text-gray-500 text-xs font-medium">
+                      Click to expand
+                    </span>
+                  </summary>
+
+                  <div className="mt-4 space-y-2 text-sm text-gray-700">
+                    <p>
+                      <span className="font-bold text-gray-600">Gas Used:</span>{" "}
+                      {tx.tx_result.gas_used || "N/A"}
+                    </p>
+                    <p>
+                      <span className="font-bold text-gray-600">
+                        Gas Wanted:
+                      </span>{" "}
+                      {tx.tx_result.gas_wanted || "N/A"}
+                    </p>
+                    <details>
+                      <summary className="text-gray-600 font-semibold cursor-pointer mt-2">
+                        Events:
+                      </summary>
+                      <pre className="tg-bg-secondary opacity-90 p-3 rounded-lg mt-2 border border-gray-300 overflow-auto">
+                        {JSON.stringify(tx.tx_result?.events, null, 2)}
+                      </pre>
+                    </details>
+                  </div>
+                </details>
               ))}
               {loading && <p className="text-center">Loading...</p>}
               {!hasMore && (
