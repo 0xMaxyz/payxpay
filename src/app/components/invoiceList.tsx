@@ -84,7 +84,7 @@ function InvoiceItem({ item, invoice }: InvoiceItemProps) {
           </p>
           <p className="tg-text ">
             <strong>Created At:</strong>{" "}
-            {new Date(1000 * item.created_at).toLocaleDateString()}
+            {new Date(item.created_at).toLocaleDateString()}
           </p>
           <p className="tg-text ">
             <strong>Status:</strong>{" "}
