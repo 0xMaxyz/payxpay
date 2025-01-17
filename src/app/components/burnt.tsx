@@ -64,7 +64,7 @@ const Burnt = () => {
           </div>
         </div>
       </dialog>
-      <div className="dropdown dropdown-bottom dropdown-end">
+      <div className="dropdown dropdown-bottom dropdown-end z-20">
         <div tabIndex={0} role="button" className="m-1">
           <div className={`avatar burnt-logo rounded-full w-8 h-8`}>
             <div className="icon-container">

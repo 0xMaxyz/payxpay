@@ -59,14 +59,14 @@ const Navbar = () => {
 
   return (
     <>
-      <div className="btm-nav btm-nav-sm sec-bg text-color ">
+      <div className="btm-nav btm-nav-md sec-bg text-color">
         {navbarItems &&
           navbarItems.map((item, index) => (
             <Link key={index} {...item.link}>
               <span className="material-symbols-outlined nav-icons">
                 {item.icon}
               </span>
-              <span className="tg-text">{item.text}</span>
+              <span className="tg-text text-sm">{item.text}</span>
             </Link>
           ))}
       </div>

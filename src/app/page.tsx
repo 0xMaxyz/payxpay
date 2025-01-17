@@ -131,6 +131,7 @@ const WalletPage = () => {
       setShowGreenMark(false);
     }, 1500);
   };
+
   return (
     <>
       {myAddress ? (
@@ -148,7 +149,7 @@ const WalletPage = () => {
               </span>
               <span
                 className={`material-symbols-outlined copy-icon text-green-700 ${
-                  showGreenMark ? "icon-visible z-10" : "icon-hidden z-0"
+                  showGreenMark ? "icon-visible z-1" : "icon-hidden z-0"
                 }`}
               >
                 check
