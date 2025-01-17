@@ -194,6 +194,52 @@ const rejectEscrow = async (invoice_id: string, reason: string) => {
   }
 };
 
+const getInvoicesCreatedByUser = async (
+  userTgId: number,
+  page: number,
+  limit: number = 10
+) => {
+  const offset = (page - 1) * limit;
+  try {
+    const res = await sql`
+    SELECT * FROM invoices
+    WHERE issuer_tg_id = ${userTgId}
+    ORDER BY created_at DESC
+    LIMIT ${limit} OFFSET ${offset};
+    `;
+    if (res.rowCount && res.rowCount > 0) {
+      return res.rows;
+    }
+    return null;
+  } catch (error) {
+    logger.error(`Db:: Can't reject the escrow,\n error: ${error}`);
+    return null;
+  }
+};
+
+const getInvoicesPaidByUser = async (
+  userTgId: number,
+  page: number,
+  limit: number = 10
+) => {
+  const offset = (page - 1) * limit;
+  try {
+    const res = await sql`
+    SELECT * FROM invoices
+    WHERE payer_tg_id = ${userTgId}
+    ORDER BY create_tx_at DESC
+    LIMIT ${limit} OFFSET ${offset};
+    `;
+    if (res.rowCount && res.rowCount > 0) {
+      return res.rows;
+    }
+    return null;
+  } catch (error) {
+    logger.error(`Db:: Can't reject the escrow,\n error: ${error}`);
+    return null;
+  }
+};
+
 export type { EscrowOut };
 export {
   addInvoice,
@@ -205,4 +251,6 @@ export {
   addEscrowOutTxToInvoice,
   confirmTheInvoicePayment,
   rejectEscrow,
+  getInvoicesCreatedByUser,
+  getInvoicesPaidByUser,
 };
