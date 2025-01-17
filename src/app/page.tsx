@@ -503,7 +503,7 @@ const WalletPage = () => {
             )}
           </form>
           <div className="flex  flex-col justify-center items-center">
-            <p className="tg-tex text-xl font-bold mb-4">Send Tokens</p>
+            <p className="tg-text text-xl font-bold mb-4">Send Tokens</p>
 
             <label className="form-control w-full mb-2">
               <div className="label">
@@ -653,7 +653,7 @@ const WalletPage = () => {
             </button>
           </form>
           <div className="flex flex-col justify-center items-center">
-            <p className="tg-tex text-xl font-bold">Receive Tokens</p>
+            <p className="tg-text text-xl font-bold">Receive Tokens</p>
             <Image
               className=" mt-4 mb-4 w-48 h-48 object-cover aspect-square justify-center"
               src={
@@ -691,22 +691,22 @@ const WalletPage = () => {
 
       {/* Activity Modal */}
       <dialog id="activity-modal" className="modal w-full">
-        <form method="dialog">
-          <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
-            ✕
-          </button>
-        </form>
         <div
           ref={activityDialogRef}
           className="modal-box tg-bg-secondary w-11/12 max-w-5xl"
         >
+          <form method="dialog">
+            <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+              ✕
+            </button>
+          </form>
           <div className="p-4">
-            <h2 className="text-lg font-bold mb-4">Transaction Activity</h2>
+            <p className="tg-text text-xl font-bold mb-4">Transactions</p>
             <div className="space-y-4">
               {transactions.map((tx, index) => (
                 <div
                   key={tx.hash || index}
-                  className="border p-4 rounded-lg shadow cursor-pointer"
+                  className="tg-bg-secondary border p-4 rounded-lg shadow cursor-pointer"
                   onClick={() => toggleExpand(index)}
                 >
                   {/* Minimal Data */}
@@ -719,14 +719,12 @@ const WalletPage = () => {
                   {/* Expanded Details */}
                   {expandedTx === index && (
                     <div className="mt-2 text-sm">
-                      <p>Raw Log: {tx.raw_log || "N/A"}</p>
-                      <p>Gas Used: {tx.gas_used || "N/A"}</p>
-                      <p>Gas Wanted: {tx.gas_wanted || "N/A"}</p>
-                      <p>Timestamp: {tx.timestamp || "N/A"}</p>
+                      <p>Gas Used: {tx.tx_result.gas_used || "N/A"}</p>
+                      <p>Gas Wanted: {tx.tx_result.gas_wanted || "N/A"}</p>
                       <p>
-                        Messages:{" "}
+                        Events:{" "}
                         <pre className="bg-gray-100 p-2 rounded">
-                          {JSON.stringify(tx.tx?.body?.messages, null, 2)}
+                          {JSON.stringify(tx.tx_result?.events, null, 2)}
                         </pre>
                       </p>
                     </div>
