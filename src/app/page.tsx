@@ -325,8 +325,8 @@ const WalletPage = () => {
   };
 
   const handleTransfer = async () => {
-    try {
-      const transfer = async () => {
+    const transfer = async () => {
+      try {
         setTransferring(true);
 
         const tx = await bankTransfer(
@@ -345,33 +345,33 @@ const WalletPage = () => {
         if (tx && tx.transactionHash) {
           setsentTxHash(tx.transactionHash);
         }
-      };
-      if (WebApp) {
-        WebApp.showPopup(
-          {
-            message: "Do you confirm the fund transfer?",
-            title: "Confirmation",
-            buttons: [
-              { type: "default", text: "yes", id: "1" },
-              { type: "cancel" },
-            ],
-          },
-          async (id) => {
-            if (id === "1") {
-              await transfer();
-            }
-          }
-        );
-      } else {
-        const res = window.confirm("Confirm Transferring the funds");
-        if (res) {
-          await transfer();
-        }
+      } catch (error) {
+        console.error("Error transferring funds", error);
+      } finally {
+        setTransferring(false);
       }
-    } catch (error) {
-      console.error("Error transferring funds", error);
-    } finally {
-      setTransferring(false);
+    };
+    if (WebApp) {
+      WebApp.showPopup(
+        {
+          message: "Do you confirm the fund transfer?",
+          title: "Confirmation",
+          buttons: [
+            { type: "default", text: "yes", id: "1" },
+            { type: "cancel" },
+          ],
+        },
+        async (id) => {
+          if (id === "1") {
+            await transfer();
+          }
+        }
+      );
+    } else {
+      const res = window.confirm("Confirm Transferring the funds");
+      if (res) {
+        await transfer();
+      }
     }
   };
 
