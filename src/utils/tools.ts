@@ -41,7 +41,7 @@ export const createInvoiceId = (invoice: Invoice): Invoice => {
 };
 
 export const getShareableLink = (invoice: string) => {
-  return `https://t.me/payxpaybot?start=invoice=${invoice}`;
+  return `https://t.me/payxpay_bot?start=invoice=${invoice}`;
 };
 
 export const escapeHtml = (unsafe: string) => {

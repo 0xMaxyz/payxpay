@@ -20,8 +20,26 @@ export const createTelegramShareMessage = async (
     title: "Payment link",
     input_message_content: {
       // prettier-ignore
-      message_text: `You received an invoice from <b><a href="tg://user?id=${signedInvoice.issuerTelegramId}">${signedInvoice.issuerFirstName}</a></b>${signedInvoice.issuerTelegramHandle?` (@${signedInvoice.issuerTelegramHandle})`: ""}.\n<b>Amount:</b> <code>${signedInvoice.amount}</code> $${signedInvoice.unit.replaceAll(' ','').split('-')[1] }\n<b>Description:</b> <code>${escapeHtml( signedInvoice.description )}</code>\n<a href="https://t.me/payxpaybot?start=invoice=${signedInvoice.id}">Click here</a> to complete your payment.`,
+      message_text: `📩 <b>You’ve Received an Invoice!</b>\n\n<b>🧾 From:</b> <a href="tg://user?id=${signedInvoice.issuerTelegramId}">${signedInvoice.issuerFirstName}</a>${signedInvoice.issuerTelegramHandle ? ` (@${signedInvoice.issuerTelegramHandle})` : ""}\n<b>💵 Amount:</b> <code>${signedInvoice.amount}</code> $${signedInvoice.unit.replaceAll(' ', '').split('-')[1]}\n<b>📝 Description:</b> <blockquote>${escapeHtml(signedInvoice.description)}</blockquote>\n<b>🆔 Invoice ID:</b> <code>${signedInvoice.id}</code>\n\n<a href="https://t.me/payxpay_bot?start=invoice=${signedInvoice.id}">🛒 Click here to complete your payment</a>\n\n💡 Need help? Use <code>/help</code> for assistance.`,
       parse_mode: `HTML`,
+    },
+    reply_markup: {
+      inline_keyboard: [
+        [
+          {
+            text: `Open App`,
+            web_app: {
+              url: `https://${
+                process.env.VERCEL_PROJECT_PRODUCTION_URL as string
+              }/pay?invoice=${signedInvoice.id}`,
+            },
+          },
+          {
+            text: `Chat with ${signedInvoice.issuerFirstName}`,
+            url: `tg://user?id=${signedInvoice.issuerTelegramId}`,
+          },
+        ],
+      ],
     },
     description: "Choose the recepient of the invoice",
   };
