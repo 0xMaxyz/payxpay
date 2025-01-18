@@ -182,5 +182,5 @@ PayxPay is a decentralized payment solution designed to address the challenges o
 
 ## Demos
 
-- **Live Demo**: [PayxPay Demo]([#](https://t.me/payxpay_bot/app))
-- **Video Walkthrough**: [YouTube Link]([#](https://youtu.be/FVajBAV9INI))
+- **Live Demo**: [PayxPay Demo](https://t.me/payxpay_bot/app)
+- **Video Walkthrough**: [YouTube Link](https://youtu.be/FVajBAV9INI)
