@@ -703,39 +703,36 @@ const WalletPage = () => {
                   className="tg-bg-secondary border border-gray-300 p-4 rounded-lg shadow-md cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-gray-400"
                 >
                   <summary className="flex items-center justify-between">
-                    <div>
+                    <div className="tg-text">
                       {/* Minimal Data */}
-                      <p className="text-sm font-semibold text-gray-800">
-                        <span className="font-bold text-gray-600">
-                          Tx Hash:
-                        </span>{" "}
+                      <p className="text-sm tg-text font-semibold tg-text">
+                        <span className="font-bold tg-text">Tx Hash:</span>{" "}
                         {tx.hash ? `${tx.hash.slice(0, 10)}...` : "Unknown"}
                       </p>
-                      <p className="text-sm text-gray-600">
-                        <span className="font-bold">Height:</span> {tx.height}
+                      <p className="text-sm tg-text">
+                        <span className="font-bold tg-text">Height:</span>{" "}
+                        {tx.height}
                       </p>
                     </div>
-                    <span className="text-gray-500 text-xs font-medium">
+                    <span className="tg-text text-xs font-medium">
                       Click to expand
                     </span>
                   </summary>
 
-                  <div className="mt-4 space-y-2 text-sm text-gray-700">
+                  <div className="mt-4 space-y-2 text-sm tg-text">
                     <p>
-                      <span className="font-bold text-gray-600">Gas Used:</span>{" "}
+                      <span className="font-bold tg-text">Gas Used:</span>{" "}
                       {tx.tx_result.gas_used || "N/A"}
                     </p>
                     <p>
-                      <span className="font-bold text-gray-600">
-                        Gas Wanted:
-                      </span>{" "}
+                      <span className="font-bold tg-text">Gas Wanted:</span>{" "}
                       {tx.tx_result.gas_wanted || "N/A"}
                     </p>
                     <details>
-                      <summary className="text-gray-600 font-semibold cursor-pointer mt-2">
+                      <summary className="tg-text font-semibold cursor-pointer mt-2">
                         Events:
                       </summary>
-                      <pre className="tg-bg-secondary opacity-90 p-3 rounded-lg mt-2 border border-gray-300 overflow-auto">
+                      <pre className="tg-bg-secondary tg-text opacity-90 p-3 rounded-lg mt-2 border border-gray-300 overflow-auto">
                         {JSON.stringify(tx.tx_result?.events, null, 2)}
                       </pre>
                     </details>
