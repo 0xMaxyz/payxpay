@@ -1,6 +1,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 ![CosmWasm](https://img.shields.io/badge/CosmWasm-green)
 ![Xion](https://img.shields.io/badge/Xion-black)
+
 # PayxPay
 
 ## Table of Contents
@@ -51,26 +52,26 @@ Below is the high-level architecture of PayxPay:
 
 ```mermaid
 C4Container
-    title Container Diagram for Invoice Application
+    title PAYXPAY
 
-    Person(UserA, "User A", "Creates invoices and manages payments.")
-    Person(Payer, "Payer", "Pays invoices and interacts with escrow.")
+    Person(UserA, "User A", "Creates invoices, manages payments, and uses wallet features like fund transfer and transaction history.")
+    Person(Payer, "Payer", "Pays invoices, interacts with escrow, and uses wallet features.")
 
     System_Boundary(System, "Invoice Application") {
-        Container(WebApp, "Web Application", "Provides UI for invoice creation and management.")
-        Container(Backend, "Backend Service", "Handles business logic, payment processing, and escrow management.")
-        Container(Database, "Database", "Stores invoice data, payment details, and escrow information.")
-        Container(Blockchain, "Blockchain Integration", "Interacts with Xion Meta Accounts for transaction signing and escrow smart contracts.")
+        Container(WebApp, "Web Application", "Provides UI for invoice creation, wallet management, and payment processing.")
+        Container(Backend, "Backend Service", "Handles business logic, payment processing, wallet operations, and escrow management.")
+        Container(Database, "Database", "Stores invoice data, payment details, wallet information, and transaction history.")
+        Container(Blockchain, "Blockchain Integration", "Interacts with Xion Meta Accounts for transaction signing, escrow smart contracts, and wallet transactions.")
     }
 
     System_Ext(PythNetwork, "Pyth Network", "Provides price feeds for fiat-to-USDC conversion.")
     System_Ext(TelegramBot, "Telegram Bot", "Sends notifications and handles user interactions.")
 
-    Rel(UserA, WebApp, "Creates invoices and confirms payments.")
-    Rel(Payer, WebApp, "Pays invoices and interacts with escrow.")
-    Rel(WebApp, Backend, "Sends and receives data for invoice and payment processing.")
-    Rel(Backend, Database, "Reads and writes invoice and payment data.")
-    Rel(Backend, Blockchain, "Signs transactions and interacts with escrow smart contracts.")
+    Rel(UserA, WebApp, "Creates invoices, manages payments, transfers funds, and views transaction history.")
+    Rel(Payer, WebApp, "Pays invoices, interacts with escrow, and uses wallet features.")
+    Rel(WebApp, Backend, "Sends and receives data for invoice, wallet, and payment processing.")
+    Rel(Backend, Database, "Reads and writes invoice, payment, wallet, and transaction data.")
+    Rel(Backend, Blockchain, "Signs transactions, interacts with escrow smart contracts, and processes wallet transactions.")
     Rel(Backend, PythNetwork, "Fetches conversion rates for fiat-to-USDC.")
     Rel(Backend, TelegramBot, "Sends notifications to users.")
 ```

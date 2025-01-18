@@ -455,7 +455,7 @@ const WalletPage = () => {
             justifyContent: "center",
           }}
         >
-          <p className="tg-text mt-4 text-3xl">
+          <p className="tg-text mt-4 text-xl">
             🔥 Connect Your Xion Meta Account! 🚀
           </p>
           <p className="tg-text mt-4">
