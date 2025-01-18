@@ -327,6 +327,8 @@ const WalletPage = () => {
   const handleTransfer = async () => {
     try {
       const transfer = async () => {
+        setTransferring(true);
+
         const tx = await bankTransfer(
           [
             {
@@ -344,7 +346,6 @@ const WalletPage = () => {
           setsentTxHash(tx.transactionHash);
         }
       };
-      setTransferring(true);
       if (WebApp) {
         WebApp.showPopup(
           {
