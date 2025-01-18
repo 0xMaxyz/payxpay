@@ -9,8 +9,10 @@ import QrCode from "qrcode";
 import Image from "next/image";
 import { fromBech32 } from "@cosmjs/encoding";
 import { useNotification } from "./context/NotificationContext";
+import { useTelegramContext } from "../app/context/TelegramContext";
 
 const WalletPage = () => {
+  const { WebApp } = useTelegramContext();
   const activityDialogRef = useRef<HTMLDivElement>(null);
   const { addNotification } = useNotification();
   const [createdQrCode, setCreatedQrCode] = useState("");
@@ -324,10 +326,7 @@ const WalletPage = () => {
 
   const handleTransfer = async () => {
     try {
-      setTransferring(true);
-      // ask for confirmation
-      const res = window.confirm("Confirm Transferring the funds");
-      if (res) {
+      const transfer = async () => {
         const tx = await bankTransfer(
           [
             {
@@ -343,6 +342,29 @@ const WalletPage = () => {
         );
         if (tx && tx.transactionHash) {
           setsentTxHash(tx.transactionHash);
+        }
+      };
+      setTransferring(true);
+      if (WebApp) {
+        WebApp.showPopup(
+          {
+            message: "Do you confirm the fund transfer?",
+            title: "Confirmation",
+            buttons: [
+              { type: "default", text: "yes", id: "1" },
+              { type: "cancel" },
+            ],
+          },
+          async (id) => {
+            if (id === "1") {
+              await transfer();
+            }
+          }
+        );
+      } else {
+        const res = window.confirm("Confirm Transferring the funds");
+        if (res) {
+          await transfer();
         }
       }
     } catch (error) {
