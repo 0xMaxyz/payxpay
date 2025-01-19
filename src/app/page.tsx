@@ -9,10 +9,8 @@ import QrCode from "qrcode";
 import Image from "next/image";
 import { fromBech32 } from "@cosmjs/encoding";
 import { useNotification } from "./context/NotificationContext";
-import { useTelegramContext } from "../app/context/TelegramContext";
 
 const WalletPage = () => {
-  const { WebApp } = useTelegramContext();
   const activityDialogRef = useRef<HTMLDivElement>(null);
   const { addNotification } = useNotification();
   const [createdQrCode, setCreatedQrCode] = useState("");
@@ -323,6 +321,21 @@ const WalletPage = () => {
     setTransferring(false);
     setsentTxHash(null);
   };
+  const [isReviewVisible, setisReviewVisible] = useState(false);
+  const [showReviewElement, setshowReviewElement] = useState(false);
+
+  useEffect(() => {
+    if (showReviewElement) {
+      setisReviewVisible(true);
+    } else {
+      const timeout = setTimeout(() => {
+        setisReviewVisible(false);
+      }, 500);
+      return () => {
+        clearTimeout(timeout);
+      };
+    }
+  }, [showReviewElement]);
 
   const handleTransfer = async () => {
     const transfer = async () => {
@@ -351,28 +364,13 @@ const WalletPage = () => {
         setTransferring(false);
       }
     };
-    if (WebApp) {
-      WebApp.showPopup(
-        {
-          message: "Do you confirm the fund transfer?",
-          title: "Confirmation",
-          buttons: [
-            { type: "default", text: "yes", id: "1" },
-            { type: "cancel" },
-          ],
-        },
-        async (id) => {
-          if (id === "1") {
-            await transfer();
-          }
-        }
-      );
-    } else {
-      const res = window.confirm("Confirm Transferring the funds");
-      if (res) {
-        await transfer();
-      }
-    }
+    await transfer();
+  };
+
+  const closeReviewTransfer = () => {
+    setshowReviewElement(false);
+    setsentTxHash(null);
+    setTransferring(false);
   };
 
   return (
@@ -511,7 +509,7 @@ const WalletPage = () => {
 
       {/* Send Modal */}
       <dialog id="send-modal" className="modal w-full" onClose={resetSend}>
-        <div className="modal-box tg-bg-secondary w-10/12 max-w-5xl">
+        <div className="modal-box relative tg-bg-secondary w-10/12 max-w-5xl">
           <form method="dialog">
             {!transferring && (
               <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
@@ -614,7 +612,7 @@ const WalletPage = () => {
             </label>
             <button
               className="btn btn-primary btn-sm btn-wide mt-6"
-              onClick={transferring ? () => {} : handleTransfer}
+              onClick={() => setshowReviewElement(true)}
               disabled={
                 transferring ||
                 new Decimal(amount).greaterThan(
@@ -627,36 +625,100 @@ const WalletPage = () => {
                 receiverAddressError
               }
             >
-              {transferring ? (
-                <span className="loading loading-dots loading-md "></span>
-              ) : (
+              Review
+            </button>
+          </div>
+          <div
+            className={`fixed inset-0 flex items-center justify-center transition-opacity duration-500 max-w-full  ${
+              showReviewElement ? "opacity-100 visible" : "opacity-0"
+            } ${!isReviewVisible && "invisible"}`}
+          >
+            <div className="absolute inset-0 tg-bg-secondary-5 bg-opacity-50 backdrop-blur-sm"></div>
+            <div className="relative tg-bg-secondary p-6 rounded-lg shadow-lg w-full">
+              <div className="flex flex-col items-center justify-center tg-text">
+                {!sentTxHash ? (
+                  <p className="tg-text text-2xl font-bold">Review Transfer</p>
+                ) : (
+                  <div className="flex flex-col items-center justify-center">
+                    <span
+                      className="material-symbols-outlined"
+                      style={{
+                        fontSize: "4rem",
+                        fontWeight: "900",
+                        color: "green",
+                      }}
+                    >
+                      check
+                    </span>
+                    <p className="tg-text text-2xl font-bold">Transfer Done</p>
+                  </div>
+                )}
+
+                <div className="border-t-2 w-full tg-border-text-color my-4"></div>
+                <p className="text-xs font-bold">Transfer Amount</p>
+                <p className="text-xl font-bold">
+                  {Number.parseFloat(amount)}{" "}
+                  <span className="opacity-35">{selectedToken}</span>
+                </p>
+                <div className="border-t-2 w-full tg-border-text-color my-4"></div>
+
+                <p className="text-xs font-bold">From</p>
+                <p className="text-xs">{shortenAddress(myAddress)}</p>
+                <p className="text-xs font-bold mt-2">To</p>
+                <p className="text-xs">{shortenAddress(receiverAddress)}</p>
+              </div>
+              {!transferring && !sentTxHash && (
+                <div className="flex flex-row justify-around mt-5">
+                  <button
+                    className="btn text-white btn-error btn-sm"
+                    onClick={() => setshowReviewElement(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="btn text-white btn-success btn-sm"
+                    onClick={handleTransfer}
+                  >
+                    Confirm
+                  </button>
+                </div>
+              )}
+              {transferring && (
+                <div className="flex items-center justify-center mt-3">
+                  <p>
+                    Transferring{" "}
+                    <span className="loading loading-spinner loading-xs text-green-500"></span>
+                  </p>
+                </div>
+              )}
+              {sentTxHash && (
                 <>
-                  <span className="text-lg ">Send</span>
-                  <span className="material-symbols-outlined">
-                    arrow_outward
-                  </span>
+                  <button
+                    className="btn btn-sm btn-circle btn-ghost absolute right-3 top-3"
+                    onClick={closeReviewTransfer}
+                  >
+                    ✕
+                  </button>
+                  <div className="flex items-center justify-center w-full max-w-full mt-3">
+                    <p className="overflow-hidden whitespace-nowrap text-ellipsis max-w-full">
+                      Transaction Hash:{" "}
+                      <span
+                        className="text-blue-500 underline cursor-pointer"
+                        onClick={async () => {
+                          await navigator.clipboard.writeText(sentTxHash || "");
+                          addNotification({
+                            color: "success",
+                            message: "Tx hash copied to clipboard.",
+                          });
+                        }}
+                      >
+                        {shortenAddress(sentTxHash)}
+                      </span>
+                    </p>
+                  </div>
                 </>
               )}
-            </button>
-            {sentTxHash && (
-              <div className="mt-4 text-center w-full">
-                <p className="overflow-hidden whitespace-nowrap text-ellipsis">
-                  Transaction Hash:{" "}
-                  <span
-                    className="text-blue-500 underline cursor-pointer"
-                    onClick={async () => {
-                      await navigator.clipboard.writeText(sentTxHash || "");
-                      addNotification({
-                        color: "success",
-                        message: "Tx hash copied to clipboard.",
-                      });
-                    }}
-                  >
-                    {sentTxHash}
-                  </span>
-                </p>
-              </div>
-            )}
+            </div>
           </div>
         </div>
       </dialog>

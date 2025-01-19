@@ -1,3 +1,12 @@
+.fadeIn {
+  opacity: 1;
+  transition: opacity 0.5s ease-in;
+}
+
+.fadeOut {
+  opacity: 0;
+  transition: opacity 0.5s ease-out;
+}
 .copy-icon {
   transition: opacity 0.3s ease, transform 0.3s ease;
   position: absolute;
@@ -175,6 +184,18 @@ a.disabled {
     background-color: var(
       --tg-theme-secondary-bg-color,
       var(--fallback-bc, oklch(var(--b2) / 1))
+    );
+  }
+  .tg-bg-secondary-5 {
+    background-color: var(
+      --tg-theme-secondary-bg-color,
+      var(--fallback-bc, oklch(var(--b2) / 0.5))
+    );
+  }
+  .tg-border-text-color {
+    border-color: var(
+      --tg-theme-text-color,
+      var(--fallback-bc, oklch(var(--bc) / 1))
     );
   }
   .tg-text {
