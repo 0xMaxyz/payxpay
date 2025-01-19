@@ -22,7 +22,8 @@ const WalletPage = () => {
   const [transferring, setTransferring] = useState(false);
   const [sentTxHash, setsentTxHash] = useState<string | null>(null);
 
-  const { myAddress, getMyBalances, bankTransfer } = usePxpContract();
+  const { myAddress, getMyBalances, bankTransfer, performIbcTransfer } =
+    usePxpContract();
   const [xionBalance, setXionBalance] = useState<Coin | null>(null);
   const [usdcBalance, setusdcBalance] = useState<Coin | null>(null);
   const [xionUsdRate, setXionUsdRate] = useState<number | null>(null);
@@ -39,6 +40,7 @@ const WalletPage = () => {
     "activity-modal",
     "send-modal",
     "receive-modal",
+    "ibc-modal",
   ] as const;
   type WalletModal = (typeof WalletModals)[number];
 
@@ -284,10 +286,7 @@ const WalletPage = () => {
     setamount(max);
   };
 
-  const validateAddress = (
-    address: string,
-    chain: "xion" = "xion"
-  ): boolean => {
+  const validateAddress = (address: string, chain: string): boolean => {
     try {
       fromBech32(address);
       // Check if the address starts with the "xion" prefix
@@ -298,11 +297,14 @@ const WalletPage = () => {
     }
   };
 
-  const handleAddressChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAddressChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+    chain: string = "xion"
+  ) => {
     const address = event.target.value;
     setreceiverAddress(address);
 
-    if (validateAddress(address)) {
+    if (validateAddress(address, chain)) {
       setreceiverAddressError(false);
     } else {
       setreceiverAddressError(true);
@@ -360,6 +362,43 @@ const WalletPage = () => {
         }
       } catch (error) {
         console.error("Error transferring funds", error);
+        addNotification({
+          color: "error",
+          message: "A transfer error occured",
+        });
+      } finally {
+        setTransferring(false);
+      }
+    };
+    await transfer();
+  };
+
+  const handleIbcTransfer = async () => {
+    const transfer = async () => {
+      try {
+        setTransferring(true);
+
+        const tx = await performIbcTransfer(
+          selectedChannel,
+          {
+            amount: new Decimal(amount).mul(10 ** 6).toString(),
+            denom:
+              selectedToken === "XION"
+                ? "uxion"
+                : "ibc/57097251ED81A232CE3C9D899E7C8096D6D87EF84BA203E12E424AA4C9B57A64",
+          },
+          receiverAddress,
+          memo
+        );
+        if (tx && tx.transactionHash) {
+          setsentTxHash(tx.transactionHash);
+        }
+      } catch (error) {
+        console.error("Error transferring funds", error);
+        addNotification({
+          color: "error",
+          message: "A transfer error occured",
+        });
       } finally {
         setTransferring(false);
       }
@@ -372,6 +411,8 @@ const WalletPage = () => {
     setsentTxHash(null);
     setTransferring(false);
   };
+
+  const [selectedChannel, setSelectedChannel] = useState("channel-489");
 
   return (
     <>
@@ -416,6 +457,17 @@ const WalletPage = () => {
               <div className="flex-flex-col">
                 <span className="material-symbols-outlined">arrow_outward</span>
                 <p>Send</p>
+              </div>
+            </button>
+            <button
+              className="btn btn-ghost"
+              onClick={() => showModal("ibc-modal")}
+            >
+              <div className="flex-flex-col">
+                <span className="material-symbols-outlined">
+                  arrows_more_up
+                </span>
+                <p>IBC Transfer</p>
               </div>
             </button>
             <button
@@ -593,7 +645,7 @@ const WalletPage = () => {
                     receiverAddressError ? "border-red-500" : "border-green-500"
                   }`}
                 value={receiverAddress}
-                onChange={handleAddressChange}
+                onChange={(e) => handleAddressChange(e, "xion")}
               />
             </label>
 
@@ -678,6 +730,237 @@ const WalletPage = () => {
                   <button
                     className="btn text-white btn-success btn-sm"
                     onClick={handleTransfer}
+                  >
+                    Confirm
+                  </button>
+                </div>
+              )}
+              {transferring && (
+                <div className="flex items-center justify-center mt-3">
+                  <p>
+                    Transferring{" "}
+                    <span className="loading loading-spinner loading-xs text-green-500"></span>
+                  </p>
+                </div>
+              )}
+              {sentTxHash && (
+                <>
+                  <button
+                    className="btn btn-sm btn-circle btn-ghost absolute right-3 top-3"
+                    onClick={closeReviewTransfer}
+                  >
+                    ✕
+                  </button>
+                  <div className="flex items-center justify-center w-full max-w-full mt-3">
+                    <p className="overflow-hidden whitespace-nowrap text-ellipsis max-w-full">
+                      Transaction Hash:{" "}
+                      <span
+                        className="text-blue-500 underline cursor-pointer"
+                        onClick={async () => {
+                          await navigator.clipboard.writeText(sentTxHash || "");
+                          addNotification({
+                            color: "success",
+                            message: "Tx hash copied to clipboard.",
+                          });
+                        }}
+                      >
+                        {shortenAddress(sentTxHash)}
+                      </span>
+                    </p>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </dialog>
+
+      {/* IBC Transfer Modal */}
+      <dialog id="ibc-modal" className="modal w-full" onClose={resetSend}>
+        <div className="modal-box relative tg-bg-secondary w-10/12 max-w-5xl">
+          <form method="dialog">
+            {!transferring && (
+              <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+                ✕
+              </button>
+            )}
+          </form>
+          <div className="flex  flex-col justify-center items-center">
+            <p className="tg-text text-xl font-bold mb-4">IBC Transfer</p>
+
+            <label className="form-control w-full mb-2">
+              <div className="label">
+                <span className="label-text">Token</span>
+              </div>
+              <select
+                className="select select-bordered select-sm tg-input"
+                value={selectedChannel}
+                onChange={(e) => setSelectedChannel(e.target.value)}
+              >
+                <option value="channel-489">noble-grand-1</option>
+              </select>
+            </label>
+
+            <label className="form-control w-full mb-2">
+              <div className="label">
+                <span className="label-text">Token</span>
+              </div>
+              <select
+                className="select select-bordered select-sm tg-input"
+                value={selectedToken}
+                onChange={(e) =>
+                  setselectedToken(e.target.value as "XION" | "USDC")
+                }
+              >
+                <option value="XION">XION</option>
+                <option value="USDC">USDC</option>
+              </select>
+            </label>
+
+            <label className="w-full mb-2">
+              <div className="label">
+                <span className="label-text">Amount</span>
+                {selectedToken === "USDC" ? (
+                  <span className="label-text text-xs ">
+                    {new Decimal(usdcBalance?.amount ?? 0)
+                      .div(10 ** 6)
+                      .toString()}{" "}
+                    USDC
+                  </span>
+                ) : (
+                  <span className="label-text text-xs">
+                    {new Decimal(xionBalance?.amount ?? 0)
+                      .div(10 ** 6)
+                      .toString()}{" "}
+                    XION
+                  </span>
+                )}
+              </div>
+              <label
+                className={`input input-bordered input-sm flex items-center gap-2 tg-input
+                ${
+                  new Decimal(amount).lessThanOrEqualTo(
+                    selectedToken === "USDC"
+                      ? new Decimal(usdcBalance?.amount ?? 0).div(10 ** 6)
+                      : new Decimal(xionBalance?.amount ?? 0).div(10 ** 6)
+                  )
+                    ? "border-green-500"
+                    : "border-red-500"
+                }
+                `}
+              >
+                <input
+                  type="text"
+                  placeholder="123"
+                  className="input input-sm w-full tg-input"
+                  value={amount}
+                  onChange={handleAmountInput}
+                />
+                <button className="btn btn-ghost btn-xs" onClick={handleMax}>
+                  Max
+                </button>
+              </label>
+            </label>
+
+            <label className="form-control w-full mb-2">
+              <div className="label">
+                <span className="label-text">Receiver Address</span>
+              </div>
+              <input
+                type="text"
+                placeholder="noble..."
+                className={`input input-bordered input-sm w-full tg-input
+                  ${
+                    receiverAddressError ? "border-red-500" : "border-green-500"
+                  }`}
+                value={receiverAddress}
+                onChange={(e) => handleAddressChange(e, "noble")}
+              />
+            </label>
+
+            <label className="form-control w-full mb-2">
+              <div className="label">
+                <span className="label-text">Memo</span>
+              </div>
+              <input
+                type="text"
+                placeholder="optional"
+                className={`input input-bordered input-sm w-full tg-input
+                  `}
+                value={memo}
+                onChange={handleMemoChange}
+              />
+            </label>
+            <button
+              className="btn btn-primary btn-sm btn-wide mt-6"
+              onClick={() => setshowReviewElement(true)}
+              disabled={
+                transferring ||
+                new Decimal(amount).greaterThan(
+                  selectedToken === "USDC"
+                    ? new Decimal(usdcBalance?.amount ?? 0).div(10 ** 6)
+                    : new Decimal(xionBalance?.amount ?? 0).div(10 ** 6)
+                ) ||
+                Number.isNaN(Number.parseFloat(amount)) ||
+                Number.parseFloat(amount) === 0.0 ||
+                receiverAddressError
+              }
+            >
+              Review
+            </button>
+          </div>
+          <div
+            className={`fixed inset-0 flex items-center justify-center transition-opacity duration-500 max-w-full  ${
+              showReviewElement ? "opacity-100 visible" : "opacity-0"
+            } ${!isReviewVisible && "invisible"}`}
+          >
+            <div className="absolute inset-0 tg-bg-secondary-5 bg-opacity-50 backdrop-blur-sm"></div>
+            <div className="relative tg-bg-secondary p-6 rounded-lg shadow-lg w-full">
+              <div className="flex flex-col items-center justify-center tg-text">
+                {!sentTxHash ? (
+                  <p className="tg-text text-2xl font-bold">
+                    Review IBC Transfer
+                  </p>
+                ) : (
+                  <div className="flex flex-col items-center justify-center">
+                    <span
+                      className="material-symbols-outlined"
+                      style={{
+                        fontSize: "4rem",
+                        fontWeight: "900",
+                        color: "green",
+                      }}
+                    >
+                      check
+                    </span>
+                    <p className="tg-text text-2xl font-bold">Transfer Done</p>
+                  </div>
+                )}
+
+                <div className="border-t-2 w-full tg-border-text-color my-4"></div>
+                <p className="text-xs font-bold">Transfer Amount</p>
+                <p className="text-xl font-bold">
+                  {Number.parseFloat(amount)}{" "}
+                  <span className="opacity-35">{selectedToken}</span>
+                </p>
+                <div className="border-t-2 w-full tg-border-text-color my-4"></div>
+
+                <p className="text-xs font-bold">From</p>
+                <p className="text-xs">{shortenAddress(myAddress)}</p>
+                <p className="text-xs font-bold mt-2">To</p>
+                <p className="text-xs">{shortenAddress(receiverAddress)}</p>
+              </div>
+              {!transferring && !sentTxHash && (
+                <div className="flex flex-row justify-around mt-5">
+                  <button
+                    className="btn text-white btn-error btn-sm"
+                    onClick={() => setshowReviewElement(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="btn text-white btn-success btn-sm"
+                    onClick={handleIbcTransfer}
                   >
                     Confirm
                   </button>

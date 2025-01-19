@@ -3,10 +3,17 @@ import {
   useAbstraxionSigningClient,
   useAbstraxionAccount,
 } from "@burnt-labs/abstraxion";
-import { Block, Coin, DeliverTxResponse, IndexedTx } from "@cosmjs/stargate";
+import {
+  Block,
+  Coin,
+  DeliverTxResponse,
+  IndexedTx,
+  StdFee,
+} from "@cosmjs/stargate";
 import { CosmWasmClient, ExecuteResult } from "@cosmjs/cosmwasm-stargate";
 import React, { createContext, useContext } from "react";
 import { queryIbcDenom } from "@/utils/tools";
+import { MsgTransferEncodeObject } from "@cosmjs/stargate";
 
 type ExecuteCreateMsg = {
   create: CreateMsg;
@@ -108,6 +115,12 @@ interface PxpContractContextType {
     timestamp: number;
   } | null>;
   getMyBalances: () => Promise<(Coin | null)[]>;
+  performIbcTransfer: (
+    sourceChannel: string,
+    coin: Coin,
+    receiver: string,
+    memo?: string
+  ) => Promise<DeliverTxResponse | undefined>;
 }
 
 const PxpContractContext = createContext<PxpContractContextType | null>(null);
@@ -255,6 +268,46 @@ export const PxpContractProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  const performIbcTransfer = async (
+    sourceChannel: string,
+    coin: Coin,
+    receiver: string,
+    memo?: string
+  ) => {
+    // IBC transfer message
+    const msgTransfer: MsgTransferEncodeObject = {
+      typeUrl: "/ibc.applications.transfer.v1.MsgTransfer",
+      value: {
+        sourcePort: "transfer",
+        sourceChannel: sourceChannel,
+        token: coin,
+        sender: xionAccount.bech32Address,
+        receiver: receiver,
+        timeoutTimestamp: BigInt(1000_000 * (Date.now() + 300_000)), // 5 minutes
+      },
+    };
+
+    const fee: StdFee = {
+      amount: [
+        {
+          denom: "uxion",
+          amount: "10",
+        },
+      ],
+      gas: "300000",
+    };
+
+    // Broadcast the transaction
+    const result = await client?.signAndBroadcast(
+      xionAccount.bech32Address,
+      [msgTransfer],
+      fee,
+      memo
+    );
+    console.log("Transaction result:", result);
+    return result;
+  };
+
   const bankTransfer = async (
     amount: Coin[],
     recipientAddress: string,
@@ -339,6 +392,7 @@ export const PxpContractProvider: React.FC<{ children: React.ReactNode }> = ({
         getBlockTimestamp,
         getTransactionDetails,
         getMyBalances,
+        performIbcTransfer,
       }}
     >
       {children}
