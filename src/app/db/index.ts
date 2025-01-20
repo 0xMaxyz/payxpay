@@ -217,6 +217,36 @@ const getInvoicesCreatedByUser = async (
   }
 };
 
+export const getAllInvoicesForAUser = async (
+  userTgId: number,
+  page: number,
+  limit: number = 10
+) => {
+  const offset = (page - 1) * limit;
+  try {
+    const res = await sql`
+    WITH filtered_invoices AS (
+    SELECT *
+    FROM invoices
+    WHERE issuer_tg_id = ${userTgId} OR payer_tg_id = ${userTgId}
+    )
+    SELECT 
+    *,
+    (SELECT COUNT(*) FROM filtered_invoices) AS total_items
+    FROM filtered_invoices
+    ORDER BY created_at DESC
+    LIMIT ${limit} OFFSET ${offset};
+    `;
+    if (res.rowCount && res.rowCount > 0) {
+      return res.rows;
+    }
+    return null;
+  } catch (error) {
+    logger.error(`Db:: Can't reject the escrow,\n error: ${error}`);
+    return null;
+  }
+};
+
 const getInvoicesPaidByUser = async (
   userTgId: number,
   page: number,
