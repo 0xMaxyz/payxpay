@@ -188,3 +188,33 @@ export const approveEscrow = async (id: string) => {
   // if everything goes well, the tx should work, return tx
   return res;
 };
+
+export const refundEscrow = async (id: string) => {
+  const wallet = await getWallet();
+  const client = await getSigner(wallet);
+  const accounts = await wallet.getAccounts();
+  const pxpContract = process.env.NEXT_PUBLIC_CONTRACT!;
+
+  const refundMsg = {
+    refund: { id },
+  };
+  console.log(refundMsg);
+  try {
+    const res = await client.execute(
+      accounts[0].address,
+      pxpContract,
+      refundMsg,
+      {
+        amount: [{ amount: "1", denom: "uxion" }],
+        gas: "500000",
+        payer: accounts[0].address,
+      },
+      "",
+      []
+    );
+    console.log(res);
+    return res;
+  } catch (error) {
+    console.log(error);
+  }
+};

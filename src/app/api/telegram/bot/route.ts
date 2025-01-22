@@ -28,7 +28,7 @@ interface HandlerParams {
 
 // Functions and command handlers
 
-const sendMessage = async (msg: Telegram.SendMessage) => {
+export const sendMessage = async (msg: Telegram.SendMessage) => {
   const response = await fetch(`${TELEGRAM_API}/sendMessage`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },

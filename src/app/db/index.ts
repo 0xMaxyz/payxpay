@@ -3,6 +3,41 @@ import { sql } from "@vercel/postgres";
 
 // Types
 type EscrowOut = "direct" | "approve" | "refund";
+
+export type InvoiceDataFromDb = {
+  invoice: string;
+  create_tx: string;
+  out_tx: string;
+  is_confirmed: boolean | null;
+  payment_type: "direct" | "escrow" | "approve" | "refund";
+  payer_tg_id: number;
+  payer_address: string;
+};
+
+export interface InvoiceDto {
+  id: number;
+  invoice: string;
+  invoice_id: string;
+  issuer_tg_id: number;
+  create_tx: string;
+  out_tx: string;
+  out_type: string;
+  create_tx_at: string;
+  out_tx_at: string;
+  payer_tg_id: number;
+  payer_address: string;
+  payment_confirmed: boolean;
+  rejection_reason: string;
+  created_at: string;
+  issuer_address: string;
+  deleted: boolean;
+  amount: string;
+  currency: string;
+  description: string;
+  invoice_validity: number;
+  issuer_tg_handle: string;
+  total_items: number;
+}
 // Functions
 const addInvoice = async (id: string, issuer_id: number, invoice: string) => {
   try {
@@ -22,16 +57,15 @@ const addInvoice = async (id: string, issuer_id: number, invoice: string) => {
     return null;
   }
 };
+
 const getInvoice = async (id: string) => {
   try {
     const result = await sql`
-    SELECT invoice,create_tx,out_tx,payment_confirmed,out_type,payer_tg_id FROM invoices
-    WHERE invoice_id = ${id};
+    SELECT invoice,create_tx,out_tx,payment_confirmed,out_type,payer_tg_id,payer_address FROM invoices
+    WHERE invoice_id = ${id} AND deleted = false;
     `;
-    if (result.rows.length > 0) {
-    }
     return result.rows.length > 0
-      ? {
+      ? ({
           invoice: result.rows[0].invoice as string,
           create_tx: result.rows[0].create_tx as string,
           out_tx: result.rows[0].out_tx as string,
@@ -40,9 +74,11 @@ const getInvoice = async (id: string) => {
             | "direct"
             | "escrow"
             | "approve"
-            | "refund",
-          payer_tg_id: result.rows[0].payer_tg_id,
-        }
+            | "refund"
+            | null,
+          payer_tg_id: result.rows[0].payer_tg_id as number,
+          payer_address: result.rows[0].payer_address as string,
+        } as InvoiceDataFromDb)
       : null;
   } catch (error) {
     logger.error(`Db:: Can't get an invoice, ${error}`);
@@ -53,7 +89,7 @@ const getInvoices = async (issuer_id: string) => {
   try {
     const result = await sql`
     SELECT invoice FROM invoices
-    WHERE issuer_tg_id = ${issuer_id};
+    WHERE issuer_tg_id = ${issuer_id} AND deleted = false;
     `;
     return result.rows.length > 0
       ? result.rows.map((row) => row.invoice as string)
@@ -63,7 +99,7 @@ const getInvoices = async (issuer_id: string) => {
     return null;
   }
 };
-const deleteInvoice = async (id: string) => {
+const hardDeleteInvoice = async (id: string) => {
   try {
     const result = await sql`
     DELETE FROM invoices
@@ -75,10 +111,24 @@ const deleteInvoice = async (id: string) => {
     return null;
   }
 };
+const deleteInvoice = async (id: string) => {
+  try {
+    const result = await sql`
+    UPDATE invoices
+    SET deleted = true
+    WHERE invoice_id = ${id};
+    `;
+    return result.rowCount;
+  } catch (error) {
+    logger.error(`Db:: Can't delete an invoice, ${error}`);
+    return null;
+  }
+};
 const deleteInvoicesByIssuer = async (issuer_id: string) => {
   try {
     const result = await sql`
-    DELETE FROM invoices
+    UPDATE invoices
+    SET deleted = true
     WHERE issuer_tg_id = ${issuer_id};
     `;
     return result.rowCount;
@@ -107,7 +157,7 @@ const addEscrowTxToInvoice = async (
         out_type = ${outType},
         out_tx = CASE WHEN ${outType} = 'direct' THEN ${txHash} ELSE out_tx END,
         out_tx_at = CASE WHEN ${outType} = 'direct' THEN NOW() ELSE out_tx_at END
-      WHERE invoice_id = ${id};
+      WHERE invoice_id = ${id} AND deleted = false;
     `;
 
     return result.rowCount;
@@ -126,7 +176,7 @@ const addEscrowOutTxToInvoice = async (
     const result = await sql`
     UPDATE invoices
     SET out_tx = ${tx_hash}, out_tx_at = NOW(), out_type = ${out_type}
-    WHERE invoice_id = ${id};
+    WHERE invoice_id = ${id}  AND deleted = false;
     `;
     return result.rowCount;
   } catch (error) {
@@ -140,7 +190,7 @@ export const queryIsPaid = async (invoice_id: string) => {
     const res = await sql`
   SELECT create_tx,out_tx FROM invoices
   WHERE
-  invoice_id = ${invoice_id};
+  invoice_id = ${invoice_id} AND deleted = false;
   `;
     if (res.rowCount && res.rowCount > 0) {
       // then either this is paid or finalized
@@ -165,7 +215,7 @@ const confirmTheInvoicePayment = async (invoice_id: string) => {
     const res = await sql`
     UPDATE invoices
     SET payment_confirmed = true
-    WHERE invoice_id = ${invoice_id};
+    WHERE invoice_id = ${invoice_id}  AND deleted = false;
     `;
     if (res.rowCount && res.rowCount > 0) {
       return true;
@@ -182,7 +232,7 @@ const rejectEscrow = async (invoice_id: string, reason: string) => {
     const res = await sql`
     UPDATE invoices
     SET rejection_reason = ${reason}
-    WHERE invoice_id = ${invoice_id};
+    WHERE invoice_id = ${invoice_id}  AND deleted = false;
     `;
     if (res.rowCount && res.rowCount > 0) {
       return true;
@@ -203,7 +253,7 @@ const getInvoicesCreatedByUser = async (
   try {
     const res = await sql`
     SELECT * FROM invoices
-    WHERE issuer_tg_id = ${userTgId}
+    WHERE issuer_tg_id = ${userTgId} AND deleted = false
     ORDER BY created_at DESC
     LIMIT ${limit} OFFSET ${offset};
     `;
@@ -228,7 +278,7 @@ export const getAllInvoicesForAUser = async (
     WITH filtered_invoices AS (
     SELECT *
     FROM invoices
-    WHERE issuer_tg_id = ${userTgId} OR payer_tg_id = ${userTgId}
+    WHERE  deleted = false AND issuer_tg_id = ${userTgId} OR payer_tg_id = ${userTgId}
     )
     SELECT 
     *,
@@ -256,7 +306,7 @@ const getInvoicesPaidByUser = async (
   try {
     const res = await sql`
     SELECT * FROM invoices
-    WHERE payer_tg_id = ${userTgId}
+    WHERE payer_tg_id = ${userTgId} AND deleted = false
     ORDER BY create_tx_at DESC
     LIMIT ${limit} OFFSET ${offset};
     `;
@@ -276,6 +326,7 @@ export {
   getInvoice,
   getInvoices,
   deleteInvoice,
+  hardDeleteInvoice,
   deleteInvoicesByIssuer,
   addEscrowTxToInvoice,
   addEscrowOutTxToInvoice,

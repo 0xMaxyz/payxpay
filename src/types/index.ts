@@ -36,7 +36,7 @@ export interface Invoice {
   amount: number;
   // The currency of the invoice
   unit: string;
-  // The address of the seller
+  // The address of the invoice_issuer
   address: string;
 }
 export interface SignedInvoice extends Invoice {
