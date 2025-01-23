@@ -69,7 +69,8 @@ const setStatus = (
     input.out_type === "escrow" &&
     input.payment_confirmed === true &&
     !input.out_tx &&
-    !input.out_tx_at
+    !input.out_tx_at &&
+    !input.rejection_reason
   ) {
     status = "Payment Confirmed";
     payment_type = "escrow";
@@ -431,10 +432,54 @@ export default function HPage() {
             </button>
           );
         }
+        // Issuer can Confirm escrow
+        if (inv.status === "Waiting Confirmation") {
+          buttons.push(
+            <button
+              className="btn btn-success btn-sm text-white"
+              disabled={executingAction}
+              onClick={() => (executingAction ? null : handleConfirm(inv))}
+            >
+              {executingAction ? (
+                <>
+                  <span className="loading loading-spinner loading-sm"></span>
+                  Confirming
+                </>
+              ) : (
+                <>
+                  <span className="material-symbols-outlined">check</span>
+                  Confirm
+                </>
+              )}
+            </button>
+          );
+        }
       }
       if (inv.payer_tg_id && inv.payer_tg_id.toString() === myTgId.toString()) {
         console.log("I'm Payer");
         // we are payer
+        if (inv.status === "Escrow Rejected") {
+          // payer can Approve a rejected escrow
+          buttons.push(
+            <button
+              disabled={executingAction}
+              className="btn btn-sm btn-success text-white"
+              onClick={() => (executingAction ? null : handleApprove(inv))}
+            >
+              {executingAction ? (
+                <>
+                  <span className="loading loading-spinner loading-sm"></span>
+                  Approving
+                </>
+              ) : (
+                <>
+                  <span className="material-symbols-outlined">done_all</span>
+                  Approve
+                </>
+              )}
+            </button>
+          );
+        }
         // payer can Reject escrow
         if (!showRejection && inv.status === "Payment Confirmed") {
           buttons.push(
@@ -497,27 +542,6 @@ export default function HPage() {
       }
     }
 
-    if (inv.status === "Waiting Confirmation") {
-      buttons.push(
-        <button
-          className="btn btn-success btn-sm text-white"
-          disabled={executingAction}
-          onClick={() => (executingAction ? null : handleConfirm(inv))}
-        >
-          {executingAction ? (
-            <>
-              <span className="loading loading-spinner loading-sm"></span>
-              Confirming
-            </>
-          ) : (
-            <>
-              <span className="material-symbols-outlined">check</span>
-              Confirm
-            </>
-          )}
-        </button>
-      );
-    }
     return <div className="flex gap-2 mt-2">{buttons}</div>;
   };
 

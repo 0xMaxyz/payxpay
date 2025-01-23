@@ -173,11 +173,23 @@ const addEscrowOutTxToInvoice = async (
   out_type: EscrowOut
 ) => {
   try {
-    const result = await sql`
+    // if the out_type is approve, then removed the reject reason too
+    let result: QueryResult<QueryResultRow> | null = null;
+
+    if (out_type === "approve") {
+      result = await sql`
+    UPDATE invoices
+    SET out_tx = ${tx_hash}, out_tx_at = NOW(), out_type = ${out_type}, rejection_reason=''
+    WHERE invoice_id = ${id}  AND deleted = false;
+    `;
+    } else {
+      result = await sql`
     UPDATE invoices
     SET out_tx = ${tx_hash}, out_tx_at = NOW(), out_type = ${out_type}
     WHERE invoice_id = ${id}  AND deleted = false;
     `;
+    }
+
     return result.rowCount;
   } catch (error) {
     logger.error(`Db:: Can't update invoice, ${error}`);
@@ -231,7 +243,7 @@ const rejectEscrow = async (invoice_id: string, reason: string) => {
   try {
     const res = await sql`
     UPDATE invoices
-    SET rejection_reason = ${reason}
+    SET rejection_reason = ${reason}, out_type='reject'
     WHERE invoice_id = ${invoice_id}  AND deleted = false;
     `;
     if (res.rowCount && res.rowCount > 0) {
