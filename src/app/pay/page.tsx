@@ -515,15 +515,6 @@ const PayPage = () => {
                           <span className="loading loading-dots loading-xs my-auto"></span>
                         </p>
                       )}
-<<<<<<< HEAD
-                      {/* <button
-                        className="btn btn-primary"
-                        onClick={() => setIsPaymentDialogVisible(true)}
-                      >
-                        Show Pay
-                      </button> */}
-=======
->>>>>>> origin/frontend
                     </div>
                   </>
                 )}
