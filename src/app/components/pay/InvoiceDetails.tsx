@@ -84,8 +84,8 @@ export const InvoiceDetails = ({
           <span className="loading loading-dots loading-xs my-auto"></span>
         </p>
       )}
-      <button className="btn btn-primary" onClick={onPay}>
-        Show Pay
+      <button className="btn btn-primary btn-success mt-4" onClick={onPay}>
+        Pay
       </button>
     </div>
   </div>

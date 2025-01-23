@@ -18,12 +18,7 @@ import {
 const PayPage = () => {
   const { data: xionAccount } = useAbstraxionAccount();
   const { addNotification } = useNotification();
-  const {
-    scanQrCode,
-    mainButton,
-    platform,
-    token: jwtToken,
-  } = useTelegramContext();
+  const { scanQrCode, mainButton, token: jwtToken } = useTelegramContext();
   const searchParams = useSearchParams();
   const invoiceId = searchParams.get("invoice");
 
@@ -82,7 +77,15 @@ const PayPage = () => {
   return (
     <div className="relative w-full p-4">
       <h1 className="text-xl font-bold mb-4">Pay</h1>
-      <InvoiceInput onScan={onScan} onPaste={onPaste} platform={platform} />
+      <InvoiceInput
+        onScan={onScan}
+        onPaste={onPaste}
+        platform="android" // or "ios" or null
+        jwtToken={jwtToken}
+        addNotification={addNotification}
+        setSignedInvoice={setInvoice}
+        setIsReceivedInvoicePaid={setIsReceivedInvoicePaid}
+      />
       {loading && <LoadingSpinner />}
       {invoice && (
         <InvoiceDetails
