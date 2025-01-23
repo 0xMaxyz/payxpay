@@ -291,7 +291,9 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
   };
 
   return (
-    <>
+    <div className="relative w-full ">
+      <div className="absolute inset-0 tg-bg-secondary-5 bg-opacity-50 backdrop-blur-sm"></div>
+
       <dialog
         ref={dialogRef}
         id="payment-modal"
@@ -433,7 +435,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
         </div> */}
         </div>
       </dialog>
-    </>
+    </div>
   );
 };
 

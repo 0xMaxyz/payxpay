@@ -7,10 +7,12 @@ import { NextRequest, NextResponse } from "next/server";
 const bot_token = process.env.BOT_TOKEN as string;
 
 export async function GET(req: NextRequest) {
-  // verify token
-  const jwtPayload = verifyJWTAndReferer(req);
-  if (jwtPayload instanceof NextResponse) {
-    return jwtPayload;
+  if (process.env.NEXT_PUBLIC_ENV !== "development") {
+    // verify token
+    const jwtPayload = verifyJWTAndReferer(req);
+    if (jwtPayload instanceof NextResponse) {
+      return jwtPayload;
+    }
   }
   try {
     const url = new URL(req.url);

@@ -347,7 +347,7 @@ const PayPage = () => {
   };
 
   return (
-    <>
+    <div className="relative w-full">
       <div className="p-4">
         <h1 className="text-xl font-bold mb-4">Pay</h1>
         {xionAccount?.bech32Address ? (
@@ -514,6 +514,12 @@ const PayPage = () => {
                           <span className="loading loading-dots loading-xs my-auto"></span>
                         </p>
                       )}
+                      <button
+                        className="btn btn-primary"
+                        onClick={() => setIsPaymentDialogVisible(true)}
+                      >
+                        Show Pay
+                      </button>
                     </div>
                   </>
                 )}
@@ -546,12 +552,14 @@ const PayPage = () => {
         {error && <p className="text-red-500 text-center">{error}</p>}
       </div>
       {isPaymentDialogVisible && paymentParams && (
-        <PaymentDialog
-          paymentParams={paymentParams}
-          onClose={() => setIsPaymentDialogVisible(false)}
-        />
+        <>
+          <PaymentDialog
+            paymentParams={paymentParams}
+            onClose={() => setIsPaymentDialogVisible(false)}
+          />
+        </>
       )}
-    </>
+    </div>
   );
 };
 

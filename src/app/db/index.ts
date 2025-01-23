@@ -179,7 +179,7 @@ const addEscrowOutTxToInvoice = async (
     if (out_type === "approve") {
       result = await sql`
     UPDATE invoices
-    SET out_tx = ${tx_hash}, out_tx_at = NOW(), out_type = ${out_type}, rejection_reason=''
+    SET out_tx = ${tx_hash}, out_tx_at = NOW(), out_type = ${out_type}, rejection_reason=NULL
     WHERE invoice_id = ${id}  AND deleted = false;
     `;
     } else {
