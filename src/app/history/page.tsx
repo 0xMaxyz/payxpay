@@ -200,6 +200,9 @@ export default function HPage() {
       case "Paid":
       case "Payment Confirmed":
       case "Waiting Confirmation":
+        if (inv.out_type === "direct") {
+          return "bg-green-500";
+        }
         return "bg-yellow-500";
       default:
         return "tg-bg-primary";
@@ -497,10 +500,7 @@ export default function HPage() {
       }
     }
 
-    if (
-      inv.status === "Waiting Confirmation" &&
-      inv.payment_type === "escrow"
-    ) {
+    if (inv.status === "Waiting Confirmation") {
       buttons.push(
         <button
           className="btn btn-success btn-sm text-white"
