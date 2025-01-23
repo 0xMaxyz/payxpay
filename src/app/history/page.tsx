@@ -335,7 +335,7 @@ export default function HPage() {
       if (res) {
         addNotification({
           color: "success",
-          message: `${action} is successful;`,
+          message: `${action} is successful`,
         });
       } else {
         throw new Error("No response from server");
