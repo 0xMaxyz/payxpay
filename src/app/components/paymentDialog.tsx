@@ -1,324 +1,100 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useNotification } from "../context/NotificationContext";
-import {
-  Balance,
-  CreateMsg,
-  EscrowType,
-  usePxpContract,
-} from "../context/PxpContractContext";
+import React, { useEffect, useRef, useState } from "react";
 import { useTelegramContext } from "../context/TelegramContext";
-import { Coin } from "@cosmjs/stargate";
-import Decimal from "decimal.js";
-import { SignedInvoice } from "@/types";
-
-export interface NamedCoin extends Coin {
-  name: string;
-}
-
-export interface PaymentParams {
-  amount: Decimal;
-  token: NamedCoin;
-  invoice: SignedInvoice;
-  paymentType: "direct" | "escrow";
-}
+import { PaymentParams } from "@/types/payment";
+import { useBalanceCheck } from "../hooks/useBalanceCheck";
+import { usePayment } from "../hooks/usePayment";
+import { PaymentStatus } from "./pay/PaymentStatus";
 
 interface PaymentDialogProps {
   paymentParams: PaymentParams;
-  onClose?: () => void;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 const PaymentDialog: React.FC<PaymentDialogProps> = ({
   paymentParams,
+  isOpen,
   onClose,
 }) => {
-  const {
-    token: jwtToken,
-    userData: tgData,
-    mainButton,
-    WebApp: tgWebApp,
-  } = useTelegramContext();
-  const { queryBankBalance, myAddress, bankTransfer, createEscrow } =
-    usePxpContract();
-  const { addNotification } = useNotification();
-  const [loading, setLoading] = useState(true);
-  const [balance, setBalance] = useState<Decimal | null>(null);
-  const [isBalanceSufficient, setIsBalanceSufficient] = useState(false);
-  const [paymentSteps, setPaymentSteps] = useState({
-    transmitting: false,
-    waitingConfirmation: false,
-    done: false,
-  });
-  const [txHash, setTxHash] = useState<string | null>(null);
-  const dialogRef = useRef<HTMLDialogElement>(null);
-  // disable main button, as soon as the dialog is shown, we don't want to show the proceed to payment button
+  const { mainButton } = useTelegramContext();
+  const { loading, balance, isBalanceSufficient } = useBalanceCheck(
+    paymentParams.token,
+    paymentParams.amount
+  );
+  const { paymentSteps, txHash, handlePayment } = usePayment(paymentParams);
+  const modalRef = useRef<HTMLDivElement>(null);
+  const [showReviewElement, setShowReviewElement] = useState(false); // State for review confirmation
+
   useEffect(() => {
     mainButton?.disableMainButton();
   }, [mainButton]);
 
   useEffect(() => {
-    const queryBalance = async (token: NamedCoin) => {
-      try {
-        const balance = await queryBankBalance(myAddress, token.denom);
-        console.log(`Balance of ${token.denom} is:`, balance);
-        return balance;
-      } catch (error) {
-        addNotification({ color: "error", message: "Can't query balance." });
-        console.error("Can't query balance.", error);
-      }
-    };
-    const checkBalance = async () => {
-      try {
-        const fetchedBalance = await queryBalance(paymentParams.token);
-        if (fetchedBalance) {
-          const balance = new Decimal(fetchedBalance.amount);
-          setBalance(balance);
-          setIsBalanceSufficient(
-            balance.minus(paymentParams.amount).greaterThanOrEqualTo(0)
-          );
-        } else {
-          throw new Error("Can't query the token balance");
-        }
-      } catch (error) {
-        addNotification({
-          color: "error",
-          message: "Failed to fetch balance.",
-        });
-        console.error("Failed to fetch balance.", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkBalance();
-  }, [
-    paymentParams.token,
-    paymentParams.amount,
-    addNotification,
-    queryBankBalance,
-    myAddress,
-  ]);
-  useEffect(() => {
-    dialogRef?.current?.showModal();
-  }, []);
-
-  const showConfirmation = () => {
-    const handleConfirmationDialog = (id: string) => {
-      if (id === "1") {
-        // close confirmation dialog
-        handlePayment();
-      }
-    };
-    tgWebApp?.showPopup(
-      {
-        message: ` Do you confirm the ${paymentParams.amount
-          .toDecimalPlaces(2)
-          .toString()} ${paymentParams.token.name.toLocaleUpperCase()} payment?`,
-        title: "Confirm Payment",
-        buttons: [
-          { type: "cancel" },
-          { type: "default", id: "1", text: "Pay" },
-        ],
-      },
-      handleConfirmationDialog
-    );
-  };
-
-  const handlePayment = async () => {
-    let tHash = "";
-    try {
-      if (paymentParams.paymentType === "direct") {
-        // change payment step
-        setPaymentSteps((prev) => ({
-          ...prev,
-          preparing: false,
-          transmitting: true,
-        }));
-        // transfer to the address of the invoice issuer
-        const res = await bankTransfer(
-          [
-            {
-              amount: paymentParams.token.amount,
-              denom: paymentParams.token.denom,
-            },
-          ],
-          paymentParams.invoice.address,
-          "payxpay"
-        );
-        if (res && res.code === 0) {
-          addNotification({
-            color: "success",
-            message: "Payment completed successfully",
-          });
-          console.log("Received result is: ", res);
-          console.log("Transaction hash is:", res.transactionHash);
-          // set tx hash
-          setTxHash(res.transactionHash);
-          tHash = res.transactionHash;
-          console.log(
-            "Tx hash after setting the state from state variable: ",
-            txHash
-          );
-          // change payment step
-          setPaymentSteps((prev) => ({
-            ...prev,
-            transmitting: false,
-            waitingConfirmation: true,
-          }));
-        } else if (res && res.code !== 0) {
-          throw new Error(`Payment failed, tx hash: ${res.transactionHash}`);
-        }
-      } else {
-        // create a escrow
-        // change payment step
-        setPaymentSteps((prev) => ({
-          ...prev,
-          preparing: false,
-          transmitting: true,
-        }));
-        // transfer to the address of the invoice issuer
-        const escrowType: EscrowType = {
-          invoice: {
-            amount: {
-              amount: paymentParams.invoice.amount.toString(),
-              currency: paymentParams.invoice.unit,
-            },
-          },
-        };
-        const createMsg: CreateMsg = {
-          id: paymentParams.invoice.id,
-          escrow_type: escrowType,
-          recipient: paymentParams.invoice.address, // address of the invoice issuer
-          recepient_email: "",
-          recepient_telegram_id:
-            paymentParams.invoice.issuerTelegramId.toString(),
-          source_telegram_id: tgData?.id?.toString(),
-          title: `Payment of ${paymentParams.invoice.amount} ${paymentParams.invoice.unit}`,
-          description: paymentParams.invoice.description,
-        };
-        const balance: Balance = {
-          cw20_balance: [],
-          native_balance: [
-            {
-              amount: paymentParams.token.amount,
-              denom: paymentParams.token.denom,
-            },
-          ],
-        };
-        const res = await createEscrow(createMsg, balance);
-        console.log("Received result is: ", res);
-        //
-        if (
-          res &&
-          res.events
-            .flatMap((event) => event.attributes)
-            .some((x) => x.key === "action" && x.value === "create")
-        ) {
-          addNotification({
-            color: "success",
-            message: "Payment completed successfully",
-          });
-          // set tx hash
-          setTxHash(res.transactionHash);
-          tHash = res.transactionHash;
-
-          // change payment step
-          setPaymentSteps((prev) => ({
-            ...prev,
-            transmitting: false,
-            waitingConfirmation: true,
-          }));
-        } else if (res) {
-          throw new Error(`Payment failed, tx hash: ${res.transactionHash}`);
-        }
-      }
-
-      // at this point the transfer is done, either we paid directly or with escrow
-      // Call the API endpoint to finalize the payment
-      console.log("Calling finalize payment");
-      await finalizePayment(tHash);
-      // set payment step as done
-      setPaymentSteps({
-        transmitting: false,
-        waitingConfirmation: false,
-        done: true,
-      });
-    } catch (error) {
-      setPaymentSteps({
-        done: false,
-        transmitting: false,
-        waitingConfirmation: false,
-      });
-      addNotification({ color: "error", message: "Payment failed." });
-      console.error("Payment failed.", error);
-    }
-  };
-
-  const finalizePayment = async (hash: string) => {
-    console.log("Finalize payment is called with tx hash of: ", hash);
-    if (hash) {
-      const res = await fetch("/api/invoice/payment", {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${jwtToken}`,
-        },
-        body: JSON.stringify({
-          invoiceId: encodeURIComponent(paymentParams.invoice.id),
-          txHash: encodeURIComponent(hash),
-          paymentType: encodeURIComponent(paymentParams.paymentType),
-          payerTgId: tgData?.id,
-          payerAddress: myAddress,
-        }),
-        method: "POST",
-      });
-      if (!res.ok) {
-        throw new Error("Something wrong happened while updating the invoice.");
-      }
+    if (isOpen) {
+      modalRef.current?.classList.remove("hidden");
     } else {
-      throw new Error("No txHash found.");
+      modalRef.current?.classList.add("hidden");
     }
-  };
-  const handleDialogClose = async (event: React.FormEvent) => {
+  }, [isOpen]);
+
+  const handleModalClose = async (event: React.FormEvent) => {
     if (paymentSteps.transmitting || paymentSteps.waitingConfirmation) {
-      event.preventDefault(); // Prevent the dialog from closing
+      event.preventDefault();
       const confirmClose = window.confirm(
-        "Payment is in process. By closing the the payment dialog, you may loose the paid balance. Do you want to proceed?"
+        "Payment is in process. By closing the payment dialog, you may lose the paid balance. Do you want to proceed?"
       );
       if (confirmClose) {
-        onClose?.(); // invoke the provided onClose (if any)
-        dialogRef.current?.close();
+        onClose?.();
+        modalRef.current?.classList.add("hidden");
       }
+    } else {
+      onClose?.();
+      modalRef.current?.classList.add("hidden");
     }
+  };
+
+  const handleConfirmPayment = () => {
+    //setShowReviewElement(false); // Close the review confirmation
+    handlePayment(); // Initiate the payment
   };
 
   return (
-    <div className="relative w-full ">
-      <div className="absolute inset-0 tg-bg-secondary-5 bg-opacity-50 backdrop-blur-sm"></div>
+    <div className="relative w-full">
+      {/* Backdrop */}
+      {isOpen && (
+        <div className="fixed inset-0 tg-bg-secondary-5 bg-opacity-50 backdrop-blur-sm"></div>
+      )}
 
-      <dialog
-        ref={dialogRef}
+      {/* Modal */}
+      <div
+        ref={modalRef}
         id="payment-modal"
-        className="modal w-full max-w-md mx-auto"
-        onCancel={handleDialogClose}
-        onClose={handleDialogClose}
+        className="fixed inset-0 flex items-center justify-center hidden"
       >
-        <div className="modal-box tg-bg-secondary">
-          {paymentSteps.done ||
-            (!paymentSteps.transmitting &&
-              !paymentSteps.waitingConfirmation && (
-                <form method="dialog">
-                  <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
-                    ✕
-                  </button>
-                </form>
-              ))}
-
+        <div className="modal-box tg-bg-secondary w-full max-w-md mx-auto flex flex-col items-center justify-center">
+          {!paymentSteps.done &&
+            !paymentSteps.transmitting &&
+            !paymentSteps.waitingConfirmation && (
+              <form method="dialog">
+                <button
+                  className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+                  onClick={handleModalClose}
+                >
+                  ✕
+                </button>
+              </form>
+            )}
           <h1 className="text-2xl font-bold text-center tg-text">Payment</h1>
           {loading ? (
-            <div className="flex justify-center items-center py-4">
-              <span className="loading loading-spinner loading-lg"></span>
+            <div className="w-full space-y-4">
+              {/* Skeleton Loading */}
+              <div className="skeleton h-6 w-3/4 mx-auto"></div>
+              <div className="skeleton h-4 w-1/2 mx-auto"></div>
+              <div className="skeleton h-12 w-full mt-4"></div>
+              <div className="skeleton h-4 w-1/3 mx-auto mt-2"></div>
             </div>
           ) : isBalanceSufficient ? (
-            <div>
+            <div className="w-full">
               {!paymentSteps.done &&
                 !paymentSteps.transmitting &&
                 !paymentSteps.waitingConfirmation && (
@@ -330,7 +106,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                           .toDecimalPlaces(2)
                           .toString()} ${paymentParams.token.name.toLocaleUpperCase()}`}
                         <span
-                          className={` ml-2 ${
+                          className={`ml-2 ${
                             balance?.lessThan(paymentParams.token.amount)
                               ? "text-red-500"
                               : "text-green-500"
@@ -343,98 +119,112 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                         </span>
                       </p>
                     </div>
-
                     <button
                       className="btn btn-success w-full mt-4"
-                      onClick={showConfirmation}
+                      onClick={() => setShowReviewElement(true)}
                       disabled={balance?.lessThan(paymentParams.token.amount)}
                     >
-                      Pay
-                      {` ${paymentParams.amount
+                      Pay{" "}
+                      {`${paymentParams.amount
                         .toDecimalPlaces(2)
                         .toString()} ${paymentParams.token.name.toLocaleUpperCase()}`}
                     </button>
-                    {/* <p className="tg-text text-xs mt-2">
-                    <strong>Transaction Fee:</strong> 1 uxion
-                  </p> */}
                     <p className="tg-text text-xs mt-1">
                       <strong>Service Fee:</strong> 0 uxion
                     </p>
                   </>
                 )}
-
-              <div className="m-3 p-3 shadow-2xl w-full">
-                {paymentSteps.transmitting && (
-                  <p className="tg-text my-auto">
-                    Transmitting transaction
-                    <span className="loading loading-dots loading-xs my-auto"></span>
-                  </p>
-                )}
-
-                {paymentSteps.waitingConfirmation && (
-                  <p className="tg-text my-auto">
-                    Waiting for confirmation
-                    <span className="loading loading-dots loading-xs my-auto"></span>
-                  </p>
-                )}
-                {!paymentSteps.done && txHash && (
-                  <div className="mt-4 text-center">
-                    <p className="overflow-hidden whitespace-nowrap text-ellipsis">
-                      Transaction Hash:{" "}
-                      <span
-                        className="text-blue-500 underline cursor-pointer"
-                        onClick={async () => {
-                          await navigator.clipboard.writeText(txHash || "");
-                          addNotification({
-                            color: "success",
-                            message: "Tx hash copied to clipboard.",
-                          });
-                        }}
-                      >
-                        {txHash}
-                      </span>
-                    </p>
-                  </div>
-                )}
-                {paymentSteps.done && (
-                  <div className="mt-4 text-center">
-                    <div className="text-green-500 text-8xl">✔</div>
-                    <p className="mt-2">
-                      Payment of{" "}
-                      {paymentParams.amount.toDecimalPlaces(2).toString()}{" "}
-                      {paymentParams.token.name.toUpperCase()} completed.
-                    </p>
-                    <p className="overflow-hidden whitespace-nowrap text-ellipsis">
-                      Transaction Hash:{" "}
-                      <span
-                        className="text-blue-500 underline cursor-pointer"
-                        onClick={async () => {
-                          await navigator.clipboard.writeText(txHash || "");
-                          addNotification({
-                            color: "success",
-                            message: "Tx hash copied to clipboard.",
-                          });
-                        }}
-                      >
-                        {txHash}
-                      </span>
-                    </p>
-                  </div>
-                )}
-              </div>
+              {/* <PaymentStatus
+                transmitting={paymentSteps.transmitting}
+                waitingConfirmation={paymentSteps.waitingConfirmation}
+                done={paymentSteps.done}
+                txHash={txHash}
+              /> */}
             </div>
           ) : (
             <p className="text-center text-red-500">
               Insufficient balance for payment.
             </p>
           )}
-          {/* <div className="modal-action">
-          <button className="btn btn-secondary" onClick={onClose}>
-            Close
-          </button>
-        </div> */}
         </div>
-      </dialog>
+      </div>
+
+      {/* Review Confirmation */}
+      {showReviewElement && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="tg-bg-secondary p-6 rounded-lg shadow-lg w-full max-w-md">
+            {!paymentSteps.done &&
+              !paymentSteps.transmitting &&
+              !paymentSteps.waitingConfirmation && (
+                <>
+                  <div className="flex flex-col items-center justify-center tg-text">
+                    <p className="tg-text text-2xl font-bold">Review Payment</p>
+                    <div className="border-t-2 w-full tg-border-text-color my-4"></div>
+                    <p className="text-xs font-bold">Payment Amount</p>
+                    <p className="text-xl font-bold">
+                      {paymentParams.amount.toDecimalPlaces(2).toString()}{" "}
+                      <span className="opacity-35">
+                        {paymentParams.token.name.toLocaleUpperCase()}
+                      </span>
+                    </p>
+                    <div className="border-t-2 w-full tg-border-text-color my-4"></div>
+                    <p className="text-xs font-bold">Current Balance</p>
+                    <p className="text-xs">
+                      {balance
+                        ?.mul(10 ** -6)
+                        .toDecimalPlaces(2)
+                        .toString()}{" "}
+                      USDC
+                    </p>
+                  </div>
+                  <div className="flex flex-row justify-around mt-5">
+                    <button
+                      className="btn text-white btn-error btn-sm"
+                      onClick={() => setShowReviewElement(false)}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      className="btn text-white btn-success btn-sm"
+                      onClick={handleConfirmPayment}
+                      disabled={
+                        paymentSteps.transmitting ||
+                        paymentSteps.waitingConfirmation
+                      }
+                    >
+                      Confirm
+                    </button>
+                  </div>
+                </>
+              )}
+
+            {/* Payment Steps */}
+            <div className="mt-4">
+              <PaymentStatus
+                transmitting={paymentSteps.transmitting}
+                waitingConfirmation={paymentSteps.waitingConfirmation}
+                done={paymentSteps.done}
+                txHash={txHash}
+              />
+            </div>
+
+            {/* Close Button when Payment is Done */}
+            {paymentSteps.done && (
+              <div className="flex justify-center mt-5">
+                <button
+                  className="btn btn-sm btn-circle btn-ghost"
+                  onClick={() => {
+                    setShowReviewElement(false); // Close review confirmation
+                    onClose(); // Close the payment dialog
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
