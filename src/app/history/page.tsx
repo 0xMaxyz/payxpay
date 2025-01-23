@@ -471,10 +471,7 @@ export default function HPage() {
           );
         }
         // payer can Refund escrow
-        if (
-          inv.status === "Waiting Confirmation" &&
-          inv.out_type !== "direct"
-        ) {
+        if (inv.status === "Paid" && inv.out_type !== "direct") {
           buttons.push(
             <button
               disabled={executingAction}
