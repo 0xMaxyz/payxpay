@@ -12,7 +12,8 @@ import Link from "next/link";
 import { useAbstraxionAccount, useModal } from "@burnt-labs/abstraxion";
 import { getRates } from "@/utils/get-rates";
 import { PriceFeed } from "@pythnetwork/price-service-client";
-import PaymentDialog, { PaymentParams } from "../components/paymentDialog";
+import PaymentDialog from "../components/paymentDialog";
+import { PaymentParams } from "@/types/payment";
 
 const PayPage = () => {
   const { data: xionAccount } = useAbstraxionAccount();
@@ -514,12 +515,15 @@ const PayPage = () => {
                           <span className="loading loading-dots loading-xs my-auto"></span>
                         </p>
                       )}
+<<<<<<< HEAD
                       {/* <button
                         className="btn btn-primary"
                         onClick={() => setIsPaymentDialogVisible(true)}
                       >
                         Show Pay
                       </button> */}
+=======
+>>>>>>> origin/frontend
                     </div>
                   </>
                 )}
@@ -556,6 +560,7 @@ const PayPage = () => {
           <PaymentDialog
             paymentParams={paymentParams}
             onClose={() => setIsPaymentDialogVisible(false)}
+            isOpen={isPaymentDialogVisible}
           />
         </>
       )}
