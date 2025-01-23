@@ -581,7 +581,7 @@ export default function HPage() {
                 <>
                   <tr
                     key={inv.id}
-                    className="tg-bg-primary cursor-pointer hover:bg-base-200"
+                    className="tg-bg-primary cursor-pointer hover:tg-bg-secondary"
                     onClick={() => handleRowClick(inv.id)}
                   >
                     <td style={{ width: "0px", padding: "0px" }}>
@@ -613,7 +613,7 @@ export default function HPage() {
                   {expandedRow === inv.id && (
                     <tr className="tg-bg-primary">
                       <td className="p-1" colSpan={5}>
-                        <div className="p-1 bg-base-100">
+                        <div className="p-1">
                           <p>
                             <strong>Invoice Id:</strong> {inv.invoice_id}
                           </p>
