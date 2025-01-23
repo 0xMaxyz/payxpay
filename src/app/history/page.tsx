@@ -116,13 +116,8 @@ export default function HPage() {
   const { addNotification } = useNotification();
   const { userData, token } = useTelegramContext();
   const [invoices, setInvoices] = useState<InvoiceDtoWithMetadata[]>([]);
-  const [filteredInvoices, setfilteredInvoices] = useState<
-    InvoiceDtoWithMetadata[]
-  >([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<
-    "All Invoices" | "My Invoices" | "My Payments"
-  >("All Invoices");
+  const [filter, setFilter] = useState<"All" | "Invoices" | "Payments">("All");
   const [expandedRow, setExpandedRow] = useState<number | null>(null);
   const [page, setpage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
@@ -130,6 +125,8 @@ export default function HPage() {
   const [showRejection, setShowRejection] = useState(false);
   const [executingAction, setExecutingAction] = useState(false);
   const [rejectionReason, setrejectionReason] = useState("");
+  const [refresh, setRefresh] = useState(false);
+
   const limit = 10; // number of elements to query and show in each page
 
   // reset rejection div when row changes
@@ -139,40 +136,9 @@ export default function HPage() {
   }, [expandedRow]);
 
   useEffect(() => {
-    console.log("filter useeffect", userData);
-    let filtered: InvoiceDtoWithMetadata[] = [];
-    const tgUserId =
-      process.env.NEXT_PUBLIC_ENV === "development"
-        ? "6376040916"
-        : userData?.id;
-    if (tgUserId) {
-      if (filter === "All Invoices") {
-        filtered = invoices;
-      } else if (filter === "My Invoices") {
-        filtered = invoices.filter(
-          (x) => x.issuer_tg_id.toString() === tgUserId.toString()
-        );
-      } else if (filter === "My Payments") {
-        filtered = invoices.filter(
-          (x) =>
-            x.payer_tg_id && x.payer_tg_id.toString() === tgUserId.toString()
-        );
-      }
-      console.log("Filtered is:", filtered);
-      setfilteredInvoices(filtered);
-    }
-  }, [invoices, filter, userData]);
-
-  useEffect(() => {
     setTotalPages(Math.ceil(totalItems / limit));
   }, [totalItems]);
 
-  const handlePageChange = (newPage: number) => {
-    if (newPage >= 1 && newPage <= totalPages) {
-      setpage(newPage);
-    }
-  };
-  const [refresh, setRefresh] = useState(false);
   useEffect(() => {
     async function fetchData() {
       const tgUserId =
@@ -182,7 +148,7 @@ export default function HPage() {
       try {
         setLoading(true);
         const res = await fetch(
-          `/api/invoice/query-all?tgId=${tgUserId}&page=${page}&limit=${limit}`,
+          `/api/invoice/query-all?tgId=${tgUserId}&page=${page}&limit=${limit}&filter=${filter}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -210,10 +176,16 @@ export default function HPage() {
       }
     }
     fetchData();
-  }, [userData, token, addNotification, page, refresh]);
+  }, [userData, token, addNotification, page, refresh, filter]);
 
   const handleRowClick = (invoiceId: number) => {
     setExpandedRow(expandedRow === invoiceId ? null : invoiceId);
+  };
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setpage(newPage);
+    }
   };
 
   const rowColor = (inv: InvoiceDtoWithMetadata) => {
@@ -561,25 +533,25 @@ export default function HPage() {
           <div className="flex gap-2 flex-wrap">
             <button
               className={`btn ${
-                filter === "All Invoices" ? "btn-success" : "btn-ghost"
+                filter === "All" ? "btn-success" : "btn-ghost"
               }`}
-              onClick={() => setFilter("All Invoices")}
+              onClick={() => setFilter("All")}
             >
               All Invoices
             </button>
             <button
               className={`btn ${
-                filter === "My Invoices" ? "btn-success" : "btn-ghost"
+                filter === "Invoices" ? "btn-success" : "btn-ghost"
               }`}
-              onClick={() => setFilter("My Invoices")}
+              onClick={() => setFilter("Invoices")}
             >
               My Invoices
             </button>
             <button
               className={`btn ${
-                filter === "My Payments" ? "btn-success" : "btn-ghost"
+                filter === "Payments" ? "btn-success" : "btn-ghost"
               }`}
-              onClick={() => setFilter("My Payments")}
+              onClick={() => setFilter("Payments")}
             >
               All Payments
             </button>
@@ -595,13 +567,13 @@ export default function HPage() {
               </tr>
             </thead>
             <tbody>
-              {filteredInvoices.map((inv) => (
+              {invoices.map((inv) => (
                 <>
                   <tr
                     key={inv.id}
                     className={`${rowColor(
                       inv
-                    )} cursor-pointer hover:tg-bg-secondary`}
+                    )} cursor-pointer hover:bg-opacity-80`}
                     onClick={() => handleRowClick(inv.id)}
                   >
                     <td style={{ width: "0px", padding: "0px" }}>
@@ -757,7 +729,7 @@ export default function HPage() {
             </tbody>
           </table>
 
-          {filteredInvoices.length === 0 && (
+          {invoices.length === 0 && (
             <div className="flex flex-row">
               <p>
                 {`You don't have any invoice yet, try to create one in `}

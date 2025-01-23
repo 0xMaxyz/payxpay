@@ -15,13 +15,15 @@ export async function GET(req: NextRequest) {
     const tgId = url.searchParams.get("tgId");
     const page = url.searchParams.get("page");
     const limit = url.searchParams.get("limit");
-    if (!tgId || !page || !limit) {
+    const filter = url.searchParams.get("filter");
+    if (!tgId || !page || !limit || !filter) {
       throw new Error("Invalid params.");
     }
     const invoices = await getAllInvoicesForAUser(
       Number.parseInt(tgId),
       Number.parseInt(page),
-      Number.parseInt(limit)
+      Number.parseInt(limit),
+      filter as "All" | "Invoices" | "Payments"
     );
     return NextResponse.json({ invoices: invoices ?? [] }, { status: 200 });
   } catch (error) {

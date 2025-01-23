@@ -1,5 +1,5 @@
 import logger from "@/utils/logger";
-import { sql } from "@vercel/postgres";
+import { QueryResult, QueryResultRow, sql } from "@vercel/postgres";
 
 // Types
 type EscrowOut = "direct" | "approve" | "refund";
@@ -270,11 +270,14 @@ const getInvoicesCreatedByUser = async (
 export const getAllInvoicesForAUser = async (
   userTgId: number,
   page: number,
-  limit: number = 10
+  limit: number,
+  filter: "All" | "Invoices" | "Payments"
 ) => {
   const offset = (page - 1) * limit;
   try {
-    const res = await sql`
+    let res: QueryResult<QueryResultRow> | null = null;
+    if (filter === "All") {
+      res = await sql`
     WITH filtered_invoices AS (
     SELECT *
     FROM invoices
@@ -287,7 +290,38 @@ export const getAllInvoicesForAUser = async (
     ORDER BY created_at DESC
     LIMIT ${limit} OFFSET ${offset};
     `;
-    if (res.rowCount && res.rowCount > 0) {
+    } else if (filter === "Payments") {
+      res = await sql`
+      WITH filtered_invoices AS (
+      SELECT *
+      FROM invoices
+      WHERE  deleted = false AND payer_tg_id = ${userTgId}
+      )
+      SELECT 
+      *,
+      (SELECT COUNT(*) FROM filtered_invoices) AS total_items
+      FROM filtered_invoices
+      ORDER BY created_at DESC
+      LIMIT ${limit} OFFSET ${offset};
+      `;
+    } else if (filter === "Invoices") {
+      res = await sql`
+      WITH filtered_invoices AS (
+      SELECT *
+      FROM invoices
+      WHERE  deleted = false AND issuer_tg_id = ${userTgId}
+      )
+      SELECT 
+      *,
+      (SELECT COUNT(*) FROM filtered_invoices) AS total_items
+      FROM filtered_invoices
+      ORDER BY created_at DESC
+      LIMIT ${limit} OFFSET ${offset};
+      `;
+    }
+    console.log(res);
+
+    if (res && res.rowCount && res.rowCount > 0) {
       return res.rows;
     }
     return null;
