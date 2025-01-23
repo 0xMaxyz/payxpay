@@ -71,6 +71,7 @@ export const InvoiceInput = ({
         )}
         {clipboardAccess && (
           <button onClick={onPaste} className="btn btn-secondary flex-1">
+            <span className="material-symbols-outlined">content_paste</span>
             Paste from Clipboard
           </button>
         )}
