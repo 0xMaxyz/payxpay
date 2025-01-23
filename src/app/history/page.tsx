@@ -478,7 +478,10 @@ export default function HPage() {
           );
         }
         // payer can Refund escrow
-        if (inv.status === "Waiting Confirmation") {
+        if (
+          inv.status === "Waiting Confirmation" &&
+          inv.out_type !== "direct"
+        ) {
           buttons.push(
             <button
               disabled={executingAction}
@@ -578,7 +581,7 @@ export default function HPage() {
                 <>
                   <tr
                     key={inv.id}
-                    className="cursor-pointer hover:bg-base-200"
+                    className="tg-bg-primary cursor-pointer hover:bg-base-200"
                     onClick={() => handleRowClick(inv.id)}
                   >
                     <td style={{ width: "0px", padding: "0px" }}>
@@ -608,7 +611,7 @@ export default function HPage() {
                     <td>{inv.status}</td>
                   </tr>
                   {expandedRow === inv.id && (
-                    <tr>
+                    <tr className="tg-bg-primary">
                       <td className="p-1" colSpan={5}>
                         <div className="p-1 bg-base-100">
                           <p>
@@ -634,6 +637,12 @@ export default function HPage() {
                               <p>
                                 <strong>Paid at:</strong>{" "}
                                 {new Date(inv.create_tx_at).toLocaleString()}
+                              </p>
+                              <p>
+                                <strong>Payment Type:</strong>{" "}
+                                {inv.out_type === "direct"
+                                  ? "Direct"
+                                  : "Escrow"}
                               </p>
                             </>
                           )}
