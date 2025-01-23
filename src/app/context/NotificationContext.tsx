@@ -8,7 +8,7 @@ import React, {
   useState,
 } from "react";
 
-export type Notif = {
+type Notification = {
   id: string;
   color: "success" | "error" | "warning" | "info";
   message: string;
@@ -16,19 +16,19 @@ export type Notif = {
   children?: ReactNode;
 };
 type NotificationContextType = {
-  addNotification: (notification: Omit<Notif, "id">) => void;
+  addNotification: (notification: Omit<Notification, "id">) => void;
   removeNotification: (id: string) => void;
 };
 const NotificationContext = createContext<NotificationContextType | undefined>(
   undefined
 );
 export const NotificationProvider = ({ children }: { children: ReactNode }) => {
-  const [notifications, setNotifications] = useState<Notif[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const removeNotification = useCallback((id: string) => {
     setNotifications((prev) => prev.filter((n) => n.id !== id));
   }, []);
   const addNotification = useCallback(
-    (notification: Omit<Notif, "id">) => {
+    (notification: Omit<Notification, "id">) => {
       const id = crypto.randomUUID();
       setNotifications((prev) => [...prev, { ...notification, id }]);
       setTimeout(() => removeNotification(id), notification.duration ?? 5000);
