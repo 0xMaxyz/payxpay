@@ -66,6 +66,7 @@ export const InvoiceInput = ({
       <div className="flex gap-4 mt-4">
         {(platform === "android" || platform === "ios") && (
           <button onClick={onScan} className="btn btn-primary flex-1">
+            <span className="material-symbols-outlined">qr_code_scanner</span>
             Scan QR Code
           </button>
         )}
