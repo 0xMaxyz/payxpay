@@ -216,6 +216,24 @@ export default function HPage() {
     setExpandedRow(expandedRow === invoiceId ? null : invoiceId);
   };
 
+  const rowColor = (inv: InvoiceDtoWithMetadata) => {
+    switch (inv.status) {
+      case "Escrow Approved":
+        return "bg-green-500";
+      case "Escrow Refunded":
+      case "Escrow Rejected":
+      case "Payment Not Confirmed":
+      case "Payment Rejected":
+        return "bg-red-500";
+      case "Paid":
+      case "Payment Confirmed":
+      case "Waiting Confirmation":
+        return "bg-yellow-500";
+      default:
+        return "tg-bg-primary";
+    }
+  };
+
   const renderPagination = () => {
     const pages = [];
     const ellipsisThreshold = 1;
@@ -568,7 +586,7 @@ export default function HPage() {
           </div>
           <table className="table w-full">
             <thead>
-              <tr>
+              <tr className="tg-text">
                 <th></th>
                 <th>Invoice Id</th>
                 <th>Created at</th>
@@ -581,7 +599,9 @@ export default function HPage() {
                 <>
                   <tr
                     key={inv.id}
-                    className="tg-bg-primary cursor-pointer hover:tg-bg-secondary"
+                    className={`${rowColor(
+                      inv
+                    )} cursor-pointer hover:tg-bg-secondary`}
                     onClick={() => handleRowClick(inv.id)}
                   >
                     <td style={{ width: "0px", padding: "0px" }}>
