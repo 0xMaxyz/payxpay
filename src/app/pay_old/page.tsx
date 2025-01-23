@@ -12,14 +12,21 @@ import Link from "next/link";
 import { useAbstraxionAccount, useModal } from "@burnt-labs/abstraxion";
 import { getRates } from "@/utils/get-rates";
 import { PriceFeed } from "@pythnetwork/price-service-client";
-import PaymentDialog, { PaymentParams } from "../components/paymentDialog";
+import PaymentDialog from "../components/paymentDialog";
+import { PaymentParams } from "@/types/payment";
 
 const PayPage = () => {
   const { data: xionAccount } = useAbstraxionAccount();
   const [isModalOpen, setModalOpen] = useModal();
   const changeModalState = () => setModalOpen(!isModalOpen);
   const { addNotification } = useNotification();
-  const { scanQrCode, mainButton, token: jwtToken } = useTelegramContext();
+  const paymentRef = useRef<HTMLDivElement>(null);
+  const {
+    scanQrCode,
+    mainButton,
+    platform,
+    token: jwtToken,
+  } = useTelegramContext();
   const searchParams = useSearchParams();
   const [signedInvoice, setSignedInvoice] = useState<SignedInvoice | null>(
     null
@@ -508,12 +515,6 @@ const PayPage = () => {
                           <span className="loading loading-dots loading-xs my-auto"></span>
                         </p>
                       )}
-                      <button
-                        className="btn btn-primary"
-                        onClick={() => setIsPaymentDialogVisible(true)}
-                      >
-                        Show Pay
-                      </button>
                     </div>
                   </>
                 )}
@@ -536,33 +537,21 @@ const PayPage = () => {
           </div>
         )}
 
-  return (
-    <div className="relative w-full p-4">
-      <h1 className="text-xl font-bold mb-4">Pay</h1>
-      <InvoiceInput
-        onScan={onScan}
-        onPaste={onPaste}
-        platform="android" // or "ios" or null
-        jwtToken={jwtToken}
-        addNotification={addNotification}
-        setSignedInvoice={setInvoice}
-        setIsReceivedInvoicePaid={setIsReceivedInvoicePaid}
-      />
-      {loading && <LoadingSpinner />}
-      {invoice && (
-        <InvoiceDetails
-          invoice={invoice}
-          latestPrice={latestPrice}
-          paymentType={paymentType}
-          onPaymentTypeChange={setPaymentType}
-          onPay={() => setIsPaymentDialogVisible(true)}
-        />
-      )}
+        {/* Loading/Errors */}
+        {loading && (
+          <p className="text-blue-500 text-center">
+            Loading Invoice{" "}
+            <span className="loading loading-dots loading-lg"></span>
+          </p>
+        )}
+        {error && <p className="text-red-500 text-center">{error}</p>}
+      </div>
       {isPaymentDialogVisible && paymentParams && (
         <>
           <PaymentDialog
             paymentParams={paymentParams}
             onClose={() => setIsPaymentDialogVisible(false)}
+            isOpen={isPaymentDialogVisible}
           />
         </>
       )}
