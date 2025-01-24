@@ -18,12 +18,23 @@ import {
 const PayPage = () => {
   const { data: xionAccount } = useAbstraxionAccount();
   const { addNotification } = useNotification();
-  const { scanQrCode, mainButton, token: jwtToken } = useTelegramContext();
+  const {
+    scanQrCode,
+    mainButton,
+    token: jwtToken,
+    platform: tgPlatform,
+  } = useTelegramContext();
   const searchParams = useSearchParams();
   const invoiceId = searchParams.get("invoice");
 
-  const { invoice, loading, setInvoice, setIsReceivedInvoicePaid, setLoading } =
-    useInvoiceData(invoiceId, jwtToken);
+  const {
+    invoice,
+    loading,
+    setInvoice,
+    setIsReceivedInvoicePaid,
+    setLoading,
+    isReceivedInvoicePaid,
+  } = useInvoiceData(invoiceId, jwtToken);
   const { paymentParams, latestPrice } = usePaymentParams(invoice);
   const [paymentType, setPaymentType] = useState<"direct" | "escrow">("direct");
   const [isPaymentDialogVisible, setIsPaymentDialogVisible] = useState(false);
@@ -80,14 +91,14 @@ const PayPage = () => {
       <InvoiceInput
         onScan={onScan}
         onPaste={onPaste}
-        platform="android" // or "ios" or null
+        platform={tgPlatform}
         jwtToken={jwtToken}
         addNotification={addNotification}
         setSignedInvoice={setInvoice}
         setIsReceivedInvoicePaid={setIsReceivedInvoicePaid}
       />
       {loading && <LoadingSpinner />}
-      {invoice && (
+      {invoice && !isReceivedInvoicePaid?.isPaid && (
         <InvoiceDetails
           invoice={invoice}
           latestPrice={latestPrice}
@@ -95,6 +106,29 @@ const PayPage = () => {
           onPaymentTypeChange={setPaymentType}
           onPay={() => setIsPaymentDialogVisible(true)}
         />
+      )}
+      {isReceivedInvoicePaid?.isPaid && (
+        <div className="mt-4 text-center">
+          <div className="text-green-500 text-8xl">✔</div>
+          <p className="mt-2">Payment is Done.</p>
+          <p className="overflow-hidden whitespace-nowrap text-ellipsis">
+            Transaction Hash:{" "}
+            <span
+              className="text-blue-500 underline cursor-pointer"
+              onClick={async () => {
+                await navigator.clipboard.writeText(
+                  isReceivedInvoicePaid.create_tx || ""
+                );
+                addNotification({
+                  color: "success",
+                  message: "Tx hash copied to clipboard.",
+                });
+              }}
+            >
+              {isReceivedInvoicePaid.create_tx}
+            </span>
+          </p>
+        </div>
       )}
       {isPaymentDialogVisible && paymentParams && (
         <PaymentDialog
