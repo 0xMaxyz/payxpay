@@ -30,19 +30,19 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = ({
       {done && txHash && (
         <div className="flex flex-col w-full items-center justify-center">
           <div className="text-green-500 text-8xl">✔</div>
-          <p className="tg-text font-bold">Payment completed</p>
+          <p className="tg-text font-bold my-8">Payment completed</p>
           <p className="tg-text overflow-hidden whitespace-nowrap text-ellipsis max-w-full">
             Transaction Hash:{" "}
             <span
               onClick={async () => {
                 await navigator.clipboard.writeText(txHash || "");
               }}
-              className="material-symbols-outlined cursor-pointer hover:text-blue-500"
+              className="material-symbols-outlined cursor-pointer text-sm mx-2 hover:text-blue-500"
             >
               content_copy
             </span>{" "}
             <span
-              className="inline-block overflow-hidden whitespace-nowrap text-ellipsis max-w-[80%]"
+              className="overflow-hidden whitespace-nowrap text-ellipsis max-w-[80%] text-sm"
               title={txHash}
             >
               {txHash}

@@ -155,7 +155,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
       {/* Review Confirmation */}
       {showReviewElement && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="tg-bg-secondary p-6 rounded-lg shadow-lg w-full max-w-md">
+          <div className="relative tg-bg-secondary p-6 rounded-lg shadow-lg w-full max-w-md">
             {!paymentSteps.done &&
               !paymentSteps.transmitting &&
               !paymentSteps.waitingConfirmation && (
@@ -215,7 +215,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
             {paymentSteps.done && (
               <div className="flex justify-center mt-5">
                 <button
-                  className="btn btn-sm btn-circle btn-ghost"
+                  className="absolute right-2 top-2 btn btn-sm btn-circle btn-ghost"
                   onClick={() => {
                     setShowReviewElement(false); // Close review confirmation
                     onClose(); // Close the payment dialog
