@@ -9,12 +9,17 @@ import QrCode from "qrcode";
 import Image from "next/image";
 import { fromBech32 } from "@cosmjs/encoding";
 import { useNotification } from "./context/NotificationContext";
+import { IBC_CHANNELS, TOKENS } from "./consts";
+import { fetchDenomMetadata } from "./xion/lib";
 
 const WalletPage = () => {
   const activityDialogRef = useRef<HTMLDivElement>(null);
   const { addNotification } = useNotification();
   const [createdQrCode, setCreatedQrCode] = useState("");
-  const [selectedToken, setselectedToken] = useState<"XION" | "USDC">("XION");
+  const [selectedToken, setselectedToken] = useState<{
+    name: string;
+    denom: string;
+  }>(TOKENS[0]);
   const [amount, setamount] = useState("0");
   const [receiverAddress, setreceiverAddress] = useState("");
   const [receiverAddressError, setreceiverAddressError] = useState(true);
@@ -280,7 +285,7 @@ const WalletPage = () => {
 
   const handleMax = () => {
     const max =
-      selectedToken === "USDC"
+      selectedToken.name === "USDC"
         ? new Decimal(usdcBalance?.amount ?? 0).div(10 ** 6).toString()
         : new Decimal(xionBalance?.amount ?? 0).div(10 ** 6).toString();
     setamount(max);
@@ -322,6 +327,7 @@ const WalletPage = () => {
     setmemo("");
     setTransferring(false);
     setsentTxHash(null);
+    setchannelError("");
   };
   const [isReviewVisible, setisReviewVisible] = useState(false);
   const [showReviewElement, setshowReviewElement] = useState(false);
@@ -348,10 +354,7 @@ const WalletPage = () => {
           [
             {
               amount: new Decimal(amount).mul(10 ** 6).toString(),
-              denom:
-                selectedToken === "XION"
-                  ? "uxion"
-                  : "ibc/57097251ED81A232CE3C9D899E7C8096D6D87EF84BA203E12E424AA4C9B57A64",
+              denom: selectedToken.denom,
             },
           ],
           receiverAddress,
@@ -382,10 +385,7 @@ const WalletPage = () => {
           selectedChannel,
           {
             amount: new Decimal(amount).mul(10 ** 6).toString(),
-            denom:
-              selectedToken === "XION"
-                ? "uxion"
-                : "ibc/57097251ED81A232CE3C9D899E7C8096D6D87EF84BA203E12E424AA4C9B57A64",
+            denom: selectedToken.denom,
           },
           receiverAddress,
           memo
@@ -412,7 +412,36 @@ const WalletPage = () => {
     setTransferring(false);
   };
 
-  const [selectedChannel, setSelectedChannel] = useState("channel-489");
+  const [selectedChannel, setSelectedChannel] = useState(
+    IBC_CHANNELS[0].channel
+  );
+
+  const chainPrefix = () =>
+    IBC_CHANNELS.filter((ibc) => ibc.channel === selectedChannel)[0].prefix;
+
+  const [channelError, setchannelError] = useState("");
+
+  useEffect(() => {
+    const checkDenom = async () => {
+      if (
+        selectedChannel &&
+        selectedToken &&
+        selectedToken.denom.startsWith("ibc/")
+      ) {
+        const metadata = await fetchDenomMetadata(selectedToken.denom);
+        if (metadata && metadata.channel !== selectedChannel) {
+          setchannelError(
+            `Please be advised that the ${selectedToken.name} is transferred from ${metadata.channel} channel`
+          );
+        } else {
+          setchannelError("");
+        }
+      } else {
+        setchannelError("");
+      }
+    };
+    checkDenom();
+  }, [selectedChannel, selectedToken]);
 
   return (
     <>
@@ -578,9 +607,11 @@ const WalletPage = () => {
               </div>
               <select
                 className="select select-bordered select-sm tg-input"
-                value={selectedToken}
+                value={selectedToken.name}
                 onChange={(e) =>
-                  setselectedToken(e.target.value as "XION" | "USDC")
+                  setselectedToken(
+                    TOKENS.filter((t) => t.name === e.target.value)[0]
+                  )
                 }
               >
                 <option value="XION">XION</option>
@@ -591,7 +622,7 @@ const WalletPage = () => {
             <label className="w-full mb-2">
               <div className="label">
                 <span className="label-text">Amount</span>
-                {selectedToken === "USDC" ? (
+                {selectedToken.name === "USDC" ? (
                   <span className="label-text text-xs ">
                     {new Decimal(usdcBalance?.amount ?? 0)
                       .div(10 ** 6)
@@ -611,7 +642,7 @@ const WalletPage = () => {
                 className={`input input-bordered input-sm flex items-center gap-2 tg-input
                 ${
                   new Decimal(amount).lessThanOrEqualTo(
-                    selectedToken === "USDC"
+                    selectedToken.name === "USDC"
                       ? new Decimal(usdcBalance?.amount ?? 0).div(10 ** 6)
                       : new Decimal(xionBalance?.amount ?? 0).div(10 ** 6)
                   )
@@ -668,7 +699,7 @@ const WalletPage = () => {
               disabled={
                 transferring ||
                 new Decimal(amount).greaterThan(
-                  selectedToken === "USDC"
+                  selectedToken.name === "USDC"
                     ? new Decimal(usdcBalance?.amount ?? 0).div(10 ** 6)
                     : new Decimal(xionBalance?.amount ?? 0).div(10 ** 6)
                 ) ||
@@ -710,7 +741,7 @@ const WalletPage = () => {
                 <p className="text-xs font-bold">Transfer Amount</p>
                 <p className="text-xl font-bold">
                   {Number.parseFloat(amount)}{" "}
-                  <span className="opacity-35">{selectedToken}</span>
+                  <span className="opacity-35">{selectedToken.name}</span>
                 </p>
                 <div className="border-t-2 w-full tg-border-text-color my-4"></div>
 
@@ -788,6 +819,16 @@ const WalletPage = () => {
           <div className="flex  flex-col justify-center items-center">
             <p className="tg-text text-xl font-bold mb-4">IBC Transfer</p>
 
+            {channelError && (
+              <div
+                role="alert"
+                className="alert alert-warning text-white p-2 mb-2"
+              >
+                <span className="material-symbols-outlined">warning</span>
+                <span>{channelError}</span>
+              </div>
+            )}
+
             <label className="form-control w-full mb-2">
               <div className="label">
                 <span className="label-text">Token</span>
@@ -797,7 +838,11 @@ const WalletPage = () => {
                 value={selectedChannel}
                 onChange={(e) => setSelectedChannel(e.target.value)}
               >
-                <option value="channel-489">noble-grand-1</option>
+                {IBC_CHANNELS.map((ibc, index) => (
+                  <option key={index} value={ibc.channel}>
+                    {ibc.chain}
+                  </option>
+                ))}
               </select>
             </label>
 
@@ -807,9 +852,11 @@ const WalletPage = () => {
               </div>
               <select
                 className="select select-bordered select-sm tg-input"
-                value={selectedToken}
+                value={selectedToken.name}
                 onChange={(e) =>
-                  setselectedToken(e.target.value as "XION" | "USDC")
+                  setselectedToken(
+                    TOKENS.filter((t) => t.name === e.target.value)[0]
+                  )
                 }
               >
                 <option value="XION">XION</option>
@@ -820,7 +867,7 @@ const WalletPage = () => {
             <label className="w-full mb-2">
               <div className="label">
                 <span className="label-text">Amount</span>
-                {selectedToken === "USDC" ? (
+                {selectedToken.name === "USDC" ? (
                   <span className="label-text text-xs ">
                     {new Decimal(usdcBalance?.amount ?? 0)
                       .div(10 ** 6)
@@ -840,7 +887,7 @@ const WalletPage = () => {
                 className={`input input-bordered input-sm flex items-center gap-2 tg-input
                 ${
                   new Decimal(amount).lessThanOrEqualTo(
-                    selectedToken === "USDC"
+                    selectedToken.name === "USDC"
                       ? new Decimal(usdcBalance?.amount ?? 0).div(10 ** 6)
                       : new Decimal(xionBalance?.amount ?? 0).div(10 ** 6)
                   )
@@ -868,13 +915,13 @@ const WalletPage = () => {
               </div>
               <input
                 type="text"
-                placeholder="noble..."
+                placeholder={chainPrefix() + "..."}
                 className={`input input-bordered input-sm w-full tg-input
                   ${
                     receiverAddressError ? "border-red-500" : "border-green-500"
                   }`}
                 value={receiverAddress}
-                onChange={(e) => handleAddressChange(e, "noble")}
+                onChange={(e) => handleAddressChange(e, chainPrefix())}
               />
             </label>
 
@@ -897,7 +944,7 @@ const WalletPage = () => {
               disabled={
                 transferring ||
                 new Decimal(amount).greaterThan(
-                  selectedToken === "USDC"
+                  selectedToken.name === "USDC"
                     ? new Decimal(usdcBalance?.amount ?? 0).div(10 ** 6)
                     : new Decimal(xionBalance?.amount ?? 0).div(10 ** 6)
                 ) ||
@@ -941,7 +988,16 @@ const WalletPage = () => {
                 <p className="text-xs font-bold">Transfer Amount</p>
                 <p className="text-xl font-bold">
                   {Number.parseFloat(amount)}{" "}
-                  <span className="opacity-35">{selectedToken}</span>
+                  <span className="opacity-35">{selectedToken.name}</span>
+                </p>
+                <div className="border-t-2 w-full tg-border-text-color my-4"></div>
+                <p className="text-xs font-bold">Channel</p>
+                <p className="text-xl font-bold">
+                  {selectedChannel}{" "}
+                  {` (${
+                    IBC_CHANNELS.filter((c) => c.channel === selectedChannel)[0]
+                      .chain
+                  })`}
                 </p>
                 <div className="border-t-2 w-full tg-border-text-color my-4"></div>
 
@@ -1067,7 +1123,7 @@ const WalletPage = () => {
             <div className="space-y-4">
               {transactions.map((tx, index) => (
                 <details
-                  key={tx.hash || index}
+                  key={`${tx.hash}-${tx.height}-${index}`}
                   className="tg-bg-secondary border border-gray-300 p-4 rounded-lg shadow-md cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-gray-400"
                 >
                   <summary className="flex items-center justify-between">

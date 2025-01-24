@@ -1,4 +1,3 @@
-import { env } from "process";
 import {
   AccountData,
   Coin,
@@ -12,8 +11,11 @@ import {
 } from "@cosmjs/cosmwasm-stargate";
 import { StdFee } from "@cosmjs/amino";
 
-const privateKeyHex = env.ARBITER_PK!;
-const nodeRpc = env.NEXT_PUBLIC_XION_RPC!;
+import { QueryClient, setupBankExtension } from "@cosmjs/stargate";
+import { Tendermint34Client } from "@cosmjs/tendermint-rpc";
+
+const privateKeyHex = process.env.ARBITER_PK!;
+const nodeRpc = process.env.NEXT_PUBLIC_XION_RPC!;
 
 const getWallet = async (): Promise<DirectSecp256k1Wallet> => {
   const wallet = await DirectSecp256k1Wallet.fromKey(
@@ -216,5 +218,29 @@ export const refundEscrow = async (id: string) => {
     return res;
   } catch (error) {
     console.log(error);
+  }
+};
+
+export const fetchDenomMetadata = async (denom: string) => {
+  try {
+    console.log(nodeRpc);
+    // Create a Tendermint client
+    const tendermintClient = await Tendermint34Client.connect(nodeRpc);
+
+    // Create a QueryClient
+    const queryClient = QueryClient.withExtensions(
+      tendermintClient,
+      setupBankExtension
+    );
+
+    // Query the denom metadata
+    const metadata = await queryClient.bank.denomMetadata(denom);
+    console.log("Denom Metadata:", {
+      metadata: metadata,
+      channel: metadata?.name.split("/")[1],
+    });
+    return { metadata: metadata, channel: metadata?.name.split("/")[1] };
+  } catch (error) {
+    console.error("Error fetching denom metadata:", error);
   }
 };

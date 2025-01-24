@@ -47,4 +47,34 @@ export const CURRENCIES: Array<Currency> = [
   },
 ];
 
-export const JWT_VALIDITY_DURATION = 15; // minutes
+export const JWT_VALIDITY_DURATION = 30; // minutes
+
+export const IBC_CHANNELS = [
+  {
+    chain: "grand-1",
+    channel: "channel-489",
+    counerparty: "channel-147",
+    prefix: "noble",
+  },
+  {
+    chain: "osmo-test-5",
+    channel: "channel-490",
+    counerparty: "channel-6668",
+    prefix: "osmo",
+  },
+  {
+    chain: "axelar-testnet-lisbon-3",
+    channel: "channel-225057",
+    counerparty: "channel-521",
+    prefix: "axelar",
+  },
+];
+
+export const TOKENS = [
+  { name: "XION", denom: "uxion" },
+  {
+    name: "USDC",
+    denom:
+      "ibc/57097251ED81A232CE3C9D899E7C8096D6D87EF84BA203E12E424AA4C9B57A64",
+  },
+];
