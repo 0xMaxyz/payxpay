@@ -62,7 +62,10 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
     <div className="relative w-full">
       {/* Backdrop */}
       {isOpen && (
-        <div className="fixed inset-0 tg-bg-secondary-5 bg-opacity-50 backdrop-blur-sm"></div>
+        <div
+          className="fixed inset-0 tg-bg-secondary-5 bg-opacity-50 backdrop-blur-sm"
+          style={{ opacity: 0.7 }}
+        ></div>
       )}
 
       {/* Modal */}

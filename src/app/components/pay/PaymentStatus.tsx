@@ -27,7 +27,23 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = ({
           <span className="loading loading-spinner loading-sm"></span>
         </p>
       )}
-      {done && txHash && <p>Payment completed. Transaction Hash: {txHash}</p>}
+      {done && txHash && (
+        <div className="flex flex-col w-full items-center justify-center">
+          <p className="tg-text font-bold">Payment completed</p>
+          <p className="tg-text overflow-hidden whitespace-nowrap text-ellipsis">
+            Transaction Hash:
+            <span
+              onClick={async () => {
+                await navigator.clipboard.writeText(txHash || "");
+              }}
+              className="material-symbols-outlined"
+            >
+              content_copy
+            </span>{" "}
+            {txHash}
+          </p>
+        </div>
+      )}
     </div>
   );
 };
