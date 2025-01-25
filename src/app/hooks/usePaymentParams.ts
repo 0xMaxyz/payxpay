@@ -11,6 +11,7 @@ export const usePaymentParams = (invoice: SignedInvoice | null) => {
   const [paymentParams, setPaymentParams] = useState<
     PaymentParams | undefined
   >();
+  const [paymentType, setPaymentType] = useState<"direct" | "escrow">("direct");
 
   useEffect(() => {
     const fetchRates = async () => {
@@ -32,7 +33,7 @@ export const usePaymentParams = (invoice: SignedInvoice | null) => {
             setPaymentParams({
               amount,
               invoice,
-              paymentType: "direct",
+              paymentType: paymentType,
               token: {
                 amount: amount
                   .mul(10 ** 6)
@@ -49,7 +50,7 @@ export const usePaymentParams = (invoice: SignedInvoice | null) => {
     };
 
     fetchRates();
-  }, [invoice]);
+  }, [invoice, paymentType]);
 
-  return { paymentParams, latestPrice };
+  return { paymentParams, latestPrice, setPaymentType, paymentType };
 };

@@ -35,8 +35,8 @@ const PayPage = () => {
     setLoading,
     isReceivedInvoicePaid,
   } = useInvoiceData(invoiceId, jwtToken);
-  const { paymentParams, latestPrice } = usePaymentParams(invoice);
-  const [paymentType, setPaymentType] = useState<"direct" | "escrow">("direct");
+  const { paymentParams, latestPrice, paymentType, setPaymentType } =
+    usePaymentParams(invoice);
   const [isPaymentDialogVisible, setIsPaymentDialogVisible] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isModalOpen, setModalOpen] = useModal();
