@@ -1,4 +1,10 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, {
+  Dispatch,
+  SetStateAction,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { useTelegramContext } from "../context/TelegramContext";
 import { PaymentParams } from "@/types/payment";
 import { useBalanceCheck } from "../hooks/useBalanceCheck";
@@ -9,12 +15,18 @@ interface PaymentDialogProps {
   paymentParams: PaymentParams;
   isOpen: boolean;
   onClose: () => void;
+  setIsPaid?: Dispatch<
+    SetStateAction<
+      { isPaid: boolean; create_tx: string; out_tx: string } | undefined
+    >
+  >;
 }
 
 const PaymentDialog: React.FC<PaymentDialogProps> = ({
   paymentParams,
   isOpen,
   onClose,
+  setIsPaid,
 }) => {
   const { mainButton } = useTelegramContext();
   const { loading, balance, isBalanceSufficient } = useBalanceCheck(
@@ -31,6 +43,12 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
   } = usePayment(paymentParams);
   const modalRef = useRef<HTMLDivElement>(null);
   const [showReviewElement, setShowReviewElement] = useState(false); // State for review confirmation
+
+  useEffect(() => {
+    if (txHash && !txFailed && paymentSteps.done) {
+      setIsPaid?.({ isPaid: true, create_tx: txHash, out_tx: "" });
+    }
+  }, [txHash, txFailed, paymentSteps, setIsPaid]);
 
   useEffect(() => {
     mainButton?.disableMainButton();

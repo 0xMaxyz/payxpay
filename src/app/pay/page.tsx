@@ -134,7 +134,10 @@ const PayPage = () => {
         <PaymentDialog
           paymentParams={paymentParams}
           isOpen={isPaymentDialogVisible}
-          onClose={() => setIsPaymentDialogVisible(false)}
+          onClose={() => {
+            setIsPaymentDialogVisible(false);
+          }}
+          setIsPaid={setIsReceivedInvoicePaid}
         />
       )}
     </div>
