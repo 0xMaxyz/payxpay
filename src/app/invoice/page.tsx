@@ -419,14 +419,12 @@ const CreateInvoicePage = () => {
             </button>
           </form>
           <div className="flex flex-col items-center justify-center p-4">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-20 h-20"
-              viewBox="0 -960 960 960"
-              fill="green"
+            <span
+              className="material-symbols-outlined text-green-500"
+              style={{ fontSize: "4rem", fontWeight: "bolder" }}
             >
-              <path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z" />
-            </svg>
+              check
+            </span>
             <h3 className="font-bold text-lg tg-text">
               Invoice has been created successfully. You can share it.
             </h3>
@@ -444,49 +442,26 @@ const CreateInvoicePage = () => {
           </div>
           <div className="flex flex-row justify-between items-center p-3">
             <button
-              className="btn btn-primary btn-sm"
+              className="btn btn-primary btn-sm text-white"
               onClick={handleCopyToClipboard}
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="white"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                role="img"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="0.1"
-                  className="svg-fill"
-                  d="M19 2h-4.18C14.4.84 13.3 0 12 0c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm7 18H5V4h2v3h10V4h2v16z"
-                ></path>
-              </svg>
+              <span className="material-symbols-outlined">content_copy</span>
               Copy
             </button>
             {navigator.share !== undefined && (
-              <button className="btn btn-primary btn-sm" onClick={handleShare}>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6"
-                  viewBox="0 -960 960 960"
-                  fill="white"
-                >
-                  <path d="M680-80q-50 0-85-35t-35-85q0-6 3-28L282-392q-16 15-37 23.5t-45 8.5q-50 0-85-35t-35-85q0-50 35-85t85-35q24 0 45 8.5t37 23.5l281-164q-2-7-2.5-13.5T560-760q0-50 35-85t85-35q50 0 85 35t35 85q0 50-35 85t-85 35q-24 0-45-8.5T598-672L317-508q2 7 2.5 13.5t.5 14.5q0 8-.5 14.5T317-452l281 164q16-15 37-23.5t45-8.5q50 0 85 35t35 85q0 50-35 85t-85 35Zm0-80q17 0 28.5-11.5T720-200q0-17-11.5-28.5T680-240q-17 0-28.5 11.5T640-200q0 17 11.5 28.5T680-160ZM200-440q17 0 28.5-11.5T240-480q0-17-11.5-28.5T200-520q-17 0-28.5 11.5T160-480q0 17 11.5 28.5T200-440Zm480-280q17 0 28.5-11.5T720-760q0-17-11.5-28.5T680-800q-17 0-28.5 11.5T640-760q0 17 11.5 28.5T680-720Zm0 520ZM200-480Zm480-280Z" />
-                </svg>
+              <button
+                className="btn btn-primary btn-sm text-white"
+                onClick={handleShare}
+              >
+                <span className="material-symbols-outlined">share</span>
                 Share
               </button>
             )}
-            <button className="btn btn-primary btn-sm" onClick={handleTgShare}>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                viewBox="0 -960 960 960"
-                fill="white"
-              >
-                <path d="M120-160v-640l760 320-760 320Zm80-120 474-200-474-200v140l240 60-240 60v140Zm0 0v-400 400Z" />
-              </svg>
+            <button
+              className="btn btn-primary btn-sm text-white"
+              onClick={handleTgShare}
+            >
+              <span className="material-symbols-outlined">send</span>
               Telegram
             </button>
           </div>
