@@ -215,6 +215,8 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
               />
             </div>
 
+            <p className="invisible">{`paymentSteps.done is: ${paymentSteps.done}`}</p>
+
             {/* Close Button when Payment is Done */}
             {paymentSteps.done ||
               (txFailed && (
