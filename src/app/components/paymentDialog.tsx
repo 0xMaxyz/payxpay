@@ -215,24 +215,21 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
               />
             </div>
 
-            <p className="invisible">{`paymentSteps.done is: ${paymentSteps.done}`}</p>
-
             {/* Close Button when Payment is Done */}
-            {paymentSteps.done ||
-              (txFailed && (
-                <div className="flex justify-center mt-5">
-                  <button
-                    className="absolute right-2 top-2 btn btn-sm btn-circle btn-ghost"
-                    onClick={() => {
-                      setShowReviewElement(false); // Close review confirmation
-                      resetFailure(); // reset txfail state and txfail error
-                      onClose(); // Close the payment dialog
-                    }}
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
+            {(paymentSteps.done || txFailed) && (
+              <div className="flex justify-center mt-5">
+                <button
+                  className="absolute right-2 top-2 btn btn-sm btn-circle btn-ghost"
+                  onClick={() => {
+                    setShowReviewElement(false); // Close review confirmation
+                    resetFailure(); // reset txfail state and txfail error
+                    onClose(); // Close the payment dialog
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
