@@ -329,12 +329,12 @@ const WalletPage = () => {
     setsentTxHash(null);
     setchannelError("");
     setTxFailed(false);
-    setTxFaileReason("");
+    setTxFailReason("");
   };
   const [isReviewVisible, setisReviewVisible] = useState(false);
   const [showReviewElement, setshowReviewElement] = useState(false);
   const [txFailed, setTxFailed] = useState(false);
-  const [txFaileReason, setTxFaileReason] = useState("");
+  const [txFailReason, setTxFailReason] = useState("");
 
   useEffect(() => {
     if (showReviewElement) {
@@ -346,6 +346,14 @@ const WalletPage = () => {
       return () => {
         clearTimeout(timeout);
       };
+    }
+  }, [showReviewElement]);
+
+  // reset fail reason after closing the review element
+  useEffect(() => {
+    if (!showReviewElement) {
+      setTxFailReason("");
+      setTxFailed(false);
     }
   }, [showReviewElement]);
 
@@ -368,7 +376,7 @@ const WalletPage = () => {
           setsentTxHash(tx.transactionHash);
         }
         setTxFailed(tx?.code !== 0);
-        setTxFaileReason(tx?.rawLog ?? "");
+        setTxFailReason(tx?.rawLog ?? "");
       } catch (error) {
         console.error("Error transferring funds", error);
         addNotification({
@@ -402,7 +410,7 @@ const WalletPage = () => {
         }
 
         setTxFailed(tx?.code !== 0);
-        setTxFaileReason(tx?.rawLog ?? "");
+        setTxFailReason(tx?.rawLog ?? "");
       } catch (error) {
         console.error("Error transferring funds", error);
         addNotification({
@@ -729,9 +737,15 @@ const WalletPage = () => {
             <div className="absolute inset-0 tg-bg-secondary-5 bg-opacity-50 backdrop-blur-sm"></div>
             <div className="relative tg-bg-secondary p-6 rounded-lg shadow-lg w-full">
               <div className="flex flex-col items-center justify-center tg-text">
-                {!sentTxHash ? (
-                  <p className="tg-text text-2xl font-bold">Review Transfer</p>
-                ) : (
+                {/* REVIEW HEADING */}
+                {!sentTxHash && (
+                  <p className="tg-text text-2xl font-bold">
+                    Review IBC Transfer
+                  </p>
+                )}
+
+                {/* TX NOT FAILED */}
+                {sentTxHash && !txFailed && (
                   <div className="flex flex-col items-center justify-center">
                     <span
                       className="material-symbols-outlined"
@@ -744,6 +758,25 @@ const WalletPage = () => {
                       check
                     </span>
                     <p className="tg-text text-2xl font-bold">Transfer Done</p>
+                  </div>
+                )}
+
+                {/* TX FAILED */}
+                {sentTxHash && txFailed && (
+                  <div className="flex flex-col items-center justify-center">
+                    <span
+                      className="material-symbols-outlined"
+                      style={{
+                        fontSize: "4rem",
+                        fontWeight: "900",
+                        color: "red",
+                      }}
+                    >
+                      error
+                    </span>
+                    <p className="tg-text text-2xl font-bold">
+                      Transfer Failed
+                    </p>
                   </div>
                 )}
 
@@ -810,6 +843,13 @@ const WalletPage = () => {
                     </p>
                   </div>
                 </>
+              )}
+              {txFailed && txFailReason && (
+                <div className="flex items-center justify-center w-full max-w-full mt-3">
+                  <p className="whitespace-normal break-words max-w-full text-red-700">
+                    Error: {txFailReason}
+                  </p>
+                </div>
               )}
             </div>
           </div>
@@ -1090,10 +1130,10 @@ const WalletPage = () => {
                   </div>
                 </>
               )}
-              {txFailed && txFaileReason && (
+              {txFailed && txFailReason && (
                 <div className="flex items-center justify-center w-full max-w-full mt-3">
                   <p className="whitespace-normal break-words max-w-full text-red-700">
-                    Error: {txFaileReason}
+                    Error: {txFailReason}
                   </p>
                 </div>
               )}
