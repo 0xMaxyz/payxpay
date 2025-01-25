@@ -47,7 +47,6 @@ const handleApproveInvoice = async (
     if (!dto.is_confirmed) {
       throw new Error("❌ Error \nThe payment is not confirmed yet (if any)");
     }
-
     // at this point we know that there is an invoice which is escrowed by us and confirmed by issuer
     // we can approve the escrow and pay the amount
     const tx = await approveEscrow(invoiceId);
