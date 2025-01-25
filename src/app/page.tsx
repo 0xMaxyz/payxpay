@@ -328,9 +328,13 @@ const WalletPage = () => {
     setTransferring(false);
     setsentTxHash(null);
     setchannelError("");
+    setTxFailed(false);
+    setTxFaileReason("");
   };
   const [isReviewVisible, setisReviewVisible] = useState(false);
   const [showReviewElement, setshowReviewElement] = useState(false);
+  const [txFailed, setTxFailed] = useState(false);
+  const [txFaileReason, setTxFaileReason] = useState("");
 
   useEffect(() => {
     if (showReviewElement) {
@@ -363,6 +367,8 @@ const WalletPage = () => {
         if (tx && tx.transactionHash) {
           setsentTxHash(tx.transactionHash);
         }
+        setTxFailed(tx?.code !== 0);
+        setTxFaileReason(tx?.rawLog ?? "");
       } catch (error) {
         console.error("Error transferring funds", error);
         addNotification({
@@ -390,9 +396,13 @@ const WalletPage = () => {
           receiverAddress,
           memo
         );
+        console.log(tx);
         if (tx && tx.transactionHash) {
           setsentTxHash(tx.transactionHash);
         }
+
+        setTxFailed(tx?.code !== 0);
+        setTxFaileReason(tx?.rawLog ?? "");
       } catch (error) {
         console.error("Error transferring funds", error);
         addNotification({
@@ -964,11 +974,15 @@ const WalletPage = () => {
             <div className="absolute inset-0 tg-bg-secondary-5 bg-opacity-50 backdrop-blur-sm"></div>
             <div className="relative tg-bg-secondary p-6 rounded-lg shadow-lg w-full">
               <div className="flex flex-col items-center justify-center tg-text">
-                {!sentTxHash ? (
+                {/* REVIEW HEADING */}
+                {!sentTxHash && (
                   <p className="tg-text text-2xl font-bold">
                     Review IBC Transfer
                   </p>
-                ) : (
+                )}
+
+                {/* TX NOT FAILED */}
+                {sentTxHash && !txFailed && (
                   <div className="flex flex-col items-center justify-center">
                     <span
                       className="material-symbols-outlined"
@@ -981,6 +995,25 @@ const WalletPage = () => {
                       check
                     </span>
                     <p className="tg-text text-2xl font-bold">Transfer Done</p>
+                  </div>
+                )}
+
+                {/* TX FAILED */}
+                {sentTxHash && txFailed && (
+                  <div className="flex flex-col items-center justify-center">
+                    <span
+                      className="material-symbols-outlined"
+                      style={{
+                        fontSize: "4rem",
+                        fontWeight: "900",
+                        color: "red",
+                      }}
+                    >
+                      error
+                    </span>
+                    <p className="tg-text text-2xl font-bold">
+                      Transfer Failed
+                    </p>
                   </div>
                 )}
 
@@ -1056,6 +1089,13 @@ const WalletPage = () => {
                     </p>
                   </div>
                 </>
+              )}
+              {txFailed && txFaileReason && (
+                <div className="flex items-center justify-center w-full max-w-full mt-3">
+                  <p className="whitespace-normal break-words max-w-full text-red-700">
+                    Error: {txFaileReason}
+                  </p>
+                </div>
               )}
             </div>
           </div>

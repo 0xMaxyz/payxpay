@@ -286,16 +286,28 @@ export const PxpContractProvider: React.FC<{ children: React.ReactNode }> = ({
         timeoutTimestamp: BigInt(1000_000 * (Date.now() + 300_000)), // 5 minutes
       },
     };
+    console.log(
+      "msgTransfer is: ",
+      JSON.stringify(msgTransfer, (key, value) => {
+        if (typeof value === "bigint") {
+          return value.toString();
+        }
+        return value;
+      })
+    );
 
     const fee: StdFee = {
       amount: [
         {
           denom: "uxion",
-          amount: "10",
+          amount: "1",
         },
       ],
       gas: "300000",
+      granter: xionAccount.bech32Address,
     };
+
+    console.log("Std fee is:", JSON.stringify(fee));
 
     // Broadcast the transaction
     const result = await client?.signAndBroadcast(
