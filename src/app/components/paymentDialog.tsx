@@ -88,13 +88,13 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
               </form>
             )}
           <h1 className="text-2xl font-bold text-center tg-text">Payment</h1>
+
           {loading ? (
-            <div className="w-full space-y-4">
+            <div className="w-full mt-2">
               {/* Skeleton Loading */}
-              <div className="skeleton h-6 w-3/4 mx-auto"></div>
-              <div className="skeleton h-4 w-1/2 mx-auto"></div>
-              <div className="skeleton h-12 w-full mt-4"></div>
-              <div className="skeleton h-4 w-1/3 mx-auto mt-2"></div>
+              <div className="skeleton h-6 w-full mx-auto py-2"></div>
+              <div className="skeleton h-12 w-full mx-auto mt-4"></div>
+              <div className="skeleton h-4 w-1/3  mt-1"></div>
             </div>
           ) : isBalanceSufficient ? (
             <div className="w-full">
