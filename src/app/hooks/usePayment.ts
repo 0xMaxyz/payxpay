@@ -14,6 +14,8 @@ export const usePayment = (paymentParams: PaymentParams) => {
     done: false,
   });
   const [txHash, setTxHash] = useState<string | null>(null);
+  const [txFailed, setTxFailed] = useState<boolean>(false);
+  const [txFailError, setTxFailError] = useState<string | null>(null);
 
   const handlePayment = async () => {
     let tHash = "";
@@ -36,6 +38,8 @@ export const usePayment = (paymentParams: PaymentParams) => {
             message: "Payment completed successfully",
           });
           setTxHash(res.transactionHash);
+          setTxFailed(res.code !== 0);
+          setTxFailError(res.rawLog ?? null);
           tHash = res.transactionHash;
           setPaymentSteps((prev) => ({
             ...prev,
@@ -43,6 +47,8 @@ export const usePayment = (paymentParams: PaymentParams) => {
             waitingConfirmation: true,
           }));
         } else if (res && res.code !== 0) {
+          setTxFailed(true);
+          setTxFailError(`Payment failed, tx hash: ${res.transactionHash}`);
           throw new Error(`Payment failed, tx hash: ${res.transactionHash}`);
         }
       } else {
@@ -94,6 +100,8 @@ export const usePayment = (paymentParams: PaymentParams) => {
             waitingConfirmation: true,
           }));
         } else if (res) {
+          setTxFailed(true);
+          setTxFailError(`Payment failed, tx hash: ${res.transactionHash}`);
           throw new Error(`Payment failed, tx hash: ${res.transactionHash}`);
         }
       }
@@ -132,12 +140,30 @@ export const usePayment = (paymentParams: PaymentParams) => {
         method: "POST",
       });
       if (!res.ok) {
+        setTxFailed(true);
+        setTxFailError(
+          "Something wrong happened while updating the invoice, please contact the support with the txHash and invoice id."
+        );
         throw new Error("Something wrong happened while updating the invoice.");
       }
     } else {
+      setTxFailed(true);
+      setTxFailError("No txHash found.");
       throw new Error("No txHash found.");
     }
   };
 
-  return { paymentSteps, txHash, handlePayment };
+  const resetFailure = () => {
+    setTxFailed(false);
+    setTxFailError(null);
+  };
+
+  return {
+    paymentSteps,
+    txHash,
+    handlePayment,
+    txFailError,
+    txFailed,
+    resetFailure,
+  };
 };

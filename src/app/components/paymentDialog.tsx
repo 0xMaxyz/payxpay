@@ -21,7 +21,14 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
     paymentParams.token,
     paymentParams.amount
   );
-  const { paymentSteps, txHash, handlePayment } = usePayment(paymentParams);
+  const {
+    paymentSteps,
+    txHash,
+    handlePayment,
+    resetFailure,
+    txFailError,
+    txFailed,
+  } = usePayment(paymentParams);
   const modalRef = useRef<HTMLDivElement>(null);
   const [showReviewElement, setShowReviewElement] = useState(false); // State for review confirmation
 
@@ -54,7 +61,6 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
   };
 
   const handleConfirmPayment = () => {
-    //setShowReviewElement(false); // Close the review confirmation
     handlePayment(); // Initiate the payment
   };
 
@@ -137,12 +143,6 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                     </p>
                   </>
                 )}
-              {/* <PaymentStatus
-                transmitting={paymentSteps.transmitting}
-                waitingConfirmation={paymentSteps.waitingConfirmation}
-                done={paymentSteps.done}
-                txHash={txHash}
-              /> */}
             </div>
           ) : (
             <p className="text-center text-red-500">
@@ -158,7 +158,8 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
           <div className="relative tg-bg-secondary p-6 rounded-lg shadow-lg w-full max-w-md">
             {!paymentSteps.done &&
               !paymentSteps.transmitting &&
-              !paymentSteps.waitingConfirmation && (
+              !paymentSteps.waitingConfirmation &&
+              !txFailed && (
                 <>
                   <div className="flex flex-col items-center justify-center tg-text">
                     <p className="tg-text text-2xl font-bold">Review Payment</p>
@@ -201,30 +202,35 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                 </>
               )}
 
-            {/* Payment Steps */}
+            {/* Payment Status */}
             <div className="mt-4">
               <PaymentStatus
                 transmitting={paymentSteps.transmitting}
                 waitingConfirmation={paymentSteps.waitingConfirmation}
                 done={paymentSteps.done}
                 txHash={txHash}
+                txFailure={txFailed}
+                txFailureMessage={txFailError ?? undefined}
+                invoiceId={paymentParams.invoice.id}
               />
             </div>
 
             {/* Close Button when Payment is Done */}
-            {paymentSteps.done && (
-              <div className="flex justify-center mt-5">
-                <button
-                  className="absolute right-2 top-2 btn btn-sm btn-circle btn-ghost"
-                  onClick={() => {
-                    setShowReviewElement(false); // Close review confirmation
-                    onClose(); // Close the payment dialog
-                  }}
-                >
-                  ✕
-                </button>
-              </div>
-            )}
+            {paymentSteps.done ||
+              (txFailed && (
+                <div className="flex justify-center mt-5">
+                  <button
+                    className="absolute right-2 top-2 btn btn-sm btn-circle btn-ghost"
+                    onClick={() => {
+                      setShowReviewElement(false); // Close review confirmation
+                      resetFailure(); // reset txfail state and txfail error
+                      onClose(); // Close the payment dialog
+                    }}
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
           </div>
         </div>
       )}
