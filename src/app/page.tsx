@@ -846,7 +846,7 @@ const WalletPage = () => {
               )}
               {txFailed && txFailReason && (
                 <div className="flex items-center justify-center w-full max-w-full mt-3">
-                  <p className="whitespace-normal break-words max-w-full text-red-700">
+                  <p className="whitespace-normal break-words max-w-full text-red-700 h-10 overflow-y-auto">
                     Error: {txFailReason}
                   </p>
                 </div>
@@ -1132,7 +1132,7 @@ const WalletPage = () => {
               )}
               {txFailed && txFailReason && (
                 <div className="flex items-center justify-center w-full max-w-full mt-3">
-                  <p className="whitespace-normal break-words max-w-full text-red-700">
+                  <p className="whitespace-normal break-words max-w-full text-red-700 h-10 overflow-y-auto">
                     Error: {txFailReason}
                   </p>
                 </div>
