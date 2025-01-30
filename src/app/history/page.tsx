@@ -144,7 +144,7 @@ export default function HPage() {
     async function fetchData() {
       const tgUserId =
         process.env.NEXT_PUBLIC_ENV === "development"
-          ? "6376040916"
+          ? "5907927544"
           : userData?.id;
       try {
         setLoading(true);
@@ -381,7 +381,7 @@ export default function HPage() {
      * Reject: Reject a confirmed invoice
      */
     const myTgId =
-      process.env.NEXT_PUBLIC_ENV === "development" ? 6376040916 : userData?.id;
+      process.env.NEXT_PUBLIC_ENV === "development" ? 5907927544 : userData?.id;
     console.log(myTgId);
     console.log(inv);
     if (myTgId) {
@@ -392,7 +392,7 @@ export default function HPage() {
           console.log("I'm issuer");
           // I'm issuer
           // Issuer can Confirm escrow
-          if (inv.status === "Paid") {
+          if (inv.status === "Paid" || inv.status === "Waiting Confirmation") {
             buttons.push(
               <button
                 disabled={executingAction}

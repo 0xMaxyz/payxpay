@@ -127,7 +127,7 @@ export async function POST(req: NextRequest) {
   }
   if (process.env.NEXT_PUBLIC_ENV === "development") {
     // mock tg_id
-    return await handleActions(6376040916);
+    return await handleActions(5907927544);
   } else {
     // verify token
     const jwtPayload = verifyJWTAndReferer(req);
