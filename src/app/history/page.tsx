@@ -385,159 +385,198 @@ export default function HPage() {
     console.log(myTgId);
     console.log(inv);
     if (myTgId) {
-      if (inv.issuer_tg_id.toString() === myTgId.toString()) {
-        console.log("I'm issuer");
-        // we are the issuer
-        // Issuer can Confirm escrow
-        if (inv.status === "Paid") {
-          buttons.push(
-            <button
-              disabled={executingAction}
-              className="btn btn-success btn-sm text-white"
-              onClick={() => (executingAction ? null : handleConfirm(inv))}
-            >
-              {executingAction ? (
-                <>
-                  <span className="loading loading-spinner loading-sm"></span>
-                  Confirming
-                </>
-              ) : (
-                <>
-                  <span className="material-symbols-outlined">check</span>
-                  Confirm
-                </>
-              )}
-            </button>
-          );
+      if (inv.out_type === "direct") {
+        // actions for direct payments
+        if (inv.issuer_tg_id.toString() === myTgId.toString()) {
+          // I'm issuer
+          // Issuer can Confirm escrow
+          if (inv.status === "Paid") {
+            buttons.push(
+              <button
+                disabled={executingAction}
+                className="btn btn-success btn-sm text-white"
+                onClick={() => (executingAction ? null : handleConfirm(inv))}
+              >
+                {executingAction ? (
+                  <>
+                    <span className="loading loading-spinner loading-sm"></span>
+                    Confirming
+                  </>
+                ) : (
+                  <>
+                    <span className="material-symbols-outlined">check</span>
+                    Confirm
+                  </>
+                )}
+              </button>
+            );
+          }
+          // Issuer can delete an invoice
+          if (inv.status === "Created") {
+            buttons.push(
+              <button
+                disabled={executingAction}
+                className="btn btn-error btn-sm text-white"
+                onClick={() => (executingAction ? null : handleDelete(inv))}
+              >
+                {executingAction ? (
+                  <>
+                    <span className="loading loading-spinner loading-sm"></span>
+                    Deleting Invoice
+                  </>
+                ) : (
+                  <>
+                    <span className="material-symbols-outlined">delete</span>
+                    Delete Invoice
+                  </>
+                )}
+              </button>
+            );
+          }
         }
-        // Issuer can delete an escrow
-        if (inv.status === "Created") {
-          buttons.push(
-            <button
-              disabled={executingAction}
-              className="btn btn-error btn-sm text-white"
-              onClick={() => (executingAction ? null : handleDelete(inv))}
-            >
-              {executingAction ? (
-                <>
-                  <span className="loading loading-spinner loading-sm"></span>
-                  Deleting Invoice
-                </>
-              ) : (
-                <>
-                  <span className="material-symbols-outlined">delete</span>
-                  Delete Invoice
-                </>
-              )}
-            </button>
-          );
+        if (
+          inv.payer_tg_id &&
+          inv.payer_tg_id.toString() === myTgId.toString()
+        ) {
+          // I'm payer
         }
-        // Issuer can Confirm escrow
-        if (inv.status === "Waiting Confirmation") {
-          buttons.push(
-            <button
-              className="btn btn-success btn-sm text-white"
-              disabled={executingAction}
-              onClick={() => (executingAction ? null : handleConfirm(inv))}
-            >
-              {executingAction ? (
-                <>
-                  <span className="loading loading-spinner loading-sm"></span>
-                  Confirming
-                </>
-              ) : (
-                <>
-                  <span className="material-symbols-outlined">check</span>
-                  Confirm
-                </>
-              )}
-            </button>
-          );
+      } else {
+        // actions for escrows
+        if (inv.issuer_tg_id.toString() === myTgId.toString()) {
+          // I'm issuer
+          // Issuer can Confirm escrow
+          if (inv.status === "Paid" || inv.status === "Waiting Confirmation") {
+            buttons.push(
+              <button
+                disabled={executingAction}
+                className="btn btn-success btn-sm text-white"
+                onClick={() => (executingAction ? null : handleConfirm(inv))}
+              >
+                {executingAction ? (
+                  <>
+                    <span className="loading loading-spinner loading-sm"></span>
+                    Confirming
+                  </>
+                ) : (
+                  <>
+                    <span className="material-symbols-outlined">check</span>
+                    Confirm
+                  </>
+                )}
+              </button>
+            );
+          }
+          // Issuer can delete an invoice
+          if (inv.status === "Created") {
+            buttons.push(
+              <button
+                disabled={executingAction}
+                className="btn btn-error btn-sm text-white"
+                onClick={() => (executingAction ? null : handleDelete(inv))}
+              >
+                {executingAction ? (
+                  <>
+                    <span className="loading loading-spinner loading-sm"></span>
+                    Deleting Invoice
+                  </>
+                ) : (
+                  <>
+                    <span className="material-symbols-outlined">delete</span>
+                    Delete Invoice
+                  </>
+                )}
+              </button>
+            );
+          }
         }
-      }
-      if (inv.payer_tg_id && inv.payer_tg_id.toString() === myTgId.toString()) {
-        console.log("I'm Payer");
-        // we are payer
-        if (inv.status === "Escrow Rejected") {
-          // payer can Approve a rejected escrow
-          buttons.push(
-            <button
-              disabled={executingAction}
-              className="btn btn-sm btn-success text-white"
-              onClick={() => (executingAction ? null : handleApprove(inv))}
-            >
-              {executingAction ? (
-                <>
-                  <span className="loading loading-spinner loading-sm"></span>
-                  Approving
-                </>
-              ) : (
-                <>
-                  <span className="material-symbols-outlined">done_all</span>
-                  Approve
-                </>
-              )}
-            </button>
-          );
-        }
-        // payer can Reject escrow
-        if (!showRejection && inv.status === "Payment Confirmed") {
-          buttons.push(
-            <button
-              disabled={executingAction}
-              className="btn btn-primary btn-sm text-white"
-              onClick={() => (executingAction ? null : setShowRejection(true))}
-            >
-              <span className="material-symbols-outlined">
-                keyboard_arrow_down
-              </span>
-              Reject
-            </button>
-          );
-          // payer can Approve escrow
-          buttons.push(
-            <button
-              disabled={executingAction}
-              className="btn btn-sm btn-success text-white"
-              onClick={() => (executingAction ? null : handleApprove(inv))}
-            >
-              {executingAction ? (
-                <>
-                  <span className="loading loading-spinner loading-sm"></span>
-                  Approving
-                </>
-              ) : (
-                <>
-                  <span className="material-symbols-outlined">done_all</span>
-                  Approve
-                </>
-              )}
-            </button>
-          );
-        }
-        // payer can Refund escrow
-        if (inv.status === "Paid" && inv.out_type !== "direct") {
-          buttons.push(
-            <button
-              disabled={executingAction}
-              className="btn btn-sm  btn-warning text-white"
-              onClick={() => (executingAction ? null : handleRefund(inv))}
-            >
-              {executingAction ? (
-                <>
-                  <span className="loading loading-spinner loading-sm"></span>
-                  Refunding
-                </>
-              ) : (
-                <>
-                  <span className="material-symbols-outlined">
-                    credit_card_off
-                  </span>
-                  Refund
-                </>
-              )}
-            </button>
-          );
+        if (
+          inv.payer_tg_id &&
+          inv.payer_tg_id.toString() === myTgId.toString()
+        ) {
+          // I'm payer
+          if (inv.status === "Escrow Rejected") {
+            // payer can Approve a rejected escrow
+            buttons.push(
+              <button
+                disabled={executingAction}
+                className="btn btn-sm btn-success text-white"
+                onClick={() => (executingAction ? null : handleApprove(inv))}
+              >
+                {executingAction ? (
+                  <>
+                    <span className="loading loading-spinner loading-sm"></span>
+                    Approving
+                  </>
+                ) : (
+                  <>
+                    <span className="material-symbols-outlined">done_all</span>
+                    Approve
+                  </>
+                )}
+              </button>
+            );
+          }
+          // payer can Reject escrow
+          if (!showRejection && inv.status === "Payment Confirmed") {
+            buttons.push(
+              <button
+                disabled={executingAction}
+                className="btn btn-primary btn-sm text-white"
+                onClick={() =>
+                  executingAction ? null : setShowRejection(true)
+                }
+              >
+                <span className="material-symbols-outlined">
+                  keyboard_arrow_down
+                </span>
+                Reject
+              </button>
+            );
+            // payer can Approve escrow
+            buttons.push(
+              <button
+                disabled={executingAction}
+                className="btn btn-sm btn-success text-white"
+                onClick={() => (executingAction ? null : handleApprove(inv))}
+              >
+                {executingAction ? (
+                  <>
+                    <span className="loading loading-spinner loading-sm"></span>
+                    Approving
+                  </>
+                ) : (
+                  <>
+                    <span className="material-symbols-outlined">done_all</span>
+                    Approve
+                  </>
+                )}
+              </button>
+            );
+          }
+          // payer can Refund escrow
+          if (inv.status === "Paid" && inv.out_type !== "direct") {
+            buttons.push(
+              <button
+                disabled={executingAction}
+                className="btn btn-sm  btn-warning text-white"
+                onClick={() => (executingAction ? null : handleRefund(inv))}
+              >
+                {executingAction ? (
+                  <>
+                    <span className="loading loading-spinner loading-sm"></span>
+                    Refunding
+                  </>
+                ) : (
+                  <>
+                    <span className="material-symbols-outlined">
+                      credit_card_off
+                    </span>
+                    Refund
+                  </>
+                )}
+              </button>
+            );
+          }
         }
       }
     }
