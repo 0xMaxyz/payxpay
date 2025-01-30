@@ -449,7 +449,14 @@ export default function HPage() {
           // I'm issuer
           console.log("I'm issuer");
           // Issuer can Confirm escrow
+          console.log(
+            `is inv.status === "Waiting Confirmation"`,
+            inv.status === "Waiting Confirmation"
+          );
+          console.log(`is inv.status === "Paid"`, inv.status === "Paid");
+
           if (inv.status === "Paid" || inv.status === "Waiting Confirmation") {
+            console.log("Add confirm button");
             buttons.push(
               <button
                 disabled={executingAction}
