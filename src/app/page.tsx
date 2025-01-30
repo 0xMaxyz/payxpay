@@ -46,6 +46,7 @@ const WalletPage = () => {
     "send-modal",
     "receive-modal",
     "ibc-modal",
+    "bridge-modal",
   ] as const;
   type WalletModal = (typeof WalletModals)[number];
 
@@ -526,6 +527,24 @@ const WalletPage = () => {
                 <p>Receive</p>
               </div>
             </button>
+            <div className="relative">
+              <button
+                className="btn btn-ghost"
+                disabled
+                onClick={() => showModal("bridge-modal")}
+              >
+                <p
+                  className="absolute right-1 top-1 text-green-600"
+                  style={{ fontSize: "0.6rem" }}
+                >
+                  soon
+                </p>
+                <div className="flex-flex-col">
+                  <span className="material-symbols-outlined">flyover</span>
+                  <p>Bridge</p>
+                </div>
+              </button>
+            </div>
             <button
               className="btn btn-ghost"
               onClick={() => showModal("activity-modal")}
