@@ -385,9 +385,11 @@ export default function HPage() {
     console.log(myTgId);
     console.log(inv);
     if (myTgId) {
+      console.log("status is:", inv.status);
       if (inv.out_type === "direct") {
         // actions for direct payments
         if (inv.issuer_tg_id.toString() === myTgId.toString()) {
+          console.log("I'm issuer");
           // I'm issuer
           // Issuer can Confirm escrow
           if (inv.status === "Paid") {
@@ -439,11 +441,13 @@ export default function HPage() {
           inv.payer_tg_id.toString() === myTgId.toString()
         ) {
           // I'm payer
+          console.log("I'm Payer");
         }
       } else {
         // actions for escrows
         if (inv.issuer_tg_id.toString() === myTgId.toString()) {
           // I'm issuer
+          console.log("I'm issuer");
           // Issuer can Confirm escrow
           if (inv.status === "Paid" || inv.status === "Waiting Confirmation") {
             buttons.push(
@@ -494,6 +498,7 @@ export default function HPage() {
           inv.payer_tg_id.toString() === myTgId.toString()
         ) {
           // I'm payer
+          console.log("I'm payer");
           if (inv.status === "Escrow Rejected") {
             // payer can Approve a rejected escrow
             buttons.push(
